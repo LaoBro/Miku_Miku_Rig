@@ -1,0 +1,1466 @@
+import bpy
+import os
+import logging
+import math
+import bmesh
+import copy
+def alert_error(title,message):
+    def draw(self,context):
+        self.layout.label(text=str(message))
+    bpy.context.window_manager.popup_menu(draw,title=title,icon='ERROR')
+class MMR():
+
+
+    context=None
+    limit_mod=True
+    wrist_follow=True
+    auto_rest_pose=True
+    auto_fix_axial=True
+    relative_mod=False
+    auto_shoulder=False
+    auto_upperbody=False
+    auto_lowerbody=False
+    wrist_rotation_follow=False
+    solid_rig=False
+    pole_target=False
+
+    zero_roll_list=["Head","Neck_Middle","Neck","LowerBody","UpperBody","UpperBody2","spine.001","UpperBody3","Leg_L","Leg_R","Knee_L","Knee_R","Ankle_L","Ankle_R","toe.L","toe.R"]
+
+    def __init__(self,context):
+        #获得场景变量
+        self.context=context
+        self.limit_mod=context.scene.limit_mod
+        self.wrist_follow=context.scene.wrist_follow
+        self.auto_rest_pose=context.scene.auto_rest_pose
+        self.auto_fix_axial=context.scene.auto_fix_axial
+        self.relative_mod=context.scene.relative_mod
+        self.auto_shoulder=context.scene.auto_shoulder
+        self.auto_upperbody=context.scene.auto_upperbody
+        self.wrist_rotation_follow=context.scene.wrist_rotation_follow
+        self.auto_lowerbody=context.scene.auto_lowerbody
+        self.solid_rig=context.scene.solid_rig
+        self.pole_target=context.scene.pole_target
+
+    def quad(self,rad):
+        degree=rad*180/math.pi
+        degree= degree % 360
+        if degree <= 90:
+            Quadrant = 1
+        else:
+            if degree <= 180:
+                Quadrant = 2
+            else:
+                if degree <= 270:
+                    Quadrant = 3
+                else:
+                    if degree <= 360:
+                        Quadrant = 4
+
+        return Quadrant
+
+    def check_arm(self):
+        global mmd_arm
+        global mmd_bones_list
+
+        mmd_arm=bpy.context.object
+        have_rigify=False
+        for addon in bpy.context.preferences.addons:
+            if addon.module=="rigify":
+                have_rigify=True
+        if mmd_arm==None:
+            logging.info("未选择骨骼！")
+            alert_error("提示","未选择骨骼！")
+            return(False)
+        if have_rigify==False:
+            logging.info("检测到未开启rigify，已自动开启")
+            alert_error("提示","检测到未开启rigify，已自动开启")
+            bpy.ops.preferences.addon_enable(module="rigify")
+        if "_arm" not in mmd_arm.name:
+            logging.info("所选对象不是MMD骨骼！")
+            alert_error("提示","所选对象不是MMD骨骼！")
+            return(False)
+        elif mmd_arm.parent==None:
+            logging.info("所选对象不是MMD骨骼！")
+            alert_error("提示","所选对象不是MMD骨骼！")
+            return(False) 
+        elif mmd_arm.name.replace("_arm","") != mmd_arm.parent.name:
+            logging.info("所选对象不是MMD骨骼！")
+            alert_error("提示","所选对象不是MMD骨骼！")
+            return(False) 
+        bpy.ops.mmd_tools.translate_mmd_model(dictionary='INTERNAL', types={'BONE'}, modes={'MMD', 'BLENDER'})
+        mmd_bones_list=mmd_arm.data.bones.keys()
+        if "UpperBodyB" in mmd_bones_list:
+            mmd_arm.data.bones["UpperBodyB"].name="UpperBody2"
+            mmd_bones_list=mmd_arm.data.bones.keys()
+        return (True)
+
+    def fix_axial_simple(self):
+
+        global mmd_arm
+        global mmd_bones_list
+        fix_bone_list=["Thumb0_L","Thumb1_L","Thumb2_L","Thumb0_R","Thumb1_R","Thumb2_R","IndexFinger1_L","IndexFinger1_R","IndexFinger2_L","IndexFinger2_R","IndexFinger3_L","IndexFinger3_R",
+            "MiddleFinger1_L","MiddleFinger1_R","MiddleFinger2_L","MiddleFinger2_R","MiddleFinger3_L","MiddleFinger3_R","RingFinger1_L","RingFinger1_R","RingFinger2_L","RingFinger2_R","RingFinger3_L","RingFinger3_R",
+            "LittleFinger1_L","LittleFinger1_R","LittleFinger2_L","LittleFinger2_R","LittleFinger3_L","LittleFinger3_R","Shoulder_L","Shoulder_R","Arm_L","Arm_R","Elbow_L","Elbow_R","Wrist_L","Wrist_R"
+        ]
+        p_operate_bones=["IndexFinger1_L","IndexFinger2_L","IndexFinger3_L",
+            "MiddleFinger1_L","MiddleFinger2_L","MiddleFinger3_L","RingFinger1_L","RingFinger2_L","RingFinger3_L",
+            "LittleFinger1_L","LittleFinger2_L","LittleFinger3_L","LittleFinger3_R"]
+        n_operate_bones=["IndexFinger1_R","IndexFinger2_R","IndexFinger3_R",
+            "MiddleFinger1_R","MiddleFinger2_R","MiddleFinger3_R","RingFinger1_R","RingFinger2_R","RingFinger3_R",
+            "LittleFinger1_R","LittleFinger2_R","LittleFinger3_R"]
+        bpy.ops.armature.select_all(action='DESELECT')
+        for name in fix_bone_list:
+            if name in mmd_bones_list:
+                mmd_arm.data.edit_bones[name].select=True
+        bpy.ops.armature.calculate_roll(type='GLOBAL_NEG_Y')
+        for name in p_operate_bones:
+            if name in mmd_bones_list:
+                mmd_arm.data.edit_bones[name].roll+=math.pi/2
+        for name in n_operate_bones:
+            if name in mmd_bones_list:
+                mmd_arm.data.edit_bones[name].roll-=math.pi/2
+                
+        alert_error("提示","轴向修正完成")
+    def fix_axial(self):
+        global mmd_arm
+        L_first_quadrant_list=["IndexFinger1_L","IndexFinger2_L","IndexFinger3_L",
+            "MiddleFinger1_L","MiddleFinger2_L","MiddleFinger3_L","RingFinger1_L","RingFinger2_L","RingFinger3_L",
+            "LittleFinger1_L","LittleFinger2_L","LittleFinger3_L","Shoulder_L","Arm_L","Elbow_L"]
+        L_second_quadrant_bones_list=["Thumb0_L","Thumb1_L","Thumb2_L","Wrist_L"]
+        R_first_quadrant_bones_list=["IndexFinger1_R","IndexFinger2_R","IndexFinger3_R",
+            "MiddleFinger1_R","MiddleFinger2_R","MiddleFinger3_R","RingFinger1_R","RingFinger2_R","RingFinger3_R",
+            "LittleFinger1_R","LittleFinger2_R","LittleFinger3_R","Shoulder_R","Arm_R","Elbow_R"]
+        R_second_quadrant_bones_list=["Thumb0_R","Thumb1_R","Thumb2_R","Wrist_R"]
+
+        for name in self.zero_roll_list:
+            if name in mmd_bones_list:
+                bone=mmd_arm.data.edit_bones[name]
+                bone.roll=0
+
+        for name in L_first_quadrant_list:
+            if name in mmd_bones_list:
+                bone=mmd_arm.data.edit_bones[name]
+                roll=bone.roll
+                old_quadrant=self.quad(roll)
+                if old_quadrant==4:
+                    roll+=math.pi/2
+                elif old_quadrant==3:
+                    roll+=math.pi
+                elif old_quadrant==2:
+                    roll-=math.pi/2
+                bone.roll=roll
+        for name in L_second_quadrant_bones_list:
+            if name in mmd_bones_list:
+                bone=mmd_arm.data.edit_bones[name]
+                roll=bone.roll
+                old_quadrant=self.quad(roll)
+                if old_quadrant==4:
+                    roll+=math.pi
+                elif old_quadrant==3:
+                    roll-=math.pi/2
+                elif old_quadrant==1:
+                    roll+=math.pi/2
+                bone.roll=roll
+        for name in R_first_quadrant_bones_list:
+            if name in mmd_bones_list:
+                bone=mmd_arm.data.edit_bones[name]
+                roll=bone.roll
+                old_quadrant=self.quad(roll)
+                if old_quadrant==3:
+                    roll+=math.pi/2
+                elif old_quadrant==2:
+                    roll+=math.pi
+                elif old_quadrant==1:
+                    roll-=math.pi/2
+                bone.roll=roll
+        for name in R_second_quadrant_bones_list:
+            if name in mmd_bones_list:
+                bone=mmd_arm.data.edit_bones[name]
+                roll=bone.roll
+                old_quadrant=self.quad(roll)
+                if old_quadrant==1:
+                    roll+=math.pi
+                elif old_quadrant==4:
+                    roll-=math.pi/2
+                elif old_quadrant==2:
+                    roll+=math.pi/2
+                bone.roll=roll
+
+        for name in L_first_quadrant_list+L_second_quadrant_bones_list:
+            if name in mmd_bones_list:
+                R_name=name.replace("_L","_R")
+                if R_name in mmd_bones_list:
+                    mmd_arm.data.edit_bones[R_name].roll=-mmd_arm.data.edit_bones[name].roll
+        alert_error("提示","轴向修正完成")
+
+    def load_pose(self):
+        my_dir = os.path.dirname(os.path.realpath(__file__))
+        vpd_file = os.path.join(my_dir, "MMR_Rig_pose.vpd")
+        print(my_dir)
+        print(vpd_file)
+        bpy.ops.mmd_tools.import_vpd(filepath=vpd_file, files=[{"name":"MMR_Rig_pose.vpd", "name":"MMR_Rig_pose.vpd"}], directory=my_dir)
+
+    def add_constraint_execute(self):
+
+        length=len(constraints_from)
+        bpy.ops.object.mode_set(mode = 'EDIT')
+        for i in range(length):
+            From = constraints_from[i]
+            To = constraints_to[i]
+            parent_name=From + '_parent'
+            parent_bone=rig.data.edit_bones.new(name=parent_name)
+            parent_bone.head=mmd_arm2.data.edit_bones[From].head
+            parent_bone.tail=mmd_arm2.data.edit_bones[From].tail
+            parent_bone.roll=mmd_arm2.data.edit_bones[From].roll
+            parent_bone.parent=rig.data.edit_bones[To]
+
+        bpy.ops.object.mode_set(mode = 'POSE')
+        for i in range(length):
+            From = constraints_from[i]
+            To = constraints_to[i]
+            con= mmd_arm.pose.bones[From].constraints
+            for c in con:
+                c.mute=True
+            parent_name=From + '_parent'
+            rig.data.bones[parent_name].hide=True
+            COPY_TRANSFORMS=con.new(type='COPY_TRANSFORMS')
+            COPY_TRANSFORMS.target = rig
+            COPY_TRANSFORMS.subtarget = parent_name
+            COPY_TRANSFORMS.name="rel_transforms"
+            COPY_TRANSFORMS.mix_mode = 'REPLACE'
+            COPY_TRANSFORMS.owner_space = 'WORLD'
+            COPY_TRANSFORMS.target_space = 'WORLD'
+
+
+
+    def add_constraint(self,To,From,rotation=True):
+        global constraints_from
+        global constraints_from
+        if From in mmd_bones_list:
+            if rotation:
+                constraints_from.append(From)
+                constraints_to.append(To)
+            else:
+                COPY_LOCATION=mmd_arm.pose.bones[From].constraints.new(type='COPY_LOCATION')
+                COPY_LOCATION.target = rig
+                COPY_LOCATION.subtarget = To
+                COPY_LOCATION.name="rel_location"
+
+    def RIG(self):
+
+
+        global mmd_arm
+        global mmd_arm2
+        global rigify_arm
+        global rigify_bones_list
+        global mmd_bones_list
+        global exist_bones
+        global rig
+        global constraints_from
+        global constraints_to
+
+        my_dir = os.path.dirname(os.path.realpath(__file__))
+        rigify_blend_file = os.path.join(my_dir, "MMR_Rig.blend")
+
+        if self.check_arm()==False:
+            return{False}
+
+        if self.auto_fix_axial and self.relative_mod==False:
+            bpy.ops.object.mode_set(mode = 'EDIT')
+            self.fix_axial()
+            bpy.ops.object.mode_set(mode = 'OBJECT')
+
+        self.load_pose()
+
+        bpy.ops.object.mode_set(mode = 'OBJECT')
+        mmd_arm2=mmd_arm.copy()
+        self.context.collection.objects.link(mmd_arm2)
+        mmd_arm2.data=mmd_arm.data.copy()
+        bpy.ops.object.select_all(action='DESELECT')
+        bpy.context.view_layer.objects.active=mmd_arm2
+        bpy.ops.object.mode_set(mode = 'POSE')
+        bpy.ops.pose.armature_apply(selected=False)
+        bpy.ops.object.mode_set(mode = 'OBJECT')
+
+        rigify_arm_name="MMR_Rig_relative"
+
+        #导入rigify骨骼
+        rigify_arm=None
+        with bpy.data.libraries.load(rigify_blend_file) as (data_from, data_to):
+            data_to.objects = [name for name in data_from.objects if rigify_arm_name == name]
+        for obj in data_to.objects:
+            self.context.collection.objects.link(obj)
+            rigify_arm=obj
+
+        rigify_bones_list=rigify_arm.data.bones.keys()
+        exist_bones=list(set(mmd_bones_list).intersection(rigify_bones_list))
+
+        #隐藏多余骨骼
+        for bone in mmd_arm.data.bones:
+            if bone.name not in rigify_bones_list:
+                bone.hide=True
+            
+
+        bpy.ops.object.select_all(action='DESELECT')
+        bpy.context.view_layer.objects.active=rigify_arm
+        bpy.ops.object.mode_set(mode = 'EDIT')
+        bpy.ops.armature.select_all(action='DESELECT')
+
+        #修正只有两节拇指骨骼的模型
+        if "Thumb1_L" in exist_bones:
+            if mmd_arm.data.bones["Thumb1_L"].parent.name !="Thumb0_L":
+                rigify_arm.data.edit_bones["Thumb2_L"].select=True
+                bpy.ops.armature.delete()
+                rigify_arm.data.edit_bones["Thumb1_L"].name='Thumb2_L'
+                rigify_arm.data.edit_bones["Thumb0_L"].name='Thumb1_L'
+
+        if "Thumb1_R" in exist_bones:
+            if mmd_arm.data.bones["Thumb1_R"].parent.name !="Thumb0_R":
+                rigify_arm.data.edit_bones["Thumb2_R"].select=True
+                bpy.ops.armature.delete()
+                rigify_arm.data.edit_bones["Thumb1_R"].name='Thumb2_R'
+                rigify_arm.data.edit_bones["Thumb0_R"].name='Thumb1_R'
+
+        rigify_bones_list=rigify_arm.data.edit_bones.keys()
+
+        #调整约束以匹配骨骼
+        bpy.ops.object.mode_set(mode = 'POSE')
+        for name in rigify_bones_list:
+            bone=rigify_arm.pose.bones[name]
+            parent_bone=None
+            parent_bone=bone.parent
+            if parent_bone!=None:
+                parent_bone.constraints['location'].target=mmd_arm
+                parent_bone.constraints['location'].subtarget=bone.parent.name
+                parent_bone.constraints['stretch'].target=mmd_arm
+                parent_bone.constraints['stretch'].subtarget=name
+                parent_bone.constraints["stretch"].rest_length = parent_bone.length
+            if name not in exist_bones:
+                bone.constraints['location'].mute=True
+                bone.constraints['stretch'].mute=True
+
+        #spine.001，Neck_Middle是多余骨骼
+        rigify_arm.pose.bones['spine.001'].constraints["location"].mute=True
+        rigify_arm.pose.bones['spine.001'].constraints["stretch"].mute=True
+
+
+        rigify_arm.pose.bones['Neck_Middle'].constraints["location"].mute=True
+        rigify_arm.pose.bones['Neck_Middle'].constraints["stretch"].mute=True
+
+        rigify_arm.pose.bones['Neck'].constraints['stretch'].subtarget='Head'
+
+        rigify_arm.pose.bones['LowerBody'].constraints["stretch"].subtarget='UpperBody'
+        rigify_arm.pose.bones["LowerBody"].constraints["location"].head_tail = 1
+
+        rigify_arm.pose.bones['UpperBody2'].constraints["stretch"].subtarget='UpperBody2'
+        rigify_arm.pose.bones["UpperBody2"].constraints["stretch"].head_tail = 1
+
+        rigify_arm.pose.bones['Ankle_L'].constraints["stretch"].subtarget='ToeTipIK_L'
+
+        rigify_arm.pose.bones['Ankle_R'].constraints["stretch"].subtarget='ToeTipIK_R'
+        
+        rigify_arm.pose.bones['Head'].constraints['location'].target=mmd_arm
+        rigify_arm.pose.bones['Head'].constraints['location'].subtarget='Head'
+        rigify_arm.pose.bones['Head'].constraints['stretch'].target=mmd_arm
+        rigify_arm.pose.bones['Head'].constraints['stretch'].subtarget='Head'
+        rigify_arm.pose.bones['Head'].constraints["stretch"].head_tail = 1
+        rigify_arm.pose.bones['Head'].constraints["stretch"].rest_length = rigify_arm.data.bones['Head'].length
+
+        rigify_arm.pose.bones['Wrist_L'].constraints["stretch"].mute=True
+        rigify_arm.pose.bones['Wrist_R'].constraints["stretch"].mute=True
+
+        rigify_arm.pose.bones['ToeTipIK_L'].constraints["stretch"].mute=True
+        rigify_arm.pose.bones['ToeTipIK_R'].constraints["stretch"].mute=True
+
+        #调整缺失UpperBody2情况
+        if 'UpperBody2' not in exist_bones and 'UpperBody' in exist_bones:
+            rigify_arm.pose.bones['UpperBody'].scale[0] = 0.0001
+            rigify_arm.pose.bones['UpperBody'].scale[1] = 0.0001
+            rigify_arm.pose.bones['UpperBody'].scale[2] = 0.0001
+            rigify_arm.pose.bones['UpperBody'].constraints['location'].mute=True
+            rigify_arm.pose.bones['UpperBody'].constraints['stretch'].mute=True
+            rigify_arm.pose.bones['UpperBody2'].constraints['location'].subtarget='UpperBody'
+            rigify_arm.pose.bones['UpperBody2'].constraints['stretch'].subtarget='UpperBody'
+            rigify_arm.pose.bones['UpperBody2'].constraints['location'].mute=False
+            rigify_arm.pose.bones['UpperBody2'].constraints['stretch'].mute=False
+        
+        bpy.ops.pose.armature_apply(selected=False)
+        bpy.ops.pose.select_all(action='SELECT')
+        bpy.ops.pose.constraints_clear()
+
+        bpy.ops.object.mode_set(mode = 'OBJECT')
+        mmd_arm2.select=True
+        bpy.ops.object.mode_set(mode = 'EDIT')
+
+        #关闭相对模式的话还会额外讲轴向与原骨骼对齐
+        if self.relative_mod==False:
+            for name in exist_bones:
+                rigify_arm.data.edit_bones[name].roll=mmd_arm2.data.edit_bones[name].roll
+
+        #修正末端骨骼长度
+        rigify_arm.data.edit_bones["Thumb2_L"].length=rigify_arm.data.edit_bones["Thumb1_L"].length
+        rigify_arm.data.edit_bones["Thumb2_R"].length=rigify_arm.data.edit_bones["Thumb1_R"].length
+        rigify_arm.data.edit_bones["IndexFinger3_L"].length=rigify_arm.data.edit_bones["IndexFinger2_L"].length
+        rigify_arm.data.edit_bones["IndexFinger3_R"].length=rigify_arm.data.edit_bones["IndexFinger2_R"].length
+        rigify_arm.data.edit_bones["MiddleFinger3_L"].length=rigify_arm.data.edit_bones["MiddleFinger2_L"].length
+        rigify_arm.data.edit_bones["MiddleFinger3_R"].length=rigify_arm.data.edit_bones["MiddleFinger2_R"].length
+        rigify_arm.data.edit_bones["RingFinger3_L"].length=rigify_arm.data.edit_bones["RingFinger2_L"].length
+        rigify_arm.data.edit_bones["RingFinger3_R"].length=rigify_arm.data.edit_bones["RingFinger2_R"].length
+        rigify_arm.data.edit_bones["LittleFinger3_L"].length=rigify_arm.data.edit_bones["LittleFinger2_L"].length
+        rigify_arm.data.edit_bones["LittleFinger3_R"].length=rigify_arm.data.edit_bones["LittleFinger2_R"].length
+        rigify_arm.data.edit_bones["ToeTipIK_L"].length=rigify_arm.data.edit_bones["Ankle_L"].length/2
+        rigify_arm.data.edit_bones["ToeTipIK_R"].length=rigify_arm.data.edit_bones["Ankle_R"].length/2
+        rigify_arm.data.edit_bones["Wrist_L"].length=rigify_arm.data.edit_bones["Elbow_L"].length/4
+        rigify_arm.data.edit_bones["Wrist_R"].length=rigify_arm.data.edit_bones["Elbow_R"].length/4
+
+
+
+
+
+        #生成控制器
+        bpy.ops.object.mode_set(mode = 'OBJECT')
+        bpy.ops.object.select_all(action='DESELECT')
+        bpy.context.view_layer.objects.active=rigify_arm
+        bpy.ops.pose.rigify_generate()
+        rig=bpy.data.objects["rig"]
+        rig_bones_list=rig.data.bones.keys()
+
+        #开始调整生成的控制器
+        bpy.ops.object.select_all(action='DESELECT')
+        bpy.context.view_layer.objects.active=rig
+        rig.select=True
+        bpy.ops.object.mode_set(mode = 'EDIT')
+        
+
+
+        #手腕旋转跟随上半身开关
+        if self.wrist_rotation_follow:
+            parent_bone=rig.data.edit_bones.new(name="Wrist_ik_L_parent")
+            parent_bone.head=rig.data.edit_bones["Wrist_ik_L"].head
+            parent_bone.tail=rig.data.edit_bones["Wrist_ik_L"].tail
+            parent_bone.roll=rig.data.edit_bones["Wrist_ik_L"].roll
+            parent_bone.parent=rig.data.edit_bones["MCH-Elbow_ik_L"]
+            parent_bone=rig.data.edit_bones.new(name="Wrist_ik_R_parent")
+            parent_bone.head=rig.data.edit_bones["Wrist_ik_R"].head
+            parent_bone.tail=rig.data.edit_bones["Wrist_ik_R"].tail
+            parent_bone.roll=rig.data.edit_bones["Wrist_ik_R"].roll
+            parent_bone.parent=rig.data.edit_bones["MCH-Elbow_ik_R"]
+            '''rig.pose.bones["ORG-Wrist_L"].constraints[0].mute = True
+            rig.pose.bones["ORG-Wrist_L"].constraints[1].mute = True
+            rig.pose.bones["ORG-Wrist_R"].constraints[0].mute = True
+            rig.pose.bones["ORG-Wrist_R"].constraints[1].mute = True'''
+            bpy.ops.object.mode_set(mode = 'POSE')
+
+            wrist_rotation=rig.pose.bones["Wrist_ik_L"].constraints.new(type='COPY_ROTATION')
+            wrist_rotation.target = rig
+            wrist_rotation.subtarget = "Wrist_ik_L_parent"
+            wrist_rotation.name="wrist_rotation"
+            wrist_rotation.mix_mode = 'BEFORE'
+            wrist_rotation.owner_space = 'LOCAL_WITH_PARENT'
+            wrist_rotation.target_space = 'LOCAL_WITH_PARENT'
+
+            wrist_rotation=rig.pose.bones["Wrist_ik_R"].constraints.new(type='COPY_ROTATION')
+            wrist_rotation.target = rig
+            wrist_rotation.subtarget = "Wrist_ik_R_parent"
+            wrist_rotation.name="wrist_rotation"
+            wrist_rotation.mix_mode = 'BEFORE'
+            wrist_rotation.owner_space = 'LOCAL_WITH_PARENT'
+            wrist_rotation.target_space = 'LOCAL_WITH_PARENT'
+
+            rig.data.bones["Wrist_ik_L_parent"].hide=True
+            rig.data.bones["Wrist_ik_R_parent"].hide=True
+            bpy.ops.object.mode_set(mode = 'EDIT')
+
+        
+
+
+        bpy.ops.object.mode_set(mode = 'OBJECT')
+        bpy.ops.object.select_all(action='DESELECT')
+        bpy.context.view_layer.objects.active=mmd_arm
+        rig.select=True
+        mmd_arm2.select=True
+        bpy.ops.object.mode_set(mode = 'POSE')
+
+        constraints_from=[]
+        constraints_to=[]
+
+        self.add_constraint("ORG-Arm_L","Arm_L",True)
+        self.add_constraint("ORG-Arm_R","Arm_R",True)
+        self.add_constraint("ORG-Elbow_L","Elbow_L",True)
+        self.add_constraint("ORG-Elbow_R","Elbow_R",True)
+        self.add_constraint("ORG-Shoulder_L","Shoulder_L",True)
+        self.add_constraint("ORG-Shoulder_R","Shoulder_R",True)
+        self.add_constraint("ORG-Wrist_L","Wrist_L",True)
+        self.add_constraint("ORG-Wrist_R","Wrist_R",True)
+
+        
+        self.add_constraint("ORG-Leg_L","Leg_L",True)
+        self.add_constraint("ORG-Leg_R","Leg_R",True)
+        self.add_constraint("ORG-Knee_L","Knee_L",True)
+        self.add_constraint("ORG-Knee_R","Knee_R",True)
+
+        self.add_constraint("DEF-Ankle_L","Ankle_L",True)
+        self.add_constraint("DEF-Ankle_R","Ankle_R",True)
+        self.add_constraint("DEF-Ankle_L","LegIK_L",False)
+        self.add_constraint("DEF-Ankle_R","LegIK_R",False)
+        self.add_constraint("DEF-ToeTipIK_L","ToeTipIK_L",True)
+        self.add_constraint("DEF-ToeTipIK_R","ToeTipIK_R",True)
+
+        #修正缺少UpperBody2的骨骼
+        if 'UpperBody2' not in exist_bones and 'UpperBody' in exist_bones:
+            self.add_constraint("UpperBody2_fk","UpperBody",True)
+        else:
+            self.add_constraint("UpperBody2_fk","UpperBody2",True)
+            self.add_constraint("UpperBody_fk","UpperBody",True)
+        self.add_constraint("LowerBody_fk","LowerBody",True)
+        self.add_constraint("torso","Center",True)
+        self.add_constraint("DEF-Neck","Neck",True)
+        self.add_constraint("DEF-Head","Head",True)
+        self.add_constraint("root","ParentNode",True)
+
+
+
+        self.add_constraint("ORG-Thumb0_L","Thumb0_L",True)
+        self.add_constraint("ORG-Thumb0_R","Thumb0_R",True)
+        self.add_constraint("ORG-Thumb1_L","Thumb1_L",True)
+        self.add_constraint("ORG-Thumb1_R","Thumb1_R",True)
+        self.add_constraint("ORG-Thumb2_L","Thumb2_L",True)
+        self.add_constraint("ORG-Thumb2_R","Thumb2_R",True)
+
+        self.add_constraint("ORG-IndexFinger1_L","IndexFinger1_L",True)
+        self.add_constraint("ORG-IndexFinger1_R","IndexFinger1_R",True)
+        self.add_constraint("ORG-IndexFinger2_L","IndexFinger2_L",True)
+        self.add_constraint("ORG-IndexFinger2_R","IndexFinger2_R",True)
+        self.add_constraint("ORG-IndexFinger3_L","IndexFinger3_L",True)
+        self.add_constraint("ORG-IndexFinger3_R","IndexFinger3_R",True)
+        self.add_constraint("ORG-MiddleFinger1_L","MiddleFinger1_L",True)
+        self.add_constraint("ORG-MiddleFinger1_R","MiddleFinger1_R",True)
+        self.add_constraint("ORG-MiddleFinger2_L","MiddleFinger2_L",True)
+        self.add_constraint("ORG-MiddleFinger2_R","MiddleFinger2_R",True)
+        self.add_constraint("ORG-MiddleFinger3_L","MiddleFinger3_L",True)
+        self.add_constraint("ORG-MiddleFinger3_R","MiddleFinger3_R",True)
+        self.add_constraint("ORG-RingFinger1_L","RingFinger1_L",True)
+        self.add_constraint("ORG-RingFinger1_R","RingFinger1_R",True)
+        self.add_constraint("ORG-RingFinger2_L","RingFinger2_L",True)
+        self.add_constraint("ORG-RingFinger2_R","RingFinger2_R",True)
+        self.add_constraint("ORG-RingFinger3_L","RingFinger3_L",True)
+        self.add_constraint("ORG-RingFinger3_R","RingFinger3_R",True)
+        self.add_constraint("ORG-LittleFinger1_L","LittleFinger1_L",True)
+        self.add_constraint("ORG-LittleFinger1_R","LittleFinger1_R",True)
+        self.add_constraint("ORG-LittleFinger2_L","LittleFinger2_L",True)
+        self.add_constraint("ORG-LittleFinger2_R","LittleFinger2_R",True)
+        self.add_constraint("ORG-LittleFinger3_L","LittleFinger3_L",True)
+        self.add_constraint("ORG-LittleFinger3_R","LittleFinger3_R",True)
+
+        self.add_constraint_execute()
+
+        bpy.ops.object.mode_set(mode = 'EDIT')
+
+        #肩膀联动
+        if self.auto_shoulder:
+            rig.pose.bones["Shoulder_L"].ik_stiffness_x = 0.5
+            rig.pose.bones["Shoulder_L"].ik_stiffness_y = 0.5
+            rig.pose.bones["Shoulder_L"].ik_stiffness_z = 0.5
+            rig.data.edit_bones["Arm_ik_L"].parent=rig.data.edit_bones["Shoulder_L"]
+            rig.pose.bones["MCH-Elbow_ik_L"].constraints["IK.001"].chain_count = 3
+            rig.pose.bones["MCH-Elbow_ik_L"].constraints["IK"].chain_count = 3
+            rig.pose.bones["Shoulder_R"].ik_stiffness_x = 0.5
+            rig.pose.bones["Shoulder_R"].ik_stiffness_y = 0.5
+            rig.pose.bones["Shoulder_R"].ik_stiffness_z = 0.5
+            rig.data.edit_bones["Arm_ik_R"].parent=rig.data.edit_bones["Shoulder_R"]
+            rig.pose.bones["MCH-Elbow_ik_R"].constraints["IK.001"].chain_count = 3
+            rig.pose.bones["MCH-Elbow_ik_R"].constraints["IK"].chain_count = 3
+
+        #生成上半身联动骨骼
+        '''point_bone=rig.data.edit_bones.new(name="upper_point_bone")
+        point_bone.head=rig.data.edit_bones["Arm_ik_L"].head
+        point_bone.tail=rig.data.edit_bones["Arm_ik_R"].head
+
+        parent_bone=rig.data.edit_bones.new(name="chest_parent")
+        parent_bone.head=rig.data.edit_bones["chest"].head
+        parent_bone.tail=rig.data.edit_bones["chest"].tail
+        parent_bone.roll=rig.data.edit_bones["chest"].roll
+        parent_bone.parent=rig.data.edit_bones["upper_point_bone"]'''
+
+        bpy.ops.object.mode_set(mode = 'POSE')
+
+        #手腕跟随上半身开关
+        #开启上半身联动时手腕不跟随上半身
+        if self.wrist_follow and self.auto_upperbody==False:
+            rig.pose.bones["Arm_parent_L"]["IK_parent"] = 4
+            rig.pose.bones["Arm_parent_R"]["IK_parent"] = 4
+        #隐藏上半身联动骨骼
+        '''point_bone=rig.pose.bones["upper_point_bone"]
+        rig.data.bones["upper_point_bone"].hide = True
+        rig.data.bones["chest_parent"].hide = True
+        #生成上半身联动约束
+        COPY_LOCATION=point_bone.constraints.new(type='COPY_LOCATION')
+        DAMPED_TRACK=point_bone.constraints.new(type='DAMPED_TRACK')
+        COPY_LOCATION.target = rig
+        COPY_LOCATION.subtarget = "Arm_ik_L"
+        COPY_LOCATION.name="point_location"
+        COPY_LOCATION.owner_space = 'WORLD'
+        COPY_LOCATION.target_space = 'WORLD'
+        COPY_LOCATION.influence=0.75
+        DAMPED_TRACK.target = rig
+        DAMPED_TRACK.subtarget = "Arm_ik_R"
+        DAMPED_TRACK.name="point_damped_track"
+        DAMPED_TRACK.track_axis = 'TRACK_Y'
+        DAMPED_TRACK.influence=0.75
+
+        chest_rotation=rig.pose.bones["chest"].constraints.new(type='COPY_ROTATION')
+        chest_rotation.target = rig
+        chest_rotation.subtarget = "chest_parent"
+        chest_rotation.name="chest_rotation"
+        chest_rotation.mix_mode = 'BEFORE'
+        chest_rotation.euler_order = 'YXZ'
+        chest_rotation.owner_space = 'WORLD'
+        chest_rotation.target_space = 'WORLD'
+        chest_rotation.use_x=False
+
+        chest_rotation.influence = 1'''
+        #肩膀联动复制缩放
+        if self.auto_shoulder:
+            COPY_SCALE=rig.pose.bones["Shoulder_L"].constraints.new(type='COPY_SCALE')
+            COPY_SCALE.target = rig
+            COPY_SCALE.subtarget = "root"
+            COPY_SCALE.name="shoulder_scale"
+            COPY_SCALE.use_make_uniform = True
+
+            COPY_SCALE=rig.pose.bones["Shoulder_R"].constraints.new(type='COPY_SCALE')
+            COPY_SCALE.target = rig
+            COPY_SCALE.subtarget = "root"
+            COPY_SCALE.name="shoulder_scale"
+            COPY_SCALE.use_make_uniform = True
+
+
+        #上半身联动开关
+        '''if self.auto_upperbody==False:
+            chest_rotation.mute=True'''
+
+        bpy.ops.object.mode_set(mode = 'EDIT')
+        #生成下半身联动骨骼
+        '''point_bone=rig.data.edit_bones.new(name="lower_point_bone")
+        
+        point_bone.head=rig.data.edit_bones["Leg_ik_L"].tail
+        point_bone.tail=rig.data.edit_bones["Leg_ik_R"].tail
+
+        parent_bone=rig.data.edit_bones.new(name="hips_parent")
+        parent_bone.head=rig.data.edit_bones["hips"].head
+        parent_bone.tail=rig.data.edit_bones["hips"].tail
+        parent_bone.roll=rig.data.edit_bones["hips"].roll
+        parent_bone.parent=rig.data.edit_bones["lower_point_bone"]
+
+        bpy.ops.object.mode_set(mode = 'POSE')
+
+        #隐藏下半身联动骨骼
+        point_bone=rig.pose.bones["lower_point_bone"]
+        rig.data.bones["lower_point_bone"].hide = True
+        rig.data.bones["hips_parent"].hide = True
+        #生成下半身联动约束
+        COPY_LOCATION=point_bone.constraints.new(type='COPY_LOCATION')
+        DAMPED_TRACK=point_bone.constraints.new(type='DAMPED_TRACK')
+        COPY_LOCATION.target = rig
+        COPY_LOCATION.subtarget = "Leg_ik_L"
+        COPY_LOCATION.name="point_location"
+        COPY_LOCATION.owner_space = 'WORLD'
+        COPY_LOCATION.target_space = 'WORLD'
+        COPY_LOCATION.head_tail = 1
+        COPY_LOCATION.influence=0.5
+        DAMPED_TRACK.target = rig
+        DAMPED_TRACK.subtarget = "Leg_ik_R"
+        DAMPED_TRACK.name="point_damped_track"
+        DAMPED_TRACK.track_axis = 'TRACK_Y'
+        DAMPED_TRACK.head_tail = 1
+        DAMPED_TRACK.influence=0.5
+
+        hips_rotation=rig.pose.bones["hips"].constraints.new(type='COPY_ROTATION')
+        hips_rotation.target = rig
+        hips_rotation.subtarget = "hips_parent"
+        hips_rotation.name="hips_rotation"
+        hips_rotation.mix_mode = 'BEFORE'
+        hips_rotation.euler_order = 'YXZ'
+        hips_rotation.owner_space = 'WORLD'
+        hips_rotation.target_space = 'WORLD'
+        hips_rotation.use_x=False
+        hips_rotation.influence = 1
+        #开启下半身联动时关闭腿部继承腰部旋转
+        if self.auto_lowerbody:
+            rig.data.bones["Leg_ik_L"].use_inherit_rotation = False
+            rig.data.bones["Leg_ik_R"].use_inherit_rotation = False
+        else:
+            hips_rotation.mute=True'''
+        #修正rigifyIK控制器范围限制
+        rig.pose.bones["MCH-Knee_ik_L"].use_ik_limit_x = True
+        rig.pose.bones["MCH-Knee_ik_R"].use_ik_limit_x = True
+        rig.pose.bones["MCH-Knee_ik_L"].ik_min_x = -0.0174533
+        rig.pose.bones["MCH-Knee_ik_R"].ik_min_x = -0.0174533
+        #rig.pose.bones["MCH-Elbow_ik_L"].use_ik_limit_z = True
+        #rig.pose.bones["MCH-Elbow_ik_R"].use_ik_limit_z = True
+        #rig.pose.bones["MCH-Elbow_ik_L"].ik_max_z = 0.0174533
+        #rig.pose.bones["MCH-Elbow_ik_R"].ik_min_z = -0.0174533
+
+        #极向目标开关
+        rig.pose.bones["MCH-Elbow_ik_L"].constraints["IK.001"].pole_angle = 3.14159
+        if self.pole_target:
+            rig.pose.bones["Leg_parent_L"]["pole_vector"] = 1
+            rig.pose.bones["Leg_parent_R"]["pole_vector"] = 1
+            rig.pose.bones["Arm_parent_L"]["pole_vector"] = 1
+            rig.pose.bones["Arm_parent_R"]["pole_vector"] = 1
+
+
+        #捩骨约束
+        if 'HandTwist_L' in mmd_bones_list:
+            c1=mmd_arm.pose.bones['HandTwist_L'].constraints.new(type='COPY_ROTATION')
+            c1.target=rig
+            c1.subtarget='ORG-Wrist_L'
+            c1.mix_mode = 'BEFORE'
+            c1.target_space = 'LOCAL'
+            c1.owner_space = 'LOCAL'
+            c2=mmd_arm.pose.bones['HandTwist_L'].constraints.new(type='DAMPED_TRACK')
+            c2.target=rig
+            c2.subtarget='ORG-Wrist_L'
+            mmd_arm.data.bones['HandTwist_L'].hide=False
+        else:
+            mmd_arm.data.bones["Wrist_L"].bbone_segments = 2
+            mmd_arm.data.bones["Elbow_L"].bbone_segments = 2
+            mmd_arm.pose.bones["Wrist_L"].bbone_easein = -1
+            mmd_arm.pose.bones["Elbow_L"].bbone_easein = -1
+            mmd_arm.pose.bones["Elbow_L"].bbone_easeout = -1
+            
+
+
+
+        if 'HandTwist_R' in mmd_bones_list:
+            c1=mmd_arm.pose.bones['HandTwist_R'].constraints.new(type='COPY_ROTATION')
+            c1.target=rig
+            c1.subtarget='ORG-Wrist_R'
+            c1.mix_mode = 'BEFORE'
+            c1.target_space = 'LOCAL'
+            c1.owner_space = 'LOCAL'
+            c2=mmd_arm.pose.bones['HandTwist_R'].constraints.new(type='DAMPED_TRACK')
+            c2.target=rig
+            c2.subtarget='ORG-Wrist_R'
+            mmd_arm.data.bones['HandTwist_R'].hide=False
+        else:
+            mmd_arm.data.bones["Wrist_R"].bbone_segments = 2
+            mmd_arm.data.bones["Elbow_R"].bbone_segments = 2
+            mmd_arm.pose.bones["Wrist_R"].bbone_easein = -1
+            mmd_arm.pose.bones["Elbow_R"].bbone_easein = -1
+            mmd_arm.pose.bones["Elbow_R"].bbone_easeout = -1
+
+        if 'ArmTwist_L' in mmd_bones_list:
+            c1=mmd_arm.pose.bones['ArmTwist_L'].constraints.new(type='COPY_ROTATION')
+            c1.target=rig
+            c1.subtarget='ORG-Elbow_L'
+            c1.mix_mode = 'BEFORE'
+            c1.target_space = 'LOCAL'
+            c1.owner_space = 'LOCAL'
+            c2=mmd_arm.pose.bones['ArmTwist_L'].constraints.new(type='DAMPED_TRACK')
+            c2.target=rig
+            c2.subtarget='ORG-Elbow_L'
+            mmd_arm.data.bones['ArmTwist_L'].hide=False
+
+        if 'ArmTwist_R' in mmd_bones_list:
+            c1=mmd_arm.pose.bones['ArmTwist_R'].constraints.new(type='COPY_ROTATION')
+            c1.target=rig
+            c1.subtarget='ORG-Elbow_R'
+            c1.mix_mode = 'BEFORE'
+            c1.target_space = 'LOCAL'
+            c1.owner_space = 'LOCAL'
+            c2=mmd_arm.pose.bones['ArmTwist_R'].constraints.new(type='DAMPED_TRACK')
+            c2.target=rig
+            c2.subtarget='ORG-Elbow_R'
+            mmd_arm.data.bones['ArmTwist_R'].hide=False
+        
+        #眼睛控制器
+        if 'Eyes' in mmd_bones_list:
+            bpy.ops.object.mode_set(mode = 'EDIT')
+            eyes_bones=rig.data.edit_bones.new(name="Eyes_Rig")
+            eyes_bones.head=mmd_arm.pose.bones["Eyes"].head
+            eyes_bones.tail=mmd_arm.pose.bones["Eyes"].tail
+            eyes_bones.parent=rig.data.edit_bones['head']
+            bpy.ops.object.mode_set(mode = 'POSE')
+            rig.pose.bones['Eyes_Rig'].custom_shape = bpy.data.objects["WGT-rig_Arm_ik_L"]
+            rig.pose.bones["Eyes_Rig"].lock_location[0] = True
+            rig.pose.bones["Eyes_Rig"].lock_location[1] = True
+            rig.pose.bones["Eyes_Rig"].lock_location[2] = True
+            c=mmd_arm.pose.bones['Eyes'].constraints.new(type='COPY_ROTATION')
+            c.target=rig
+            c.subtarget='Eyes_Rig'
+            c.mix_mode = 'BEFORE'
+            c.target_space = 'LOCAL'
+            c.owner_space = 'LOCAL'
+            mmd_arm.data.bones['Eyes'].hide=False
+
+        #写入PMX骨骼名称数据
+        PMX_list=['root','全ての親','torso','センター','LowerBody_fk','下半身','UpperBody_fk','上半身','UpperBody2_fk','上半身２','neck','首','head','頭','Eyes_Rig','両目',
+        'Leg_ik_L','左足','Ankle_ik_L','左足ＩＫ','ToeTipIK_L','左つま先ＩＫ','Leg_ik_R','右足','Ankle_ik_R','右足ＩＫ','ToeTipIK_R','右つま先ＩＫ',
+        'Shoulder_L','左肩','Arm_fk_L','左腕','Elbow_fk_L','左ひじ','Wrist_fk_L','左手首','Shoulder_R','右肩','Arm_fk_R','右腕','Elbow_fk_R','右ひじ','Wrist_fk_R','右手首',
+        'Thumb0_L','左親指０','Thumb1_L','左親指１','Thumb2_L','左親指２',
+        'IndexFinger1_L','左人指１','IndexFinger2_L','左人指２','IndexFinger3_L','左人指３',
+        'MiddleFinger1_L','左中指１','MiddleFinger2_L','左中指２','MiddleFinger3_L','左中指３',
+        'RingFinger1_L','左薬指１','RingFinger2_L','左薬指２','RingFinger3_L','左薬指３',
+        'LittleFinger1_L','左小指１','LittleFinger2_L','左小指２','LittleFinger3_L','左小指３',
+        'Thumb0_R','右親指０','Thumb1_R','右親指１','Thumb2_R','右親指２',
+        'IndexFinger1_R','右人指１','IndexFinger2_R','右人指２','IndexFinger3_R','右人指３',
+        'MiddleFinger1_R','右中指１','MiddleFinger2_R','右中指２','MiddleFinger3_R','右中指３',
+        'RingFinger1_R','右薬指１','RingFinger2_R','右薬指２','RingFinger3_R','右薬指３',
+        'LittleFinger1_R','右小指１','LittleFinger2_R','右小指２','LittleFinger3_R','右小指３']
+        for i in range(int(len(PMX_list)/2)):
+            if PMX_list[2*i] in rig_bones_list:
+                rig.pose.bones[PMX_list[2*i]].mmd_bone.name_j=PMX_list[2*i+1]
+
+        #插入关键帧
+        '''rig.pose.bones["Arm_parent_L"].keyframe_insert(data_path='["IK_FK"]', frame=1)
+        rig.pose.bones["Arm_parent_R"].keyframe_insert(data_path='["IK_FK"]', frame=1)
+        rig.pose.bones["Leg_parent_L"].keyframe_insert(data_path='["IK_FK"]', frame=1)
+        rig.pose.bones["Leg_parent_R"].keyframe_insert(data_path='["IK_FK"]', frame=1)
+        rig.pose.bones["head"].keyframe_insert(data_path='["neck_follow"]', frame=1)
+        rig.pose.bones["head"].keyframe_insert(data_path='["head_follow"]', frame=1)'''
+        
+        bpy.ops.object.mode_set(mode = 'OBJECT')
+        bpy.ops.object.select_all(action='DESELECT')
+        #删除多余骨架
+        rigify_arm.select=True
+        mmd_arm2.select=True
+        bpy.ops.object.delete(use_global=True)
+        #隐藏原骨架，把新骨架设为永远在前
+        rig.show_in_front = True
+        mmd_arm.hide = True
+        mmd_arm.parent.hide = True
+        rig.name=mmd_arm.parent.name+'_Rig'
+        mmd_arm.parent.parent=rig
+
+        #缩小root控制器
+        rig.pose.bones["root"].custom_shape_scale = 0.4
+
+
+        #隐藏部分控制器
+        rig.data.layers[4] = False
+        rig.data.layers[6] = False
+        rig.data.layers[8] = False
+        rig.data.layers[9] = False
+        rig.data.layers[11] = False
+        rig.data.layers[12] = False
+        rig.data.layers[14] = False
+        rig.data.layers[15] = False
+        rig.data.layers[17] = False
+        rig.data.layers[18] = False
+
+        #锁定移动的骨骼列表
+        lock_location_bone_list=["Arm_ik_L","Arm_ik_R","Leg_ik_L","Leg_ik_R","hips","chest","neck","head","Shoulder_L","Shoulder_R","Thumb0_master_L","Thumb0_master_R","Thumb1_master_L","Thumb1_master_R","IndexFinger1_master_L","IndexFinger1_master_R","MiddleFinger1_master_L","MiddleFinger1_master_R","RingFinger1_master_L","RingFinger1_master_R","LittleFinger1_master_L","LittleFinger1_master_R"]
+        #隐藏的骨骼列表
+        hide_bone_list=["Leg_parent_L","Leg_parent_R","Arm_parent_L","Arm_parent_R","Ankle_heel_ik_L","Ankle_heel_ik_R"]
+        #锁定缩放的骨骼列表
+        lock_scale_bone_list=["root","torso","Ankle_ik_L","Ankle_ik_R","toe.L","toe.R","Wrist_ik_L","Wrist_ik_R","Arm_ik_L","Arm_ik_R","Leg_ik_L","Leg_ik_R","hips","chest","neck","head","Shoulder_L","Shoulder_R"]
+        if self.limit_mod:
+            for name in lock_location_bone_list:
+                if name in rig.data.bones.keys():              
+                    rig.pose.bones[name].lock_location = [True,True,True]
+            for name in lock_scale_bone_list:
+                if name in rig.data.bones.keys():  
+                    rig.pose.bones[name].lock_scale = [True,True,True]
+        for name in hide_bone_list:
+            if name in rig.data.bones.keys():  
+                rig.data.bones[name].hide=True
+
+        #将IK拉伸设为0
+        rig.pose.bones["Arm_parent_L"]["IK_Stretch"] = 0
+        rig.pose.bones["Arm_parent_R"]["IK_Stretch"] = 0
+        rig.pose.bones["Leg_parent_L"]["IK_Stretch"] = 0
+        rig.pose.bones["Leg_parent_R"]["IK_Stretch"] = 0
+
+        #替换实心控制器
+        bpy.ops.object.select_all(action='DESELECT')
+        if self.solid_rig:
+            solid_rig_list=[]
+            solid_rig_blend_file = os.path.join(my_dir, "Solid_Rig.blend")
+            with bpy.data.libraries.load(solid_rig_blend_file) as (data_from, data_to):
+                data_to.objects = data_from.objects
+            for obj in data_to.objects:
+                solid_rig_list.append(obj.name)
+                bpy.data.collections["WGTS_rig"].objects.link(obj)
+
+            bpy.context.view_layer.objects.active=rig
+            bpy.ops.object.mode_set(mode = 'POSE')
+            bpy.context.object.pose.bones["Ankle_ik_L"].custom_shape = bpy.data.objects["WGT-rig_Ankle_ik_L_solid"]
+            for bone in rig.pose.bones:
+                if bone.custom_shape !=None:
+                    solid_name=bone.custom_shape.name+"_solid"
+                    if solid_name in solid_rig_list:
+                        bone.custom_shape=bpy.data.objects[solid_name]
+            rig.display_type = 'SOLID'
+            rig.show_in_front = False
+            bpy.ops.object.mode_set(mode = 'OBJECT')
+
+
+
+        #将轴心设为各自中点以方便操作
+        bpy.context.view_layer.objects.active=rig
+        rig.select=True
+        bpy.context.scene.tool_settings.transform_pivot_point = 'INDIVIDUAL_ORIGINS'
+        logging.info("完成")
+        alert_error("提示","完成")
+        return(True)
+
+    def set_min_ik_loop(self,min_ik_loop=10):
+        if self.check_arm()==False:
+            return
+        for bone in mmd_arm.pose.bones:
+            for c in bone.constraints:
+                if c.type=='IK':
+                    if c.iterations < min_ik_loop:
+                        c.iterations=min_ik_loop
+        return(True)
+    
+    def retarget_mixmao(self,mixamo_path,rigify_arm,lock_location=True,fade_in_out=0,action_scale=1,auto_action_scale=False,ik_fk_hand=3,ik_fk_leg=3):
+
+        if rigify_arm.type!='ARMATURE':
+            return(False)
+        if mixamo_path==None:
+            return(False)
+
+        #获得文件路径
+        my_dir = os.path.dirname(os.path.realpath(__file__))
+        retarget_blend_file = os.path.join(my_dir, "mixamo_retarget_arm_ik.blend")
+        fname,fename=os.path.split(mixamo_path)
+        action_name=str(os.path.splitext(fename)[0])
+
+        #导入mixamo FBX文件
+        bpy.ops.object.mode_set(mode = 'OBJECT')
+        bpy.ops.object.select_all(action='DESELECT')
+        bpy.ops.import_scene.fbx(filepath=mixamo_path,directory =fname)
+        for obj in bpy.data.objects:
+            if obj.select==True:
+                if obj.type=='ARMATURE':
+                    mixamo_arm=obj
+                else:
+                    bpy.data.objects.remove(obj)
+        mixamo_action=mixamo_arm.animation_data.action
+        #自动动作缩放
+        if auto_action_scale:
+            action_scale_auto=rigify_arm.pose.bones['Leg_ik_L'].head[2]/10.896
+            action_scale2=action_scale_auto
+        else:
+            action_scale2=action_scale
+        #导入重定向骨骼文件
+        with bpy.data.libraries.load(retarget_blend_file) as (data_from,data_to):
+            data_to.objects = [name for name in data_from.objects]
+        for obj in data_to.objects:
+                self.context.collection.objects.link(obj)
+        mixamo_arm2=bpy.data.objects['mixamo_arm']
+        retarget_arm=bpy.data.objects['retarget_arm']
+        bpy.ops.object.select_all(action='DESELECT')
+        retarget_arm.select=True
+        mixamo_arm2.scale[0] *= action_scale2
+        mixamo_arm2.scale[1] *= action_scale2
+        mixamo_arm2.scale[2] *= action_scale2
+        retarget_arm.scale[0] *= action_scale2
+        retarget_arm.scale[1] *= action_scale2
+        retarget_arm.scale[2] *= action_scale2
+        bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+        
+        #锁定位置开关
+        if lock_location:
+            mixamo_arm2.pose.bones["mixamorig:Hips2"].constraints["复制位置"].use_x = False
+            mixamo_arm2.pose.bones["mixamorig:Hips2"].constraints["复制位置"].use_y = False
+
+        mixamo_arm2.animation_data.action=mixamo_action
+        bpy.ops.object.select_all(action='DESELECT')
+        bpy.context.view_layer.objects.active=retarget_arm
+        retarget_arm.select=True
+        bpy.ops.object.mode_set(mode = 'POSE')
+        bpy.ops.pose.select_all(action='SELECT')
+        bpy.ops.nla.bake(frame_start=mixamo_action.frame_range[0], frame_end=mixamo_action.frame_range[1], only_selected=True, visual_keying=True, bake_types={'POSE'})
+
+        #插入IKFK关键帧
+        if ik_fk_hand==2:
+            retarget_arm.pose.bones["Arm_parent_L"]["IK_FK"]=0
+            retarget_arm.pose.bones["Arm_parent_R"]["IK_FK"]=0
+        elif ik_fk_hand==3:
+            retarget_arm.pose.bones["Arm_parent_L"]["IK_FK"]=1
+            retarget_arm.pose.bones["Arm_parent_R"]["IK_FK"]=1
+        if ik_fk_hand !=1:
+            retarget_arm.pose.bones["Arm_parent_L"].keyframe_insert(data_path='["IK_FK"]', frame=mixamo_action.frame_range[0])
+            retarget_arm.pose.bones["Arm_parent_R"].keyframe_insert(data_path='["IK_FK"]', frame=mixamo_action.frame_range[0])
+
+        if ik_fk_leg==2:
+            retarget_arm.pose.bones["Leg_parent_L"]["IK_FK"]=0
+            retarget_arm.pose.bones["Leg_parent_R"]["IK_FK"]=0
+        elif ik_fk_leg==3:
+            retarget_arm.pose.bones["Leg_parent_L"]["IK_FK"]=1
+            retarget_arm.pose.bones["Leg_parent_R"]["IK_FK"]=1
+        if ik_fk_leg !=1:
+            retarget_arm.pose.bones["Leg_parent_L"].keyframe_insert(data_path='["IK_FK"]', frame=mixamo_action.frame_range[0])
+            retarget_arm.pose.bones["Leg_parent_R"].keyframe_insert(data_path='["IK_FK"]', frame=mixamo_action.frame_range[0])
+
+        retarget_arm.pose.bones["head"]["neck_follow"]=1
+        retarget_arm.pose.bones["head"]["head_follow"]=1
+        retarget_arm.pose.bones["head"].keyframe_insert(data_path='["neck_follow"]', frame=mixamo_action.frame_range[0])
+        retarget_arm.pose.bones["head"].keyframe_insert(data_path='["head_follow"]', frame=mixamo_action.frame_range[0])
+        #插入手腕旋转约束关键帧
+        retarget_arm.pose.bones["Wrist_ik_L"].constraints["wrist_rotation"].keyframe_insert(data_path='influence', frame=mixamo_action.frame_range[0])
+        retarget_arm.pose.bones["Wrist_ik_R"].constraints["wrist_rotation"].keyframe_insert(data_path='influence', frame=mixamo_action.frame_range[0])
+        
+        #清空部分位置关键帧
+        for bone in retarget_arm.pose.bones:
+            if bone.bone.hide==False:
+                if bone.lock_location[0] == True:
+                    bone.location[0]=0
+                    bone.location[1]=0
+                    bone.location[2]=0
+                    for i in range(int(mixamo_action.frame_range[0]),int(mixamo_action.frame_range[1])):
+                        bone.keyframe_delete(data_path='location',frame=i)
+
+
+        bpy.ops.object.mode_set(mode = 'OBJECT')
+        bpy.ops.object.select_all(action='DESELECT')
+        bpy.context.view_layer.objects.active=rigify_arm
+        rigify_arm.select=True
+
+        retarget_action=retarget_arm.animation_data.action
+        retarget_action.name=action_name
+        target_track=rigify_arm.animation_data.nla_tracks.new()
+        target_track.name='mixamo_track'
+        target_strip=target_track.strips.new(action_name,bpy.context.scene.frame_current,retarget_action)
+        target_strip.blend_type = 'REPLACE'
+        #target_strip.use_auto_blend = True
+        target_strip.extrapolation = 'NOTHING'
+        target_strip.blend_in = fade_in_out
+        target_strip.blend_out = fade_in_out
+
+        #更改原动作混合模式为合并
+        rigify_arm.animation_data.action_blend_type = 'COMBINE'
+
+        bpy.ops.object.select_all(action='DESELECT')
+        bpy.data.objects.remove(mixamo_arm)
+        bpy.data.objects.remove(mixamo_arm2)
+        bpy.data.objects.remove(retarget_arm)
+        bpy.context.view_layer.objects.active=rigify_arm
+        rigify_arm.select=True
+        alert_error("提示","导入完成")
+        return(True)
+        
+
+    def load_vmd(self,vmd_path,rigify_arm,fade_in_out,action_scale=1):
+        if rigify_arm.type!='ARMATURE':
+            return(False)
+        if vmd_path==None:
+            return(False)
+
+
+        fname,fename=os.path.split(vmd_path)
+        action_name=str(os.path.splitext(fename)[0])
+        bpy.ops.object.mode_set(mode = 'OBJECT')
+        bpy.ops.object.select_all(action='DESELECT')
+        #复制骨骼
+        rigify_arm2=rigify_arm.copy()
+        self.context.collection.objects.link(rigify_arm2)
+        for track in rigify_arm2.animation_data.nla_tracks:
+            rigify_arm2.animation_data.nla_tracks.remove(track)
+        bpy.context.view_layer.objects.active=rigify_arm2
+        rigify_arm2.select=True
+        print(vmd_path)
+        old_frame_end=bpy.context.scene.frame_end
+        bpy.ops.mmd_tools.import_vmd(filepath=vmd_path,scale=action_scale)
+        bpy.context.scene.frame_end=old_frame_end
+        
+        vmd_action=rigify_arm2.animation_data.action
+        vmd_action.name=action_name
+
+        #插入IKFK关键帧
+        rigify_arm2.pose.bones["Arm_parent_L"]["IK_FK"]=1
+        rigify_arm2.pose.bones["Arm_parent_R"]["IK_FK"]=1
+        rigify_arm2.pose.bones["Leg_parent_L"]["IK_FK"]=0
+        rigify_arm2.pose.bones["Leg_parent_R"]["IK_FK"]=0
+        rigify_arm2.pose.bones["head"]["neck_follow"]=1
+        rigify_arm2.pose.bones["head"]["head_follow"]=1
+        
+
+        rigify_arm2.pose.bones["Arm_parent_L"].keyframe_insert(data_path='["IK_FK"]', frame=vmd_action.frame_range[0])
+        rigify_arm2.pose.bones["Arm_parent_R"].keyframe_insert(data_path='["IK_FK"]', frame=vmd_action.frame_range[0])
+        rigify_arm2.pose.bones["Leg_parent_L"].keyframe_insert(data_path='["IK_FK"]', frame=vmd_action.frame_range[0])
+        rigify_arm2.pose.bones["Leg_parent_R"].keyframe_insert(data_path='["IK_FK"]', frame=vmd_action.frame_range[0])
+        rigify_arm2.pose.bones["head"].keyframe_insert(data_path='["neck_follow"]', frame=vmd_action.frame_range[0])
+        rigify_arm2.pose.bones["head"].keyframe_insert(data_path='["head_follow"]', frame=vmd_action.frame_range[0])
+
+        #修复脚掌
+        rigify_arm.data.bones["Ankle_L_parent"].inherit_scale = 'NONE'
+        rigify_arm.data.bones["Ankle_R_parent"].inherit_scale = 'NONE'
+        
+        target_track=rigify_arm.animation_data.nla_tracks.new()
+        target_track.name='vmd_track'
+        target_strip=target_track.strips.new(action_name,bpy.context.scene.frame_current,vmd_action)
+        target_strip.blend_type = 'REPLACE'
+        target_strip.use_auto_blend = False
+        target_strip.extrapolation = 'NOTHING'
+        target_strip.blend_in = fade_in_out
+        target_strip.blend_out = fade_in_out
+
+        #更改原动作混合模式为合并
+        rigify_arm.animation_data.action_blend_type = 'COMBINE'
+        #bpy.ops.object.delete(use_global=True)
+        bpy.data.objects.remove(rigify_arm2)
+        bpy.context.view_layer.objects.active=rigify_arm
+        rigify_arm.select=True
+        alert_error("提示","导入完成")
+
+        return(True)
+
+    def convert_rigid_body_to_cloth(self,subdivide,cloth_convert_mod):
+        select_obj=bpy.context.selected_objects
+        mmd_mesh=None
+        first_rigid_body=None
+        
+        for obj in select_obj:
+            if obj.type=="MESH":
+                for m in obj.modifiers:
+                    if m.type=='ARMATURE':
+                        mmd_mesh=obj
+                        mmd_parent=mmd_mesh.parent.parent
+                        mmd_arm=m.object
+                if hasattr(obj,'mmd_rigid'):
+                    if obj.mmd_rigid.name!='':
+                        first_rigid_body=obj
+
+        if mmd_mesh==None:
+            alert_error("提示","所选物体中没有MMD网格模型")
+            return(False)
+        if first_rigid_body==None:
+            alert_error("提示","所选物体中没有MMD刚体")
+            return(False)
+        bpy.ops.object.select_all(action='DESELECT')
+        bpy.context.view_layer.objects.active=first_rigid_body
+        bpy.ops.mmd_tools.rigid_body_select(properties={'collision_group_number'})
+
+        rigid_bodys=bpy.context.selected_objects
+        rigid_bodys_count=len(rigid_bodys)
+        new_vertex_index=[]
+        joints=[]
+        side_joints=[]
+        edge_index=[]
+        verts=[]
+        edges=[]
+        bones_list=[]
+
+        mean_radius=0
+
+        for r in rigid_bodys:
+            if r.mmd_rigid.shape == 'BOX':
+                radius=min(r.mmd_rigid.size[0],min(r.mmd_rigid.size[1],r.mmd_rigid.size[2]))
+            else :
+                radius=r.mmd_rigid.size[0]
+            mean_radius+=radius
+
+            bone=mmd_arm.pose.bones[r.mmd_rigid.bone]
+            verts.append(r.location)
+            bones_list.append(bone)
+
+        mean_radius/=rigid_bodys_count
+
+        for obj in bpy.context.view_layer.objects:
+            if hasattr(obj,'rigid_body_constraint'):
+                if obj.rigid_body_constraint!=None:
+                    if obj.rigid_body_constraint.object1 in rigid_bodys and obj.rigid_body_constraint.object2 in rigid_bodys:
+                        joints.append(obj)
+                        index1=rigid_bodys.index(obj.rigid_body_constraint.object1)
+                        index2=rigid_bodys.index(obj.rigid_body_constraint.object2)
+                        edge_index.append([index1,index2])
+                        edges.append([index1,index2])
+                    elif obj.rigid_body_constraint.object1 in rigid_bodys or obj.rigid_body_constraint.object2 in rigid_bodys:
+                        side_joints.append(obj)
+        
+
+        mesh=bpy.data.meshes.new('mmd_cloth')
+        mesh.from_pydata(verts,edges,[])
+        mesh.validate()
+        cloth_obj=bpy.data.objects.new('mmd_cloth',mesh)
+        bpy.context.collection.objects.link(cloth_obj)
+        cloth_obj.parent=mmd_parent
+        bpy.ops.object.select_all(action='DESELECT')
+
+
+
+        bpy.context.view_layer.objects.active=cloth_obj
+        bpy.ops.object.mode_set(mode = 'EDIT')
+        bpy.ops.mesh.select_all(action='SELECT')
+        bpy.ops.mesh.edge_face_add()
+        bpy.ops.object.mode_set(mode = 'OBJECT')
+
+        #删除大于四边的面
+        bm=bmesh.new()
+        bm.from_mesh(mesh)
+        for f in bm.faces:
+            if len(f.verts)>4:
+                bm.faces.remove(f)
+        #删除多余边
+        for e in bm.edges:
+            true_edge=False
+            for i in edge_index:
+                if e.verts[0].index in i and e.verts[1].index in i:
+                    true_edge=True
+                    break
+            if true_edge==False:
+                bm.edges.remove(e)
+        #尝试标记出头发
+        bm.to_mesh(mesh)
+        bpy.ops.object.mode_set(mode = 'EDIT')
+        bpy.ops.mesh.select_all(action='DESELECT')
+        bpy.ops.mesh.select_mode(type='EDGE')
+        bpy.ops.mesh.select_non_manifold(extend=False, use_wire=True, use_boundary=False, use_multi_face=False, use_non_contiguous=False, use_verts=False)
+        bpy.ops.mesh.select_linked(delimit=set())
+        bpy.ops.object.mode_set(mode = 'OBJECT')
+        bm.clear()
+        bm.from_mesh(mesh)
+        #bm.faces.ensure_lookup_table()
+        #bm.edges.ensure_lookup_table()
+        #标记出特殊边和点
+        hair_verts=[]
+        up_edges=[]
+        down_edges=[]
+        side_edges=[]
+        up_verts=[]
+        down_verts=[]
+        wire_verts=[]
+        side_verts=[]
+
+        bm.verts.ensure_lookup_table()
+        for i in range(len(bm.verts)):
+            v=bm.verts[i]
+            bone=bones_list[i]
+            if bone.bone.use_connect==False:
+                up_verts.append(v)
+            elif len(bone.children)==0:
+                down_verts.append(v)
+            elif bone.children[0] not in bones_list:
+                down_verts.append(v)
+            if v.is_wire:
+                wire_verts.append(v)
+            if v.select :
+                hair_verts.append(v)
+                if cloth_convert_mod==1:
+                    v.co=bone.tail
+            if cloth_convert_mod==2:
+                v.co=bone.tail
+
+            
+        bm.edges.ensure_lookup_table()
+        for i in range(len(bm.edges)):
+            e=bm.edges[i]
+            vert1=e.verts[0]
+            vert2=e.verts[1]
+            if e.is_boundary:
+                if vert1 in  up_verts and vert2 in up_verts:
+                    up_edges.append(e)
+                elif vert1 in down_verts and vert2 in down_verts:
+                    down_edges.append(e)
+                else:
+                    side_edges.append(e)
+                    if e.verts[0] not in side_verts:
+                        side_verts.append(e.verts[0])
+                    if e.verts[1] not in side_verts:
+                        side_verts.append(e.verts[1])
+
+        #延长头部顶点
+        new_up_verts=[None for i in range(len(bm.verts))]
+        new_down_verts=[None for i in range(len(bm.verts))]
+        for i in range(len(up_verts)):
+            v=up_verts[i]
+            new_location=[0,0,0]
+            if cloth_convert_mod==1 and v in hair_verts or cloth_convert_mod==2:
+                new_location=bones_list[v.index].head
+            else: 
+                for e in v.link_edges:
+                    if e not in up_edges:
+                        if e.verts[0]==v:
+                            new_location=v.co*2-e.verts[1].co
+                        else:
+                            new_location=v.co*2-e.verts[0].co
+                    break
+            new_vert=bm.verts.new(new_location)
+            new_edge=bm.edges.new([v,new_vert])
+            new_up_verts[v.index]=new_vert
+            if v in side_verts:
+                side_verts.append(new_vert)
+                side_edges.append(new_edge)
+            bm.edges.ensure_lookup_table()
+
+        #延长尾部顶点
+        for i in range(len(down_verts)):
+            v=down_verts[i]
+            if v not in up_verts:
+                new_location=[0,0,0]
+                for e in v.link_edges:
+                    if e not in down_edges:
+                        if e.verts[0]==v:
+                            new_location=v.co*2-e.verts[1].co
+                        else:
+                            new_location=v.co*2-e.verts[0].co
+                    break
+                new_vert=bm.verts.new(new_location)
+                new_edge=bm.edges.new([v,new_vert])
+                new_down_verts[v.index]=new_vert
+                if v in side_verts:
+                    side_verts.append(new_vert)
+                    side_edges.append(new_edge)
+                bm.edges.ensure_lookup_table()
+
+        for i in range(len(up_edges)):
+            e=up_edges[i]
+            vert1=e.verts[0]
+            vert2=e.verts[1]
+            vert3=new_up_verts[vert2.index]
+            vert4=new_up_verts[vert1.index]
+            if vert3 != None and vert4 != None:
+                bm.faces.new([vert1,vert2,vert3,vert4])
+            bm.edges.ensure_lookup_table()
+
+        for i in range(len(down_edges)):
+            e=down_edges[i]
+            vert1=e.verts[0]
+            vert2=e.verts[1]
+            vert3=new_down_verts[vert2.index]
+            vert4=new_down_verts[vert1.index]
+            if vert3 != None and vert4 != None:
+                bm.faces.new([vert1,vert2,vert3,vert4])
+            bm.edges.ensure_lookup_table()
+            
+        bm.verts.index_update( ) 
+        bm.faces.ensure_lookup_table()
+        new_side_verts=[None for i in range(len(bm.verts))]
+        for i in range(len(side_verts)):
+            v=side_verts[i]
+            for e in v.link_edges:
+                if e not in side_edges:
+                    if e.verts[0]==v:
+                        new_location=v.co*2-e.verts[1].co
+                    else:
+                        new_location=v.co*2-e.verts[0].co
+                    break
+            new_vert=bm.verts.new(new_location)
+            new_side_verts[v.index]=new_vert
+            bm.edges.ensure_lookup_table()
+
+        for i in range(len(side_edges)):
+            e=side_edges[i]
+            vert1=e.verts[0]
+            vert2=e.verts[1]
+            vert3=new_side_verts[vert2.index]
+            vert4=new_side_verts[vert1.index]
+            if vert3 != None and vert4 != None:
+                bm.faces.new([vert1,vert2,vert3,vert4])
+            bm.edges.ensure_lookup_table()
+
+        bm.verts.ensure_lookup_table()
+        bm.to_mesh(mesh)
+
+        bpy.ops.object.mode_set(mode = 'EDIT')
+        bpy.ops.mesh.select_all(action='SELECT')
+        bpy.ops.mesh.normals_make_consistent(inside=False)
+        bpy.ops.object.mode_set(mode = 'OBJECT')
+
+        pin_vertex_group=cloth_obj.vertex_groups.new(name='mmd_cloth_pin')
+        for obj in joints:
+            bpy.data.objects.remove(obj)
+        for obj in side_joints:
+            if obj.rigid_body_constraint.object1 in rigid_bodys:
+                side_rigid_body=obj.rigid_body_constraint.object1
+                pin_rigid_body=obj.rigid_body_constraint.object2
+            else:
+                side_rigid_body=obj.rigid_body_constraint.object2
+                pin_rigid_body=obj.rigid_body_constraint.object1
+            
+            index1=rigid_bodys.index(side_rigid_body)
+            vert2=new_up_verts[index1]
+            if vert2 !=None:
+                index3=vert2.index
+                vert3=new_side_verts[index3]
+                if vert3 == None:
+                    pin_index=[index3]
+                else:
+                    pin_index=[index3,vert3.index]
+            else:
+                pin_index=[index1]
+
+            pin_bone_name=pin_rigid_body.mmd_rigid.bone
+
+            skin_vertex_group=cloth_obj.vertex_groups.get(pin_bone_name)
+            if skin_vertex_group==None:
+                skin_vertex_group=cloth_obj.vertex_groups.new(name=pin_bone_name)
+            skin_vertex_group.add(pin_index,1,'REPLACE')
+            pin_vertex_group.add(pin_index,1,'REPLACE')
+            bpy.data.objects.remove(obj)
+
+        deform_vertex_group=mmd_mesh.vertex_groups.new(name='mmd_cloth_deform')
+
+        cloth_obj.display_type = 'WIRE'
+
+        mod=cloth_obj.modifiers.new('mmd_cloth_subsurface','SUBSURF')
+        mod.levels = subdivide
+        mod.render_levels = subdivide
+        mod.boundary_smooth = 'PRESERVE_CORNERS'
+        mod.show_only_control_edges = False
+
+
+        mod=cloth_obj.modifiers.new('mmd_cloth_skin','ARMATURE')
+        mod.object = mmd_arm
+        mod.vertex_group = "mmd_cloth_pin"
+
+        mod=cloth_obj.modifiers.new('mmd_cloth','CLOTH')
+        mod.settings.vertex_group_mass = "mmd_cloth_pin"
+
+        mod=cloth_obj.modifiers.new('mmd_cloth_smooth','CORRECTIVE_SMOOTH')
+        mod.smooth_type = 'LENGTH_WEIGHTED'
+        mod.rest_source = 'BIND'
+        bpy.ops.object.correctivesmooth_bind(modifier="mmd_cloth_smooth")
+        if subdivide==0:
+            mod.show_viewport = False
+
+        bpy.context.view_layer.objects.active=mmd_mesh
+
+        for i in range(rigid_bodys_count):
+            v=bm.verts[i]
+            obj=rigid_bodys[i]
+            bone=bones_list[i]
+            name=bone.name
+            if v in hair_verts and cloth_convert_mod==1 or cloth_convert_mod==2 :
+                line_vertex_group=cloth_obj.vertex_groups.new(name=name)
+                line_vertex_group.add([i],1,'REPLACE')
+                for c in bone.constraints:
+                    bone.constraints.remove(c)
+                con=bone.constraints.new(type='STRETCH_TO')
+                con.target = cloth_obj
+                con.subtarget = name
+                con.rest_length = bone.length
+            else:
+                mod=mmd_mesh.modifiers.new('combin_weight','VERTEX_WEIGHT_MIX')
+                mod.vertex_group_a = deform_vertex_group.name
+                mod.vertex_group_b = name
+                mod.mix_set = 'OR'
+                mod.mix_mode = 'ADD'
+                mod.normalize = False
+                bpy.ops.object.modifier_move_to_index(modifier="combin_weight", index=0)
+                bpy.ops.object.modifier_apply(modifier="combin_weight")
+                mmd_mesh.vertex_groups.remove(mmd_mesh.vertex_groups[name])
+            bpy.data.objects.remove(obj)
+
+        #挤出孤立边
+        bpy.context.view_layer.objects.active=cloth_obj
+        bpy.ops.object.mode_set(mode = 'EDIT')
+        bpy.ops.mesh.select_non_manifold(extend=False, use_wire=True, use_boundary=False, use_multi_face=False, use_non_contiguous=False, use_verts=False)
+        bpy.ops.mesh.extrude_edges_move(TRANSFORM_OT_translate={"value":(0, 0.01, 0)})
+        bpy.ops.mesh.select_linked(delimit=set())
+        bpy.ops.mesh.select_all(action='INVERT')
+        bpy.ops.transform.shrink_fatten(value=mean_radius, use_even_offset=False, mirror=True, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False)
+
+        bpy.ops.object.mode_set(mode = 'OBJECT')
+
+        if len(mesh.polygons.items())!=0 and cloth_convert_mod!=2:
+            bpy.context.view_layer.objects.active=mmd_mesh
+            mod=mmd_mesh.modifiers.new('mmd_cloth_deform','SURFACE_DEFORM')
+            mod.target = cloth_obj
+            mod.vertex_group = deform_vertex_group.name
+            bpy.ops.object.surfacedeform_bind(modifier=mod.name)
+
+        bm.free()
