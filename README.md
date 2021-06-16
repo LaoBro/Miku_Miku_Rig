@@ -13,3 +13,6 @@ MikumiKurig is a Blender plugin that can generates rig, automatically imports an
 ![picture1](https://github.com/958261649/Miku_Miku_Rig/blob/main/preview/QQ%E6%88%AA%E5%9B%BE20210616125213.png)
 
 ![picture2](https://github.com/958261649/Miku_Miku_Rig/blob/main/preview/QQ%E6%88%AA%E5%9B%BE20210616125406.png)
+
+视频演示：
+https://www.bilibili.com/video/BV1vZ4y1P71a/
