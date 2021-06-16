@@ -1,7 +1,7 @@
 # Miku_Miku_Rig
 MikuMikuRig是一款集生成控制器，自动导入动画，自动布料为一体的blender插件。
 
-MikumiKurig is a Blender plugin that can generates rig, automatically imports animations, and automatically generates cloth.
+MikumiKurig is a Blender plugin that can generates rig, automatically imports animations as nla track, and automatically generates cloth.
 
 ## 功能 Functions
 自动为mmd骨骼生成rigify控制器，包含了各种特殊情况的修复。
