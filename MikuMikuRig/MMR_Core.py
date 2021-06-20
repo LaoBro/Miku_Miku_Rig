@@ -254,10 +254,7 @@ class MMR():
         if self.check_arm()==False:
             return{False}
 
-        if self.mmr_property.auto_fix_axial and self.relative_mod==False:
-            bpy.ops.object.mode_set(mode = 'EDIT')
-            self.fix_axial()
-            bpy.ops.object.mode_set(mode = 'OBJECT')
+
 
         self.load_pose()
 
