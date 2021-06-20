@@ -565,6 +565,7 @@ class MMR():
 
         #肩膀联动
         if self.mmr_property.auto_shoulder:
+            bpy.ops.object.mode_set(mode = 'EDIT')
             rig.pose.bones["Shoulder_L"].ik_stiffness_x = 0.5
             rig.pose.bones["Shoulder_L"].ik_stiffness_y = 0.5
             rig.pose.bones["Shoulder_L"].ik_stiffness_z = 0.5
