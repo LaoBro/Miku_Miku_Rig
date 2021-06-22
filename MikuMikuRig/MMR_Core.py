@@ -437,50 +437,6 @@ class MMR():
         bpy.ops.object.select_all(action='DESELECT')
         bpy.context.view_layer.objects.active=rig
         rig.select=True
-        bpy.ops.object.mode_set(mode = 'EDIT')
-        
-
-
-        #手腕旋转跟随上半身开关
-        if self.mmr_property.wrist_rotation_follow:
-            parent_bone=rig.data.edit_bones.new(name="Wrist_ik_L_parent")
-            parent_bone.head=rig.data.edit_bones["Wrist_ik_L"].head
-            parent_bone.tail=rig.data.edit_bones["Wrist_ik_L"].tail
-            parent_bone.roll=rig.data.edit_bones["Wrist_ik_L"].roll
-            parent_bone.parent=rig.data.edit_bones["MCH-Elbow_ik_L"]
-            parent_bone=rig.data.edit_bones.new(name="Wrist_ik_R_parent")
-            parent_bone.head=rig.data.edit_bones["Wrist_ik_R"].head
-            parent_bone.tail=rig.data.edit_bones["Wrist_ik_R"].tail
-            parent_bone.roll=rig.data.edit_bones["Wrist_ik_R"].roll
-            parent_bone.parent=rig.data.edit_bones["MCH-Elbow_ik_R"]
-            '''rig.pose.bones["ORG-Wrist_L"].constraints[0].mute = True
-            rig.pose.bones["ORG-Wrist_L"].constraints[1].mute = True
-            rig.pose.bones["ORG-Wrist_R"].constraints[0].mute = True
-            rig.pose.bones["ORG-Wrist_R"].constraints[1].mute = True'''
-            bpy.ops.object.mode_set(mode = 'POSE')
-
-            wrist_rotation=rig.pose.bones["Wrist_ik_L"].constraints.new(type='COPY_ROTATION')
-            wrist_rotation.target = rig
-            wrist_rotation.subtarget = "Wrist_ik_L_parent"
-            wrist_rotation.name="wrist_rotation"
-            wrist_rotation.mix_mode = 'BEFORE'
-            wrist_rotation.owner_space = 'LOCAL_WITH_PARENT'
-            wrist_rotation.target_space = 'LOCAL_WITH_PARENT'
-
-            wrist_rotation=rig.pose.bones["Wrist_ik_R"].constraints.new(type='COPY_ROTATION')
-            wrist_rotation.target = rig
-            wrist_rotation.subtarget = "Wrist_ik_R_parent"
-            wrist_rotation.name="wrist_rotation"
-            wrist_rotation.mix_mode = 'BEFORE'
-            wrist_rotation.owner_space = 'LOCAL_WITH_PARENT'
-            wrist_rotation.target_space = 'LOCAL_WITH_PARENT'
-
-            rig.data.bones["Wrist_ik_L_parent"].hide=True
-            rig.data.bones["Wrist_ik_R_parent"].hide=True
-            bpy.ops.object.mode_set(mode = 'EDIT')
-
-        
-
 
         bpy.ops.object.mode_set(mode = 'OBJECT')
         bpy.ops.object.select_all(action='DESELECT')
@@ -488,6 +444,9 @@ class MMR():
         rig.select=True
         mmd_arm2.select=True
         bpy.ops.object.mode_set(mode = 'POSE')
+
+        #添加约束
+        #add constraint
 
         constraints_from=[]
         constraints_to=[]
@@ -511,8 +470,8 @@ class MMR():
         self.add_constraint("DEF-Ankle_R","Ankle_R",True)
         self.add_constraint("DEF-Ankle_L","LegIK_L",False)
         self.add_constraint("DEF-Ankle_R","LegIK_R",False)
-        self.add_constraint("DEF-ToeTipIK_L","ToeTipIK_L",True)
-        self.add_constraint("DEF-ToeTipIK_R","ToeTipIK_R",True)
+        self.add_constraint("DEF-ToeTipIK_L","ToeTipIK_L",False)
+        self.add_constraint("DEF-ToeTipIK_R","ToeTipIK_R",False)
 
         #修正缺少UpperBody2的骨骼
         #fix the armature that lack upperbody2
@@ -563,7 +522,47 @@ class MMR():
 
         self.add_constraint_execute()
 
+        #手腕旋转跟随上半身开关
+        if self.mmr_property.wrist_rotation_follow:
+            bpy.ops.object.mode_set(mode = 'EDIT')
+            parent_bone=rig.data.edit_bones.new(name="Wrist_ik_L_parent")
+            parent_bone.head=rig.data.edit_bones["Wrist_ik_L"].head
+            parent_bone.tail=rig.data.edit_bones["Wrist_ik_L"].tail
+            parent_bone.roll=rig.data.edit_bones["Wrist_ik_L"].roll
+            parent_bone.parent=rig.data.edit_bones["MCH-Elbow_ik_L"]
+            parent_bone=rig.data.edit_bones.new(name="Wrist_ik_R_parent")
+            parent_bone.head=rig.data.edit_bones["Wrist_ik_R"].head
+            parent_bone.tail=rig.data.edit_bones["Wrist_ik_R"].tail
+            parent_bone.roll=rig.data.edit_bones["Wrist_ik_R"].roll
+            parent_bone.parent=rig.data.edit_bones["MCH-Elbow_ik_R"]
+            '''rig.pose.bones["ORG-Wrist_L"].constraints[0].mute = True
+            rig.pose.bones["ORG-Wrist_L"].constraints[1].mute = True
+            rig.pose.bones["ORG-Wrist_R"].constraints[0].mute = True
+            rig.pose.bones["ORG-Wrist_R"].constraints[1].mute = True'''
+            bpy.ops.object.mode_set(mode = 'POSE')
+
+            wrist_rotation=rig.pose.bones["Wrist_ik_L"].constraints.new(type='COPY_ROTATION')
+            wrist_rotation.target = rig
+            wrist_rotation.subtarget = "Wrist_ik_L_parent"
+            wrist_rotation.name="wrist_rotation"
+            wrist_rotation.mix_mode = 'BEFORE'
+            wrist_rotation.owner_space = 'LOCAL_WITH_PARENT'
+            wrist_rotation.target_space = 'LOCAL_WITH_PARENT'
+
+            wrist_rotation=rig.pose.bones["Wrist_ik_R"].constraints.new(type='COPY_ROTATION')
+            wrist_rotation.target = rig
+            wrist_rotation.subtarget = "Wrist_ik_R_parent"
+            wrist_rotation.name="wrist_rotation"
+            wrist_rotation.mix_mode = 'BEFORE'
+            wrist_rotation.owner_space = 'LOCAL_WITH_PARENT'
+            wrist_rotation.target_space = 'LOCAL_WITH_PARENT'
+
+            rig.data.bones["Wrist_ik_L_parent"].hide=True
+            rig.data.bones["Wrist_ik_R_parent"].hide=True
+
+
         #肩膀联动
+        #IK shoulder
         if self.mmr_property.auto_shoulder:
             bpy.ops.object.mode_set(mode = 'EDIT')
             rig.pose.bones["Shoulder_L"].ik_stiffness_x = 0.5
@@ -588,7 +587,7 @@ class MMR():
             rig.pose.bones["Arm_parent_R"]["IK_parent"] = 4
        
         #肩膀联动复制缩放
-        #IK shoulder
+        #shoulder scale
         '''if self.mmr_property.auto_shoulder:
             COPY_SCALE=rig.pose.bones["Shoulder_L"].constraints.new(type='COPY_SCALE')
             COPY_SCALE.target = rig
@@ -638,9 +637,6 @@ class MMR():
             mmd_arm.pose.bones["Wrist_L"].bbone_easein = -1
             mmd_arm.pose.bones["Elbow_L"].bbone_easein = -1
             mmd_arm.pose.bones["Elbow_L"].bbone_easeout = -1
-            
-
-
 
         if 'HandTwist_R' in mmd_bones_list:
             c1=mmd_arm.pose.bones['HandTwist_R'].constraints.new(type='COPY_ROTATION')
@@ -705,9 +701,115 @@ class MMR():
             c.owner_space = 'LOCAL'
             mmd_arm.data.bones['Eyes'].hide=False
 
+        #脚掌IK
+        #ToeTipIK
+        bpy.ops.object.mode_set(mode = 'EDIT')
+        '''if 'LegTipEX_L' in mmd_bones_list:
+            LegTipEX_L=rig.data.edit_bones.new(name="LegTipEX_L")
+            LegTipEX_L.head=mmd_arm2.data.edit_bones["LegTipEX_L"].head
+            LegTipEX_L.tail=mmd_arm2.data.edit_bones["LegTipEX_L"].tail
+            LegTipEX_L.roll=mmd_arm2.data.edit_bones["LegTipEX_L"].roll
+            #LegTipEX_L.roll=-90
+            LegTipEX_L.parent=rig.data.edit_bones['ToeTipIK_L']
+
+        if 'LegTipEX_R' in mmd_bones_list:
+            LegTipEX_R=rig.data.edit_bones.new(name="LegTipEX_R")
+            LegTipEX_R.head=mmd_arm2.data.edit_bones["LegTipEX_R"].head
+            LegTipEX_R.tail=mmd_arm2.data.edit_bones["LegTipEX_R"].tail
+            LegTipEX_R.roll=mmd_arm2.data.edit_bones["LegTipEX_R"].roll
+            #LegTipEX_R.roll=0
+            LegTipEX_R.parent=rig.data.edit_bones['ToeTipIK_R']
+
+        head=rig.data.edit_bones['Ankle_ik_L'].head
+        tail=rig.data.edit_bones['Ankle_ik_L'].tail
+        roll=rig.data.edit_bones['Ankle_ik_L'].roll
+        Foot_IK_cs_L=rig.data.edit_bones.new(name="Foot_IK_cs_L")
+        Foot_IK_cs_L.head=head
+        Foot_IK_cs_L.tail=tail
+        Foot_IK_cs_L.roll=roll
+        Foot_IK_cs_L.parent=rig.data.edit_bones['Ankle_ik_L']
+
+        rig.data.edit_bones['Ankle_ik_L'].tail=rig.data.edit_bones["ORG-Ankle_L"].tail
+
+        Foot_IK_Tip_L=rig.data.edit_bones.new(name="Foot_IK_Tip_L")
+        Foot_IK_Tip_L.head=Foot_IK_Tip_L.tail=rig.data.edit_bones['Ankle_ik_L'].tail
+        Foot_IK_Tip_L.tail[2]+=1
+        Foot_IK_Tip_L.length=rig.data.edit_bones['ToeTipIK_L'].length
+
+        Foot_IK_Parent_L=rig.data.edit_bones.new(name="Foot_IK_Parent_L")
+        Foot_IK_Parent_L.head=Foot_IK_Parent_L.tail=head
+        Foot_IK_Parent_L.tail[2]+=1
+        Foot_IK_Parent_L.parent=rig.data.edit_bones['Ankle_ik_L']
+        Foot_IK_Parent_L.use_inherit_rotation = False
+
+        Foot_IK_Tip_L.parent=Foot_IK_Parent_L
+
+
+
+        head=rig.data.edit_bones['Ankle_ik_R'].head
+        tail=rig.data.edit_bones['Ankle_ik_R'].tail
+        roll=rig.data.edit_bones['Ankle_ik_R'].roll
+        Foot_IK_cs_R=rig.data.edit_bones.new(name="Foot_IK_cs_R")
+        Foot_IK_cs_R.head=head
+        Foot_IK_cs_R.tail=tail
+        Foot_IK_cs_R.roll=roll
+        Foot_IK_cs_R.parent=rig.data.edit_bones['Ankle_ik_R']
+
+        rig.data.edit_bones['Ankle_ik_R'].tail=rig.data.edit_bones["ORG-Ankle_R"].tail
+
+        Foot_IK_Tip_R=rig.data.edit_bones.new(name="Foot_IK_Tip_R")
+        Foot_IK_Tip_R.head=Foot_IK_Tip_R.tail=rig.data.edit_bones['Ankle_ik_R'].tail
+        Foot_IK_Tip_R.tail[2]+=1
+        Foot_IK_Tip_R.length=rig.data.edit_bones['ToeTipIK_R'].length
+
+        Foot_IK_Parent_R=rig.data.edit_bones.new(name="Foot_IK_Parent_R")
+        Foot_IK_Parent_R.head=Foot_IK_Parent_R.tail=head
+        Foot_IK_Parent_R.tail[2]+=1
+        Foot_IK_Parent_R.parent=rig.data.edit_bones['Ankle_ik_R']
+        Foot_IK_Parent_R.use_inherit_rotation = False
+
+        Foot_IK_Tip_R.parent=Foot_IK_Parent_R
+
+        bpy.ops.object.mode_set(mode = 'POSE')
+
+        if 'LegTipEX_L' in mmd_bones_list:
+            mmd_arm.data.bones['LegTipEX_L'].hide=False
+            rig.data.bones['LegTipEX_L'].hide=True
+            c=mmd_arm.pose.bones['LegTipEX_L'].constraints.new(type='COPY_ROTATION')
+            c.target=rig
+            c.subtarget='LegTipEX_L'
+
+        if 'LegTipEX_R' in mmd_bones_list:
+            mmd_arm.data.bones['LegTipEX_R'].hide=False
+            rig.data.bones['LegTipEX_R'].hide=True
+            c=mmd_arm.pose.bones['LegTipEX_R'].constraints.new(type='COPY_ROTATION')
+            c.target=rig
+            c.subtarget='LegTipEX_R'
+
+        c=rig.pose.bones['Ankle_ik_L'].constraints.new(type='IK')
+        c.target=rig
+        c.subtarget='Foot_IK_Tip_L'
+        c.chain_count = 1
+        rig.pose.bones["Ankle_ik_L"].custom_shape_transform = rig.pose.bones["Foot_IK_cs_L"]
+        rig.data.bones["Foot_IK_cs_L"].hide=True
+        rig.pose.bones["Foot_IK_Tip_L"].custom_shape = bpy.data.objects["WGT-rig_ToeTipIK_L"]
+
+
+
+        c=rig.pose.bones['Ankle_ik_R'].constraints.new(type='IK')
+        c.target=rig
+        c.subtarget='Foot_IK_Tip_R'
+        c.chain_count = 1
+        rig.pose.bones["Ankle_ik_R"].custom_shape_transform = rig.pose.bones["Foot_IK_cs_R"]
+        rig.data.bones["Foot_IK_cs_R"].hide=True
+        rig.pose.bones["Foot_IK_Tip_R"].custom_shape = bpy.data.objects["WGT-rig_ToeTipIK_R"]'''
+
+
+
         #写入PMX骨骼名称数据
         #write PMX bone name
-        PMX_list=['root','全ての親','torso','グルーブ','hips','センター','LowerBody_fk','下半身','UpperBody_fk','上半身','UpperBody2_fk','上半身2','neck','首','head','頭','Eyes_Rig','両目',
+        rig_bones_list=rig.data.bones.keys()
+        PMX_list=['root','全ての親','MCH-torso.parent','グルーブ','torso','センター','hips','下半身','UpperBody_fk','上半身','UpperBody2_fk','上半身2','neck','首','head','頭','Eyes_Rig','両目',
         'Leg_ik_L','左足','Ankle_ik_L','左足ＩＫ','ToeTipIK_L','左つま先ＩＫ','Leg_ik_R','右足','Ankle_ik_R','右足ＩＫ','ToeTipIK_R','右つま先ＩＫ',
         'Shoulder_L','左肩','Arm_fk_L','左腕','Elbow_fk_L','左ひじ','Wrist_fk_L','左手首','Shoulder_R','右肩','Arm_fk_R','右腕','Elbow_fk_R','右ひじ','Wrist_fk_R','右手首',
         'Thumb0_L','左親指０','Thumb1_L','左親指１','Thumb2_L','左親指２',
@@ -934,7 +1036,7 @@ class MMR():
                     bone.location[0]=0
                     bone.location[1]=0
                     bone.location[2]=0
-                    for i in range(int(mixamo_action.frame_range[0]),int(mixamo_action.frame_range[1])):
+                    for i in range(int(mixamo_action.frame_range[0]),int(mixamo_action.frame_range[1])+1):
                         bone.keyframe_delete(data_path='location',frame=i)
 
 
@@ -988,7 +1090,7 @@ class MMR():
         rigify_arm2.select=True
         print(vmd_path)
         old_frame_end=bpy.context.scene.frame_end
-        bpy.ops.mmd_tools.import_vmd(filepath=vmd_path,scale=action_scale)
+        bpy.ops.mmd_tools.import_vmd(filepath=vmd_path,scale=action_scale, margin=0)
         bpy.context.scene.frame_end=old_frame_end
         
         vmd_action=rigify_arm2.animation_data.action
@@ -1011,6 +1113,13 @@ class MMR():
         rigify_arm2.pose.bones["head"].keyframe_insert(data_path='["neck_follow"]', frame=vmd_action.frame_range[0])
         rigify_arm2.pose.bones["head"].keyframe_insert(data_path='["head_follow"]', frame=vmd_action.frame_range[0])
 
+        #插入脚掌约束关键帧
+        #insert leg constrain keyframe
+        rigify_arm2.pose.bones["DEF-Ankle_L"].constraints[0].influence=0
+        rigify_arm2.pose.bones["DEF-Ankle_R"].constraints[0].influence=0
+        rigify_arm2.pose.bones["DEF-Ankle_L"].constraints[0].keyframe_insert(data_path='influence', frame=vmd_action.frame_range[0])
+        rigify_arm2.pose.bones["DEF-Ankle_R"].constraints[0].keyframe_insert(data_path='influence', frame=vmd_action.frame_range[0])
+
         #清空部分位置关键帧
         #clear certain keyframe
         for bone in rigify_arm2.pose.bones:
@@ -1019,7 +1128,7 @@ class MMR():
                     bone.location[0]=0
                     bone.location[1]=0
                     bone.location[2]=0
-                    for i in range(int(vmd_action.frame_range[0]),int(vmd_action.frame_range[1])):
+                    for i in range(int(vmd_action.frame_range[0]),int(vmd_action.frame_range[1])+1):
                         bone.keyframe_delete(data_path='location',frame=i)
 
         #修复脚掌
