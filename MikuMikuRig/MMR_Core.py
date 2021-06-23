@@ -374,10 +374,12 @@ class MMR():
         
         rigify_arm.pose.bones['Head'].constraints['location'].target=mmd_arm
         rigify_arm.pose.bones['Head'].constraints['location'].subtarget='Head'
+        scale=mmd_arm.data.bones['Head'].length/rigify_arm.data.bones['Head'].length
+        rigify_arm.pose.bones['Head'].scale=[scale,scale,scale]
         rigify_arm.pose.bones['Head'].constraints['stretch'].target=mmd_arm
         rigify_arm.pose.bones['Head'].constraints['stretch'].subtarget='Head'
         rigify_arm.pose.bones['Head'].constraints["stretch"].head_tail = 1
-        rigify_arm.pose.bones['Head'].constraints["stretch"].rest_length = rigify_arm.data.bones['Head'].length
+        #rigify_arm.pose.bones['Head'].constraints["stretch"].rest_length = rigify_arm.data.bones['Head'].length
 
         rigify_arm.pose.bones['Wrist_L'].constraints["stretch"].mute=True
         rigify_arm.pose.bones['Wrist_R'].constraints["stretch"].mute=True
@@ -396,7 +398,24 @@ class MMR():
             rigify_arm.pose.bones['UpperBody2'].constraints['stretch'].subtarget='UpperBody'
             rigify_arm.pose.bones['UpperBody2'].constraints['location'].mute=False
             rigify_arm.pose.bones['UpperBody2'].constraints['stretch'].mute=False
-        
+
+        #匹配眼睛骨骼
+        rigify_arm.pose.bones['eye.L'].constraints['location'].mute=False
+        rigify_arm.pose.bones['eye.L'].constraints['stretch'].mute=False
+        rigify_arm.pose.bones['eye.L'].constraints['location'].target=mmd_arm
+        rigify_arm.pose.bones['eye.L'].constraints['location'].subtarget='Eye_L'
+        rigify_arm.pose.bones['eye.L'].constraints['stretch'].target=mmd_arm
+        rigify_arm.pose.bones['eye.L'].constraints['stretch'].subtarget='Eye_L'
+        rigify_arm.pose.bones['eye.L'].constraints["stretch"].head_tail = 1
+
+        rigify_arm.pose.bones['eye.R'].constraints['location'].mute=False
+        rigify_arm.pose.bones['eye.R'].constraints['stretch'].mute=False
+        rigify_arm.pose.bones['eye.R'].constraints['location'].target=mmd_arm
+        rigify_arm.pose.bones['eye.R'].constraints['location'].subtarget='Eye_R'
+        rigify_arm.pose.bones['eye.R'].constraints['stretch'].target=mmd_arm
+        rigify_arm.pose.bones['eye.R'].constraints['stretch'].subtarget='Eye_R'
+        rigify_arm.pose.bones['eye.R'].constraints["stretch"].head_tail = 1
+
         bpy.ops.pose.armature_apply(selected=False)
         bpy.ops.pose.select_all(action='SELECT')
         bpy.ops.pose.constraints_clear()
@@ -486,6 +505,8 @@ class MMR():
         self.add_constraint("DEF-Head","Head",True)
         self.add_constraint("root","ParentNode",True)
 
+        self.add_constraint("ORG-eye.L","Eye_L",True)
+        self.add_constraint("ORG-eye.R","Eye_R",True)
 
 
         self.add_constraint("ORG-Thumb0_L","Thumb0_L",True)
@@ -682,24 +703,94 @@ class MMR():
         
         #眼睛控制器
         #eyes controller
-        if 'Eyes' in mmd_bones_list:
+        '''if 'Eyes' in mmd_bones_list and 'Eye_L'in mmd_bones_list and 'Eye_R' in mmd_bones_list:
             bpy.ops.object.mode_set(mode = 'EDIT')
-            eyes_bones=rig.data.edit_bones.new(name="Eyes_Rig")
-            eyes_bones.head=mmd_arm.pose.bones["Eyes"].head
-            eyes_bones.tail=mmd_arm.pose.bones["Eyes"].tail
-            eyes_bones.parent=rig.data.edit_bones['head']
+            head_L=mmd_arm2.data.edit_bones["Eye_L"].head
+            head_R=mmd_arm2.data.edit_bones["Eye_R"].head
+            center=[(head_L[0]+head_R[0])/2,(head_L[1]+head_R[1])/2,(head_L[2]+head_R[2])/2]
+            eye_distance=abs(head_L[0]-head_R[0])
+
+            eyes_parent=rig.data.edit_bones.new(name="eyes_parent")
+            eyes_parent.head=eyes_parent.tail=center
+            eyes_parent.tail[1]-=eye_distance
+            eyes_parent.parent=rig.data.edit_bones['head']
+
+            eyes_parent2=rig.data.edit_bones.new(name="eyes_parent2")
+            eyes_parent2.head=mmd_arm2.data.edit_bones["Eyes"].head
+            eyes_parent2.tail=mmd_arm2.data.edit_bones["Eyes"].tail
+            eyes_parent2.roll=mmd_arm2.data.edit_bones["Eyes"].roll
+            eyes_parent2.parent=eyes_parent
+
+            eyes_parent_L=rig.data.edit_bones.new(name="eyes_parent_L")
+            eyes_parent_L.head=eyes_parent_L.tail=head_L
+            eyes_parent_L.tail[1]-=eye_distance
+            eyes_parent_L.parent=rig.data.edit_bones['head']
+
+            eyes_parent2_L=rig.data.edit_bones.new(name="eyes_parent2_L")
+            eyes_parent2_L.head=head_L
+            eyes_parent2_L.tail=mmd_arm2.data.edit_bones["Eye_L"].tail
+            eyes_parent2_L.roll=mmd_arm2.data.edit_bones["Eye_L"].roll
+            eyes_parent2_L.parent=eyes_parent_L
+
+            eyes_parent_R=rig.data.edit_bones.new(name="eyes_parent_R")
+            eyes_parent_R.head=eyes_parent_R.tail=head_R
+            eyes_parent_R.tail[1]-=eye_distance
+            eyes_parent_R.parent=rig.data.edit_bones['head']
+
+            eyes_parent2_R=rig.data.edit_bones.new(name="eyes_parent2_R")
+            eyes_parent2_R.head=head_R
+            eyes_parent2_R.tail=mmd_arm2.data.edit_bones["Eye_R"].tail
+            eyes_parent2_R.roll=mmd_arm2.data.edit_bones["Eye_R"].roll
+            eyes_parent2_R.parent=eyes_parent_R
+
+            eyes_controller_C=rig.data.edit_bones.new(name="eyes_controller_C")
+            eyes_controller_C.head=eyes_controller_C.tail=[center[0],center[1]-eye_distance*2,center[2]]
+            eyes_controller_C.tail[2]+=eye_distance
+            eyes_controller_C.parent=rig.data.edit_bones['head']
+
+            eyes_controller_L=rig.data.edit_bones.new(name="eyes_controller_L")
+            eyes_controller_L.head=eyes_controller_L.tail=[head_L[0],head_L[1]-eye_distance*2,head_L[2]]
+            eyes_controller_L.tail[2]+=eye_distance
+            eyes_controller_L.parent=eyes_controller_C
+
+            eyes_controller_R=rig.data.edit_bones.new(name="eyes_controller_R")
+            eyes_controller_R.head=eyes_controller_R.tail=[head_R[0],head_R[1]-eye_distance*2,head_R[2]]
+            eyes_controller_R.tail[2]+=eye_distance
+            eyes_controller_R.parent=eyes_controller_C
+
             bpy.ops.object.mode_set(mode = 'POSE')
             rig.pose.bones['Eyes_Rig'].custom_shape = bpy.data.objects["WGT-rig_Arm_ik_L"]
             rig.pose.bones["Eyes_Rig"].lock_location[0] = True
             rig.pose.bones["Eyes_Rig"].lock_location[1] = True
             rig.pose.bones["Eyes_Rig"].lock_location[2] = True
+
             c=mmd_arm.pose.bones['Eyes'].constraints.new(type='COPY_ROTATION')
             c.target=rig
-            c.subtarget='Eyes_Rig'
+            c.subtarget='eyes_parent2'
             c.mix_mode = 'BEFORE'
             c.target_space = 'LOCAL'
             c.owner_space = 'LOCAL'
             mmd_arm.data.bones['Eyes'].hide=False
+
+            c=mmd_arm.pose.bones['Eye_L'].constraints.new(type='COPY_ROTATION')
+            c.target=rig
+            c.subtarget='eyes_parent2_L'
+            c=rig.pose.bones['eyes_parent_L'].constraints.new(type='DAMPED_TRACK')
+            c.target=rig
+            c.subtarget='eyes_controller_L'
+            mmd_arm.data.bones['Eye_L'].hide=False
+            rig.data.bones['eyes_parent_L'].hide=True
+            rig.data.bones['eyes_parent2_L'].hide=True
+
+            c=mmd_arm.pose.bones['Eye_R'].constraints.new(type='COPY_ROTATION')
+            c.target=rig
+            c.subtarget='eyes_parent2_R'
+            c=rig.pose.bones['eyes_parent_R'].constraints.new(type='DAMPED_TRACK')
+            c.target=rig
+            c.subtarget='eyes_controller_R'
+            mmd_arm.data.bones['Eye_R'].hide=False
+            rig.data.bones['eyes_parent_R'].hide=True
+            rig.data.bones['eyes_parent2_R'].hide=True'''
 
         #脚掌IK
         #ToeTipIK
@@ -848,6 +939,8 @@ class MMR():
 
         #隐藏部分控制器
         #hide some controller
+        rig.data.layers[1] = False
+        rig.data.layers[2] = False
         rig.data.layers[4] = False
         rig.data.layers[6] = False
         rig.data.layers[8] = False
@@ -861,13 +954,21 @@ class MMR():
 
         #锁定移动的骨骼列表
         #lock the location of these bone
-        lock_location_bone_list=["Arm_ik_L","Arm_ik_R","Leg_ik_L","Leg_ik_R","hips","chest","neck","head","Shoulder_L","Shoulder_R","Thumb0_master_L","Thumb0_master_R","Thumb1_master_L","Thumb1_master_R","IndexFinger1_master_L","IndexFinger1_master_R","MiddleFinger1_master_L","MiddleFinger1_master_R","RingFinger1_master_L","RingFinger1_master_R","LittleFinger1_master_L","LittleFinger1_master_R"]
+        lock_location_bone_list=[
+            "Arm_ik_L","Arm_ik_R","Leg_ik_L","Leg_ik_R","hips","chest","neck","head","Shoulder_L","Shoulder_R","Thumb0_master_L","Thumb0_master_R",
+            "Thumb1_master_L","Thumb1_master_R","IndexFinger1_master_L","IndexFinger1_master_R","MiddleFinger1_master_L","MiddleFinger1_master_R",
+            "RingFinger1_master_L","RingFinger1_master_R","LittleFinger1_master_L","LittleFinger1_master_R"
+            ]
         #隐藏的骨骼列表
         #hide these bone
-        hide_bone_list=["Leg_parent_L","Leg_parent_R","Arm_parent_L","Arm_parent_R","Ankle_heel_ik_L","Ankle_heel_ik_R"]
+        hide_bone_list=[
+            "Leg_parent_L","Leg_parent_R","Arm_parent_L","Arm_parent_R","Ankle_heel_ik_L","Ankle_heel_ik_R",'master_eye.L','master_eye.R',
+            'ear.L','ear.R','nose_master','teeth.T','teeth.B','tongue_master','jaw_master']
         #锁定缩放的骨骼列表
         #lock the scale of these bone
-        lock_scale_bone_list=["root","torso","Ankle_ik_L","Ankle_ik_R","toe.L","toe.R","Wrist_ik_L","Wrist_ik_R","Arm_ik_L","Arm_ik_R","Leg_ik_L","Leg_ik_R","hips","chest","neck","head","Shoulder_L","Shoulder_R"]
+        lock_scale_bone_list=[
+            "root","torso","Ankle_ik_L","Ankle_ik_R","toe.L","toe.R","Wrist_ik_L","Wrist_ik_R","Arm_ik_L","Arm_ik_R","Leg_ik_L","Leg_ik_R",
+            "hips","chest","neck","head","Shoulder_L","Shoulder_R"]
         for name in lock_location_bone_list:
             if name in rig.data.bones.keys():              
                 rig.pose.bones[name].lock_location = [True,True,True]
