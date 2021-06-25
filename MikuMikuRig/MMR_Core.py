@@ -1289,7 +1289,7 @@ class MMR():
 
     def convert_rigid_body_to_cloth(self,subdivide,cloth_convert_mod):
         select_obj=bpy.context.selected_objects
-        mmd_mesh=None
+        mmd_mesh_object=None
         mmd_arm=None
         mmd_parent=None
         select_rigid_body=[]
@@ -1317,14 +1317,14 @@ class MMR():
         else:
             rigid_bodys=select_rigid_body
 
-        mmd_parent=mmd_mesh=select_rigid_body[0].parent.parent
+        mmd_parent=select_rigid_body[0].parent.parent
 
         if self.mmr_property.auto_select_mesh:
             for obj in mmd_parent.children:
                 if obj.type=="ARMATURE":
                     mmd_arm=obj
-                    mmd_mesh=mmd_arm.children[0]
-            if mmd_mesh == None:
+                    mmd_mesh_object=mmd_arm.children[0]
+            if mmd_mesh_object == None:
                 alert_error("提示","所选刚体没有对应网格模型")
                 return(False)
   
@@ -1332,9 +1332,9 @@ class MMR():
             alert_error("提示","所选物体中没有MMD网格模型")
             return(False)
         else:
-            mmd_mesh=select_mesh[0]
+            mmd_mesh_object=select_mesh[0]
                 
-        mmd_arm=mmd_mesh.parent
+        mmd_arm=mmd_mesh_object.parent
 
         rigid_bodys_count=len(rigid_bodys)
         joints=[]
@@ -1377,10 +1377,32 @@ class MMR():
         mesh.validate()
         cloth_obj=bpy.data.objects.new('mmd_cloth',mesh)
         bpy.context.collection.objects.link(cloth_obj)
+
+        #写入钉固顶点组
+        #add pin vertex group
+        pin_vertex_group=cloth_obj.vertex_groups.new(name='mmd_cloth_pin')
+        for obj in side_joints:
+            if obj.rigid_body_constraint.object1 in rigid_bodys:
+                side_rigid_body=obj.rigid_body_constraint.object1
+                pin_rigid_body=obj.rigid_body_constraint.object2
+            else:
+                side_rigid_body=obj.rigid_body_constraint.object2
+                pin_rigid_body=obj.rigid_body_constraint.object1
+            
+            index1=rigid_bodys.index(side_rigid_body)
+            pin_index=[index1]
+
+            pin_bone_name=pin_rigid_body.mmd_rigid.bone
+            skin_vertex_group=cloth_obj.vertex_groups.get(pin_bone_name)
+
+            if skin_vertex_group==None:
+                skin_vertex_group=cloth_obj.vertex_groups.new(name=pin_bone_name)
+
+            skin_vertex_group.add(pin_index,1,'REPLACE')
+            pin_vertex_group.add(pin_index,1,'REPLACE')
+
         cloth_obj.parent=mmd_parent
         bpy.ops.object.select_all(action='DESELECT')
-
-
 
         bpy.context.view_layer.objects.active=cloth_obj
         bpy.ops.object.mode_set(mode = 'EDIT')
@@ -1405,6 +1427,8 @@ class MMR():
                     break
             if true_edge==False:
                 bm.edges.remove(e)
+        bm.faces.ensure_lookup_table()
+        face_count=len(bm.faces)
         #尝试标记出头发,飘带
         #try mark hair or ribbon vertex
         bm.to_mesh(mesh)
@@ -1435,6 +1459,8 @@ class MMR():
             v=bm.verts[i]
             bone=bones_list[i]
             if bone.bone.use_connect==False:
+                up_verts.append(v)
+            elif bone.parent not in bones_list:
                 up_verts.append(v)
             elif len(bone.children)==0:
                 down_verts.append(v)
@@ -1482,7 +1508,7 @@ class MMR():
                         else:
                             new_location=v.co*2-e.verts[0].co
                     break
-            new_vert=bm.verts.new(new_location)
+            new_vert=bm.verts.new(new_location,v)
             new_edge=bm.edges.new([v,new_vert])
             new_up_verts[v.index]=new_vert
             if v in side_verts:
@@ -1503,7 +1529,7 @@ class MMR():
                         else:
                             new_location=v.co*2-e.verts[0].co
                     break
-                new_vert=bm.verts.new(new_location)
+                new_vert=bm.verts.new(new_location,v)
                 new_edge=bm.edges.new([v,new_vert])
                 new_down_verts[v.index]=new_vert
                 if v in side_verts:
@@ -1531,6 +1557,8 @@ class MMR():
                 bm.faces.new([vert1,vert2,vert3,vert4])
             bm.edges.ensure_lookup_table()
             
+        #延长侧边顶点
+        #extend side vertex
         bm.verts.index_update( ) 
         bm.faces.ensure_lookup_table()
         new_side_verts=[None for i in range(len(bm.verts))]
@@ -1543,8 +1571,8 @@ class MMR():
                     else:
                         new_location=v.co*2-e.verts[0].co
                     break
-            new_vert=bm.verts.new(new_location)
-            new_side_verts[v.index]=new_vert
+            new_vert=bm.verts.new(new_location,v)
+            new_side_verts[i]=new_vert
             bm.edges.ensure_lookup_table()
 
         for i in range(len(side_edges)):
@@ -1558,6 +1586,44 @@ class MMR():
             bm.edges.ensure_lookup_table()
 
         bm.verts.ensure_lookup_table()
+        bm.normal_update()
+
+        #挤出飘带顶点
+        #extrude ribbon edge
+        new_extrude_verts=[None for i in range(len(bm.verts))]
+        for i in range(len(bm.verts)):
+            v=bm.verts[i]
+            if v.is_wire:
+                new_location=[v.co[0],v.co[1]+0.01,v.co[2]]
+                new_vert=bm.verts.new(new_location,v)
+                new_extrude_verts[i]=new_vert
+                bm.verts.ensure_lookup_table()
+            else:
+                v.co[0]-=v.normal[0]*mean_radius
+                v.co[1]-=v.normal[1]*mean_radius
+                v.co[2]-=v.normal[2]*mean_radius
+
+        bm.edges.ensure_lookup_table()
+        for i in range(len(bm.edges)):
+            e=bm.edges[i]
+            if e.is_wire:
+                vert1=e.verts[0]
+                vert2=e.verts[1]
+                vert3=new_extrude_verts[vert2.index]
+                vert4=new_extrude_verts[vert1.index]
+                if vert3 != None and vert4 != None:
+                    new_face=bm.faces.new([vert1,vert2,vert3,vert4])
+                    bm.edges.ensure_lookup_table()
+
+        #删除孤立顶点
+        bm.verts.ensure_lookup_table()
+        isolate_verts=[]
+        for v in bm.verts:
+            if len(v.link_edges)==0:
+                isolate_verts.append(v)
+        for v in isolate_verts:
+            bm.verts.remove(v)
+        bm.verts.ensure_lookup_table()
         bm.to_mesh(mesh)
 
         bpy.ops.object.mode_set(mode = 'EDIT')
@@ -1565,39 +1631,12 @@ class MMR():
         bpy.ops.mesh.normals_make_consistent(inside=False)
         bpy.ops.object.mode_set(mode = 'OBJECT')
 
-        pin_vertex_group=cloth_obj.vertex_groups.new(name='mmd_cloth_pin')
         for obj in joints:
             bpy.data.objects.remove(obj)
         for obj in side_joints:
-            if obj.rigid_body_constraint.object1 in rigid_bodys:
-                side_rigid_body=obj.rigid_body_constraint.object1
-                pin_rigid_body=obj.rigid_body_constraint.object2
-            else:
-                side_rigid_body=obj.rigid_body_constraint.object2
-                pin_rigid_body=obj.rigid_body_constraint.object1
-            
-            index1=rigid_bodys.index(side_rigid_body)
-            vert2=new_up_verts[index1]
-            if vert2 !=None:
-                index3=vert2.index
-                vert3=new_side_verts[index3]
-                if vert3 == None:
-                    pin_index=[index3]
-                else:
-                    pin_index=[index3,vert3.index]
-            else:
-                pin_index=[index1]
-
-            pin_bone_name=pin_rigid_body.mmd_rigid.bone
-
-            skin_vertex_group=cloth_obj.vertex_groups.get(pin_bone_name)
-            if skin_vertex_group==None:
-                skin_vertex_group=cloth_obj.vertex_groups.new(name=pin_bone_name)
-            skin_vertex_group.add(pin_index,1,'REPLACE')
-            pin_vertex_group.add(pin_index,1,'REPLACE')
             bpy.data.objects.remove(obj)
 
-        deform_vertex_group=mmd_mesh.vertex_groups.new(name='mmd_cloth_deform')
+        deform_vertex_group=mmd_mesh_object.vertex_groups.new(name='mmd_cloth_deform')
 
         cloth_obj.display_type = 'WIRE'
 
@@ -1622,7 +1661,19 @@ class MMR():
         if subdivide==0:
             mod.show_viewport = False
 
-        bpy.context.view_layer.objects.active=mmd_mesh
+        bpy.context.view_layer.objects.active=mmd_mesh_object
+
+        #写入形变权重或骨骼约束
+        #Add weight or constrain
+        #准备阶段
+        # preparation
+        unnecessary_vertex_groups: List[bpy.types.VertexGroup] = []
+        mmd_mesh: bpy.types.Mesh = mmd_mesh_object.data
+        mmd_bm: bmesh.types.BMesh = bmesh.new()
+        mmd_bm.from_mesh(mmd_mesh)
+
+        mmd_bm.verts.layers.deform.verify()
+        deform_layer = mmd_bm.verts.layers.deform.active
 
         for i in range(rigid_bodys_count):
             v=bm.verts[i]
@@ -1639,31 +1690,29 @@ class MMR():
                 con.subtarget = name
                 con.rest_length = bone.length
             else:
-                mod=mmd_mesh.modifiers.new('combin_weight','VERTEX_WEIGHT_MIX')
-                mod.vertex_group_a = deform_vertex_group.name
-                mod.vertex_group_b = name
-                mod.mix_set = 'OR'
-                mod.mix_mode = 'ADD'
-                mod.normalize = False
-                bpy.ops.object.modifier_move_to_index(modifier="combin_weight", index=0)
-                bpy.ops.object.modifier_apply(modifier="combin_weight")
-                mmd_mesh.vertex_groups.remove(mmd_mesh.vertex_groups[name])
+                from_vertex_group = mmd_mesh_object.vertex_groups[name]
+                from_index = from_vertex_group.index
+                unnecessary_vertex_groups.append(from_vertex_group)
+
+                vert: bmesh.types.BMVert
+                for vert in mmd_bm.verts:
+                    deform_vert: bmesh.types.BMDeformVert = vert[deform_layer]
+                    if from_index not in deform_vert:
+                        continue
+
+                    to_index = deform_vertex_group.index
+                    deform_vert[to_index] = deform_vert.get(to_index, 0.0) + deform_vert[from_index]
+        
             bpy.data.objects.remove(obj)
 
-        #挤出孤立边
-        bpy.context.view_layer.objects.active=cloth_obj
-        bpy.ops.object.mode_set(mode = 'EDIT')
-        bpy.ops.mesh.select_non_manifold(extend=False, use_wire=True, use_boundary=False, use_multi_face=False, use_non_contiguous=False, use_verts=False)
-        bpy.ops.mesh.extrude_edges_move(TRANSFORM_OT_translate={"value":(0, 0.01, 0)})
-        bpy.ops.mesh.select_linked(delimit=set())
-        bpy.ops.mesh.select_all(action='INVERT')
-        bpy.ops.transform.shrink_fatten(value=mean_radius, use_even_offset=False, mirror=True, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False)
+        mmd_bm.to_mesh(mmd_mesh)
+        mmd_bm.free()
+        for vertex_group in unnecessary_vertex_groups:
+            mmd_mesh_object.vertex_groups.remove(vertex_group)
 
-        bpy.ops.object.mode_set(mode = 'OBJECT')
-
-        if len(mesh.polygons.items())!=0 and cloth_convert_mod!=2:
-            bpy.context.view_layer.objects.active=mmd_mesh
-            mod=mmd_mesh.modifiers.new('mmd_cloth_deform','SURFACE_DEFORM')
+        if face_count !=0 and cloth_convert_mod!=2:
+            bpy.context.view_layer.objects.active=mmd_mesh_object
+            mod=mmd_mesh_object.modifiers.new('mmd_cloth_deform','SURFACE_DEFORM')
             mod.target = cloth_obj
             mod.vertex_group = deform_vertex_group.name
             bpy.ops.object.surfacedeform_bind(modifier=mod.name)
