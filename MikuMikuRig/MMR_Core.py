@@ -404,17 +404,19 @@ class MMR():
         rigify_arm.pose.bones['eye.L'].constraints['stretch'].mute=False
         rigify_arm.pose.bones['eye.L'].constraints['location'].target=mmd_arm
         rigify_arm.pose.bones['eye.L'].constraints['location'].subtarget='Eye_L'
-        rigify_arm.pose.bones['eye.L'].constraints['stretch'].target=mmd_arm
-        rigify_arm.pose.bones['eye.L'].constraints['stretch'].subtarget='Eye_L'
-        rigify_arm.pose.bones['eye.L'].constraints["stretch"].head_tail = 1
+        rigify_arm.pose.bones['eye.L'].constraints['location'].head_tail = 1
+        #rigify_arm.pose.bones['eye.L'].constraints['stretch'].target=mmd_arm
+        #rigify_arm.pose.bones['eye.L'].constraints['stretch'].subtarget='Eye_L'
+        #rigify_arm.pose.bones['eye.L'].constraints["stretch"].head_tail = 1
 
         rigify_arm.pose.bones['eye.R'].constraints['location'].mute=False
         rigify_arm.pose.bones['eye.R'].constraints['stretch'].mute=False
         rigify_arm.pose.bones['eye.R'].constraints['location'].target=mmd_arm
         rigify_arm.pose.bones['eye.R'].constraints['location'].subtarget='Eye_R'
-        rigify_arm.pose.bones['eye.R'].constraints['stretch'].target=mmd_arm
-        rigify_arm.pose.bones['eye.R'].constraints['stretch'].subtarget='Eye_R'
-        rigify_arm.pose.bones['eye.R'].constraints["stretch"].head_tail = 1
+        rigify_arm.pose.bones['eye.R'].constraints['location'].head_tail = 1
+        #rigify_arm.pose.bones['eye.R'].constraints['stretch'].target=mmd_arm
+        #rigify_arm.pose.bones['eye.R'].constraints['stretch'].subtarget='Eye_R'
+        #rigify_arm.pose.bones['eye.R'].constraints["stretch"].head_tail = 1
 
         bpy.ops.pose.armature_apply(selected=False)
         bpy.ops.pose.select_all(action='SELECT')
@@ -505,8 +507,8 @@ class MMR():
         self.add_constraint("DEF-Head","Head",True)
         self.add_constraint("root","ParentNode",True)
 
-        self.add_constraint("ORG-eye.L","Eye_L",True)
-        self.add_constraint("ORG-eye.R","Eye_R",True)
+        #self.add_constraint("ORG-eye.L","Eye_L",True)
+        #self.add_constraint("ORG-eye.R","Eye_R",True)
 
 
         self.add_constraint("ORG-Thumb0_L","Thumb0_L",True)
@@ -542,6 +544,37 @@ class MMR():
         self.add_constraint("ORG-LittleFinger3_R","LittleFinger3_R",True)
 
         self.add_constraint_execute()
+
+        #眼睛约束
+        bpy.ops.object.mode_set(mode = 'EDIT')
+        eyes_parent_L=rig.data.edit_bones.new(name='eyes_parent_L')
+        eyes_parent_L.head=mmd_arm2.data.edit_bones['Eye_L'].head
+        eyes_parent_L.tail=mmd_arm2.data.edit_bones['Eye_L'].tail
+        eyes_parent_L.roll=mmd_arm2.data.edit_bones['Eye_L'].roll
+        eyes_parent_L.parent=rig.data.edit_bones['ORG-eye.L']
+
+        eyes_parent_R=rig.data.edit_bones.new(name='eyes_parent_R')
+        eyes_parent_R.head=mmd_arm2.data.edit_bones['Eye_R'].head
+        eyes_parent_R.tail=mmd_arm2.data.edit_bones['Eye_R'].tail
+        eyes_parent_R.roll=mmd_arm2.data.edit_bones['Eye_R'].roll
+        eyes_parent_R.parent=rig.data.edit_bones['ORG-eye.R']
+
+        bpy.ops.object.mode_set(mode = 'POSE')
+        con= mmd_arm.pose.bones['Eye_L'].constraints
+        rig.data.bones['eyes_parent_L'].hide=True
+        mmd_arm.data.bones['Eye_L'].hide=False
+        COPY_ROTATION=con.new(type='COPY_ROTATION')
+        COPY_ROTATION.target = rig
+        COPY_ROTATION.subtarget = 'eyes_parent_L'
+        COPY_ROTATION.name="rel_rotation"
+
+        con= mmd_arm.pose.bones['Eye_R'].constraints
+        rig.data.bones['eyes_parent_R'].hide=True
+        mmd_arm.data.bones['Eye_R'].hide=False
+        COPY_ROTATION=con.new(type='COPY_ROTATION')
+        COPY_ROTATION.target = rig
+        COPY_ROTATION.subtarget = 'eyes_parent_R'
+        COPY_ROTATION.name="rel_rotation"
 
         #手腕旋转跟随上半身开关
         if self.mmr_property.wrist_rotation_follow:
