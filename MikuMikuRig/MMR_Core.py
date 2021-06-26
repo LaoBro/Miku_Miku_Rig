@@ -576,6 +576,30 @@ class MMR():
         COPY_ROTATION.subtarget = 'eyes_parent_R'
         COPY_ROTATION.name="rel_rotation"
 
+        #上半身控制器
+
+        if self.mmr_property.upper_body_controller:
+            bpy.ops.object.mode_set(mode = 'EDIT')
+            torso_parent=rig.data.edit_bones.new(name='torso_parent')
+            torso_parent.head=rig.data.edit_bones['root'].head
+            torso_parent.tail=rig.data.edit_bones['root'].tail
+            torso_parent.roll=rig.data.edit_bones['root'].roll
+            torso_parent.length=rig.data.edit_bones['root'].length/3
+            torso_parent.head[2]=torso_parent.tail[2]=mmd_arm2.data.edit_bones['Knee_L'].head[2]
+            rig.data.edit_bones['MCH-torso.parent'].parent=torso_parent
+            rig.data.edit_bones['MCH-Wrist_ik.parent_L'].parent=torso_parent
+            rig.data.edit_bones['MCH-Wrist_ik.parent_R'].parent=torso_parent
+            
+            bpy.ops.object.mode_set(mode = 'POSE')
+            rig.pose.bones["torso_parent"].custom_shape = bpy.data.objects["WGT-rig_root"]
+            rig.pose.bones["torso_parent"].custom_shape_scale = 0.4
+            rig.pose.bones['torso_parent'].mmd_bone.name_j='グルーブ'
+
+        else:
+            rig.pose.bones['MCH-torso.parent'].mmd_bone.name_j='グルーブ'
+
+
+
         #手腕旋转跟随上半身开关
         if self.mmr_property.wrist_rotation_follow:
             bpy.ops.object.mode_set(mode = 'EDIT')
@@ -617,28 +641,33 @@ class MMR():
 
         #肩膀联动
         #IK shoulder
+        rig.pose.bones["Shoulder_L"].ik_stiffness_x = 0.5
+        rig.pose.bones["Shoulder_L"].ik_stiffness_y = 0.5
+        rig.pose.bones["Shoulder_L"].ik_stiffness_z = 0.5
+        rig.pose.bones["Shoulder_R"].ik_stiffness_x = 0.5
+        rig.pose.bones["Shoulder_R"].ik_stiffness_y = 0.5
+        rig.pose.bones["Shoulder_R"].ik_stiffness_z = 0.5
+
+        rig.pose.bones["ORG-Shoulder_L"].ik_stiffness_x = 0.5
+        rig.pose.bones["ORG-Shoulder_L"].ik_stiffness_y = 0.5
+        rig.pose.bones["ORG-Shoulder_L"].ik_stiffness_z = 0.5
+        rig.pose.bones["ORG-Shoulder_R"].ik_stiffness_x = 0.5
+        rig.pose.bones["ORG-Shoulder_R"].ik_stiffness_y = 0.5
+        rig.pose.bones["ORG-Shoulder_R"].ik_stiffness_z = 0.5
+
         if self.mmr_property.auto_shoulder:
-            bpy.ops.object.mode_set(mode = 'EDIT')
-            rig.pose.bones["Shoulder_L"].ik_stiffness_x = 0.5
-            rig.pose.bones["Shoulder_L"].ik_stiffness_y = 0.5
-            rig.pose.bones["Shoulder_L"].ik_stiffness_z = 0.5
-            rig.data.edit_bones["Arm_ik_L"].parent=rig.data.edit_bones["Shoulder_L"]
-            rig.pose.bones["MCH-Elbow_ik_L"].constraints["IK.001"].chain_count = 3
-            rig.pose.bones["MCH-Elbow_ik_L"].constraints["IK"].chain_count = 3
-            rig.pose.bones["Shoulder_R"].ik_stiffness_x = 0.5
-            rig.pose.bones["Shoulder_R"].ik_stiffness_y = 0.5
-            rig.pose.bones["Shoulder_R"].ik_stiffness_z = 0.5
-            rig.data.edit_bones["Arm_ik_R"].parent=rig.data.edit_bones["Shoulder_R"]
-            rig.pose.bones["MCH-Elbow_ik_R"].constraints["IK.001"].chain_count = 3
-            rig.pose.bones["MCH-Elbow_ik_R"].constraints["IK"].chain_count = 3
+            #bpy.ops.object.mode_set(mode = 'EDIT')
+            #rig.data.edit_bones["Arm_ik_L"].parent=rig.data.edit_bones["Shoulder_L"]
+            rig.pose.bones["MCH-Elbow_ik_L"].constraints["IK.001"].chain_count = 4
+            rig.pose.bones["MCH-Elbow_ik_L"].constraints["IK"].chain_count = 4
+
+            #rig.data.edit_bones["Arm_ik_R"].parent=rig.data.edit_bones["Shoulder_R"]
+            rig.pose.bones["MCH-Elbow_ik_R"].constraints["IK.001"].chain_count = 4
+            rig.pose.bones["MCH-Elbow_ik_R"].constraints["IK"].chain_count = 4
 
 
         bpy.ops.object.mode_set(mode = 'POSE')
 
-        #手腕跟随上半身开关
-        if self.mmr_property.wrist_follow:
-            rig.pose.bones["Arm_parent_L"]["IK_parent"] = 4
-            rig.pose.bones["Arm_parent_R"]["IK_parent"] = 4
        
         #肩膀联动复制缩放
         #shoulder scale
@@ -933,7 +962,7 @@ class MMR():
         #写入PMX骨骼名称数据
         #write PMX bone name
         rig_bones_list=rig.data.bones.keys()
-        PMX_list=['root','全ての親','MCH-torso.parent','グルーブ','torso','センター','hips','下半身','UpperBody_fk','上半身','UpperBody2_fk','上半身2','neck','首','head','頭','Eyes_Rig','両目',
+        PMX_list=['root','全ての親','torso','センター','hips','下半身','UpperBody_fk','上半身','UpperBody2_fk','上半身2','neck','首','head','頭','Eyes_Rig','両目',
         'Leg_ik_L','左足','Ankle_ik_L','左足ＩＫ','ToeTipIK_L','左つま先ＩＫ','Leg_ik_R','右足','Ankle_ik_R','右足ＩＫ','ToeTipIK_R','右つま先ＩＫ',
         'Shoulder_L','左肩','Arm_fk_L','左腕','Elbow_fk_L','左ひじ','Wrist_fk_L','左手首','Shoulder_R','右肩','Arm_fk_R','右腕','Elbow_fk_R','右ひじ','Wrist_fk_R','右手首',
         'Thumb0_L','左親指０','Thumb1_L','左親指１','Thumb2_L','左親指２',

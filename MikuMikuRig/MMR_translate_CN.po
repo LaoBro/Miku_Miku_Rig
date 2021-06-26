@@ -28,8 +28,8 @@ msgctxt "Operator"
 msgid "Fix axial"
 msgstr "修正轴向"
 
-msgid "Wrist follow chest"
-msgstr "手腕跟随上半身"
+msgid "Upper body controller"
+msgstr "上半身控制器"
 
 msgid "Wrist rotation follow arm"
 msgstr "手腕旋转跟随手臂"
