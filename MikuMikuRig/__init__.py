@@ -1,7 +1,7 @@
 bl_info = {
     "name": "MikuMikuRig", #插件名字
     "author": "William", #作者名字
-    "version": (0, 3, 8,3), #插件版本
+    "version": (0, 3, 8,4), #插件版本
     "blender": (2, 92, 0), #blender版本
     "location": "3DView > Tools", #插件所在位置
     "description": "自动为MMD模型生成rigify控制器", #描述
@@ -32,6 +32,7 @@ class MMR_property(bpy.types.PropertyGroup):
     cloth_convert_mod:bpy.props.IntProperty(default=1,description="布料转换模式",min=1,max=3)
     auto_select_mesh:bpy.props.BoolProperty(default=True,description="自动选择模型")
     auto_select_rigid_body:bpy.props.BoolProperty(default=True,description="自动选择刚体")
+    extend_ribbon:bpy.props.BoolProperty(default=True,description="延展飘带区域")
 
 class Mmr_Panel_Base(object):
     bl_space_type = 'VIEW_3D'
@@ -110,6 +111,7 @@ class PT_MikuMikuRig_4(Mmr_Panel_Base,bpy.types.Panel):
         layout.label(text="1=Auto 2=Bone constrain 3=Surface deform")
         layout.prop(mmr_property,'auto_select_mesh',text="Auto select mesh")
         layout.prop(mmr_property,'auto_select_rigid_body',text="Auto select rigid body")
+        layout.prop(mmr_property,'extend_ribbon',text="Extend ribbon area")
         layout.operator("mmr.convert_rigid_body_to_cloth",text="Convert rigid body to cloth",icon="CUBE")
 
 class OT_Generate_Rig(bpy.types.Operator):

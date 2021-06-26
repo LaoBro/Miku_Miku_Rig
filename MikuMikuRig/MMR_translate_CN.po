@@ -111,6 +111,9 @@ msgstr "自动选择模型"
 msgid "Auto select rigid body"
 msgstr "自动选择刚体"
 
+msgid "Extend ribbon area"
+msgstr "延展飘带区域"
+
 msgctxt "Operator"
 msgid "Convert rigid body to cloth"
 msgstr "把刚体转换为布料"

@@ -1379,8 +1379,9 @@ class MMR():
         bpy.context.collection.objects.link(cloth_obj)
 
         #写入钉固顶点组
-        #add pin vertex group
+        #add pin vertex groups
         pin_vertex_group=cloth_obj.vertex_groups.new(name='mmd_cloth_pin')
+        skin_vertex_groups_index=[pin_vertex_group.index]
         for obj in side_joints:
             if obj.rigid_body_constraint.object1 in rigid_bodys:
                 side_rigid_body=obj.rigid_body_constraint.object1
@@ -1401,22 +1402,25 @@ class MMR():
             skin_vertex_group.add(pin_index,1,'REPLACE')
             pin_vertex_group.add(pin_index,1,'REPLACE')
 
+            skin_vertex_groups_index.append(skin_vertex_group.index)
+
         cloth_obj.parent=mmd_parent
         bpy.ops.object.select_all(action='DESELECT')
-
         bpy.context.view_layer.objects.active=cloth_obj
-        bpy.ops.object.mode_set(mode = 'EDIT')
-        bpy.ops.mesh.select_all(action='SELECT')
-        bpy.ops.mesh.edge_face_add()
         bpy.ops.object.mode_set(mode = 'OBJECT')
 
-        #删除大于四边的面
+        #填充面
         #remove ngon
         bm=bmesh.new()
         bm.from_mesh(mesh)
-        for f in bm.faces:
+        #bmesh.ops.edgenet_fill(bm, edges=bm.edges, mat_nr=0, use_smooth=True, sides=4)
+        bmesh.ops.holes_fill(bm, edges=bm.edges, sides=4)
+
+        #删除大于四边的面
+        #remove ngon
+        '''for f in bm.faces:
             if len(f.verts)>4:
-                bm.faces.remove(f)
+                bm.faces.remove(f)'''
         #删除多余边
         #remove extra edge
         for e in bm.edges:
@@ -1428,10 +1432,11 @@ class MMR():
             if true_edge==False:
                 bm.edges.remove(e)
         bm.faces.ensure_lookup_table()
-        face_count=len(bm.faces)
+
         #尝试标记出头发,飘带
         #try mark hair or ribbon vertex
-        bm.to_mesh(mesh)
+
+        '''bm.to_mesh(mesh)
         bpy.ops.object.mode_set(mode = 'EDIT')
         bpy.ops.mesh.select_all(action='DESELECT')
         bpy.ops.mesh.select_mode(type='EDGE')
@@ -1439,26 +1444,50 @@ class MMR():
         bpy.ops.mesh.select_linked(delimit=set())
         bpy.ops.object.mode_set(mode = 'OBJECT')
         bm.clear()
-        bm.from_mesh(mesh)
+        bm.from_mesh(mesh)'''
+
+        ribbon_verts=[v for v in bm.verts if v.is_wire]
+        if self.mmr_property.extend_ribbon:
+            boundary_verts=set(ribbon_verts)
+            boundary_verts2=[]
+            while len(boundary_verts) != 0:
+                boundary_verts2.clear()
+                for v in boundary_verts:
+                    for e in v.link_edges:
+                        for v2 in e.verts:
+                            if v2 not in ribbon_verts:
+                                ribbon_verts.append(v2)
+                                boundary_verts2.append(v2)
+                boundary_verts=set(boundary_verts2)
+                boundary_verts2.clear()
+
+        all_ribbon=True
+        for f in bm.faces:
+            ribbon_face=False
+            for v in f.verts:
+                if v in ribbon_verts:
+                    ribbon_face=True
+            if ribbon_face==False:
+                all_ribbon=False
 
         #标记出特殊边和点
         #These are special edge and vertex
-        hair_verts=[]
+
         up_edges=[]
         down_edges=[]
         side_edges=[]
         up_verts=[]
         down_verts=[]
-        wire_verts=[]
         side_verts=[]
 
         #标出头部，尾部，飘带顶点
         #try mark head,tail,ribbon vertex
         bm.verts.ensure_lookup_table()
+        bm.edges.ensure_lookup_table()
         for i in range(len(bm.verts)):
             v=bm.verts[i]
             bone=bones_list[i]
-            if bone.bone.use_connect==False:
+            if bone.bone.use_connect==False and v.is_boundary:
                 up_verts.append(v)
             elif bone.parent not in bones_list:
                 up_verts.append(v)
@@ -1466,17 +1495,11 @@ class MMR():
                 down_verts.append(v)
             elif bone.children[0] not in bones_list:
                 down_verts.append(v)
-            if v.is_wire:
-                wire_verts.append(v)
-            if v.select :
-                hair_verts.append(v)
-                if cloth_convert_mod==1:
-                    v.co=bone.tail
-            if cloth_convert_mod==2:
+            if v in ribbon_verts and cloth_convert_mod==1 or cloth_convert_mod==2:
                 v.co=bone.tail
 
-            
-        bm.edges.ensure_lookup_table()
+        #标出头部，尾部，飘带边
+        #try mark head,tail,ribbon edge
         for i in range(len(bm.edges)):
             e=bm.edges[i]
             vert1=e.verts[0]
@@ -1495,12 +1518,12 @@ class MMR():
 
         #延长头部顶点 
         #extend root vertex
+        deform_layer = bm.verts.layers.deform.active
         new_up_verts=[None for i in range(len(bm.verts))]
         new_down_verts=[None for i in range(len(bm.verts))]
-        for i in range(len(up_verts)):
-            v=up_verts[i]
+        for v in up_verts:
             new_location=bones_list[v.index].head
-            if cloth_convert_mod==1 and v not in hair_verts or cloth_convert_mod==3:
+            if cloth_convert_mod==1 and v not in ribbon_verts or cloth_convert_mod==3:
                 for e in v.link_edges:
                     if e not in up_edges:
                         if e.verts[0]==v:
@@ -1510,16 +1533,20 @@ class MMR():
                     break
             new_vert=bm.verts.new(new_location,v)
             new_edge=bm.edges.new([v,new_vert])
+
+            deform_vert = v[deform_layer]
+            for i in skin_vertex_groups_index:
+                if i in deform_vert:
+                    deform_vert[i]=0
+
             new_up_verts[v.index]=new_vert
             if v in side_verts:
                 side_verts.append(new_vert)
                 side_edges.append(new_edge)
-            bm.edges.ensure_lookup_table()
 
         #延长尾部顶点
         #extend tail vertex
-        for i in range(len(down_verts)):
-            v=down_verts[i]
+        for v in down_verts:
             if v not in up_verts:
                 new_location=[0,0,0]
                 for e in v.link_edges:
@@ -1535,35 +1562,30 @@ class MMR():
                 if v in side_verts:
                     side_verts.append(new_vert)
                     side_edges.append(new_edge)
-                bm.edges.ensure_lookup_table()
 
-        for i in range(len(up_edges)):
-            e=up_edges[i]
+        for e in up_edges:
             vert1=e.verts[0]
             vert2=e.verts[1]
             vert3=new_up_verts[vert2.index]
             vert4=new_up_verts[vert1.index]
             if vert3 != None and vert4 != None:
                 bm.faces.new([vert1,vert2,vert3,vert4])
-            bm.edges.ensure_lookup_table()
 
-        for i in range(len(down_edges)):
-            e=down_edges[i]
+
+        for e in down_edges:
             vert1=e.verts[0]
             vert2=e.verts[1]
             vert3=new_down_verts[vert2.index]
             vert4=new_down_verts[vert1.index]
             if vert3 != None and vert4 != None:
                 bm.faces.new([vert1,vert2,vert3,vert4])
-            bm.edges.ensure_lookup_table()
             
         #延长侧边顶点
         #extend side vertex
         bm.verts.index_update( ) 
         bm.faces.ensure_lookup_table()
         new_side_verts=[None for i in range(len(bm.verts))]
-        for i in range(len(side_verts)):
-            v=side_verts[i]
+        for v in side_verts:
             for e in v.link_edges:
                 if e not in side_edges:
                     if e.verts[0]==v:
@@ -1572,58 +1594,54 @@ class MMR():
                         new_location=v.co*2-e.verts[0].co
                     break
             new_vert=bm.verts.new(new_location,v)
-            new_side_verts[i]=new_vert
-            bm.edges.ensure_lookup_table()
+            new_side_verts[v.index]=new_vert
 
-        for i in range(len(side_edges)):
-            e=side_edges[i]
+        for e in side_edges:
             vert1=e.verts[0]
             vert2=e.verts[1]
             vert3=new_side_verts[vert2.index]
             vert4=new_side_verts[vert1.index]
             if vert3 != None and vert4 != None:
                 bm.faces.new([vert1,vert2,vert3,vert4])
-            bm.edges.ensure_lookup_table()
 
         bm.verts.ensure_lookup_table()
+        bmesh.ops.recalc_face_normals(bm,faces=bm.faces)
         bm.normal_update()
 
         #挤出飘带顶点
         #extrude ribbon edge
         new_extrude_verts=[None for i in range(len(bm.verts))]
-        for i in range(len(bm.verts)):
-            v=bm.verts[i]
+        for v in bm.verts[:]:
             if v.is_wire:
                 new_location=[v.co[0],v.co[1]+0.01,v.co[2]]
                 new_vert=bm.verts.new(new_location,v)
-                new_extrude_verts[i]=new_vert
-                bm.verts.ensure_lookup_table()
+                new_extrude_verts[v.index]=new_vert
             else:
                 v.co[0]-=v.normal[0]*mean_radius
                 v.co[1]-=v.normal[1]*mean_radius
                 v.co[2]-=v.normal[2]*mean_radius
 
+        bm.verts.ensure_lookup_table()
         bm.edges.ensure_lookup_table()
-        for i in range(len(bm.edges)):
-            e=bm.edges[i]
+        for e in bm.edges[:]:
             if e.is_wire:
                 vert1=e.verts[0]
                 vert2=e.verts[1]
                 vert3=new_extrude_verts[vert2.index]
                 vert4=new_extrude_verts[vert1.index]
                 if vert3 != None and vert4 != None:
-                    new_face=bm.faces.new([vert1,vert2,vert3,vert4])
-                    bm.edges.ensure_lookup_table()
+                    bm.faces.new([vert1,vert2,vert3,vert4])
 
         #删除孤立顶点
+        #remove single vertex
         bm.verts.ensure_lookup_table()
-        isolate_verts=[]
-        for v in bm.verts:
+        bm.edges.ensure_lookup_table()
+
+        '''for v in bm.verts[:]:
             if len(v.link_edges)==0:
-                isolate_verts.append(v)
-        for v in isolate_verts:
-            bm.verts.remove(v)
-        bm.verts.ensure_lookup_table()
+                bm.verts.remove(v)
+
+        bm.verts.ensure_lookup_table()'''
         bm.to_mesh(mesh)
 
         bpy.ops.object.mode_set(mode = 'EDIT')
@@ -1680,7 +1698,7 @@ class MMR():
             obj=rigid_bodys[i]
             bone=bones_list[i]
             name=bone.name
-            if v in hair_verts and cloth_convert_mod==1 or cloth_convert_mod==2 :
+            if v in ribbon_verts and cloth_convert_mod==1 or cloth_convert_mod==2 :
                 line_vertex_group=cloth_obj.vertex_groups.new(name=name)
                 line_vertex_group.add([i],1,'REPLACE')
                 for c in bone.constraints:
@@ -1710,7 +1728,7 @@ class MMR():
         for vertex_group in unnecessary_vertex_groups:
             mmd_mesh_object.vertex_groups.remove(vertex_group)
 
-        if face_count !=0 and cloth_convert_mod!=2:
+        if all_ribbon == False and cloth_convert_mod!=2:
             bpy.context.view_layer.objects.active=mmd_mesh_object
             mod=mmd_mesh_object.modifiers.new('mmd_cloth_deform','SURFACE_DEFORM')
             mod.target = cloth_obj
