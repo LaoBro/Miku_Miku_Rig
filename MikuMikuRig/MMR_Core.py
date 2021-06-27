@@ -586,6 +586,7 @@ class MMR():
             torso_parent.roll=rig.data.edit_bones['root'].roll
             torso_parent.length=rig.data.edit_bones['root'].length/3
             torso_parent.head[2]=torso_parent.tail[2]=mmd_arm2.data.edit_bones['Knee_L'].head[2]
+            torso_parent.parent=rig.data.edit_bones['root']
             rig.data.edit_bones['MCH-torso.parent'].parent=torso_parent
             rig.data.edit_bones['MCH-Wrist_ik.parent_L'].parent=torso_parent
             rig.data.edit_bones['MCH-Wrist_ik.parent_R'].parent=torso_parent
@@ -594,6 +595,11 @@ class MMR():
             rig.pose.bones["torso_parent"].custom_shape = bpy.data.objects["WGT-rig_root"]
             rig.pose.bones["torso_parent"].custom_shape_scale = 0.4
             rig.pose.bones['torso_parent'].mmd_bone.name_j='グルーブ'
+            rig.pose.bones["Arm_parent_L"]["IK_parent"] = 0
+            rig.pose.bones["Arm_parent_R"]["IK_parent"] = 0
+            rig.pose.bones["torso"]["torso_parent"] = 0
+            rig.data.bones["torso_parent"].layers=rig.data.bones["torso"].layers
+
 
         else:
             rig.pose.bones['MCH-torso.parent'].mmd_bone.name_j='グルーブ'
@@ -656,14 +662,14 @@ class MMR():
         rig.pose.bones["ORG-Shoulder_R"].ik_stiffness_z = 0.5
 
         if self.mmr_property.auto_shoulder:
-            #bpy.ops.object.mode_set(mode = 'EDIT')
-            #rig.data.edit_bones["Arm_ik_L"].parent=rig.data.edit_bones["Shoulder_L"]
-            rig.pose.bones["MCH-Elbow_ik_L"].constraints["IK.001"].chain_count = 4
-            rig.pose.bones["MCH-Elbow_ik_L"].constraints["IK"].chain_count = 4
+            bpy.ops.object.mode_set(mode = 'EDIT')
+            rig.data.edit_bones["Arm_ik_L"].parent=rig.data.edit_bones["Shoulder_L"]
+            rig.pose.bones["MCH-Elbow_ik_L"].constraints["IK.001"].chain_count = 3
+            rig.pose.bones["MCH-Elbow_ik_L"].constraints["IK"].chain_count = 3
 
-            #rig.data.edit_bones["Arm_ik_R"].parent=rig.data.edit_bones["Shoulder_R"]
-            rig.pose.bones["MCH-Elbow_ik_R"].constraints["IK.001"].chain_count = 4
-            rig.pose.bones["MCH-Elbow_ik_R"].constraints["IK"].chain_count = 4
+            rig.data.edit_bones["Arm_ik_R"].parent=rig.data.edit_bones["Shoulder_R"]
+            rig.pose.bones["MCH-Elbow_ik_R"].constraints["IK.001"].chain_count = 3
+            rig.pose.bones["MCH-Elbow_ik_R"].constraints["IK"].chain_count = 3
 
 
         bpy.ops.object.mode_set(mode = 'POSE')
@@ -998,6 +1004,8 @@ class MMR():
         #reduce size
         rig.pose.bones["root"].custom_shape_scale = 0.4
 
+        mmd_arm.data.bones['ParentNode'].hide=False
+
 
         #隐藏部分控制器
         #hide some controller
@@ -1190,6 +1198,22 @@ class MMR():
         #insert wrist rotation constrain keyframe
         retarget_arm.pose.bones["Wrist_ik_L"].constraints["wrist_rotation"].keyframe_insert(data_path='influence', frame=mixamo_action.frame_range[0])
         retarget_arm.pose.bones["Wrist_ik_R"].constraints["wrist_rotation"].keyframe_insert(data_path='influence', frame=mixamo_action.frame_range[0])
+        #插入IK硬度关键帧
+        retarget_arm.pose.bones["Shoulder_L"].ik_stiffness_x = 0.99
+        retarget_arm.pose.bones["Shoulder_L"].ik_stiffness_y = 0.99
+        retarget_arm.pose.bones["Shoulder_L"].ik_stiffness_z = 0.99
+
+        retarget_arm.pose.bones["Shoulder_R"].ik_stiffness_x = 0.99
+        retarget_arm.pose.bones["Shoulder_R"].ik_stiffness_y = 0.99
+        retarget_arm.pose.bones["Shoulder_R"].ik_stiffness_z = 0.99
+
+        retarget_arm.pose.bones["Shoulder_L"].keyframe_insert(data_path='ik_stiffness_x', frame=mixamo_action.frame_range[0])
+        retarget_arm.pose.bones["Shoulder_L"].keyframe_insert(data_path='ik_stiffness_y', frame=mixamo_action.frame_range[0])
+        retarget_arm.pose.bones["Shoulder_L"].keyframe_insert(data_path='ik_stiffness_z', frame=mixamo_action.frame_range[0])
+
+        retarget_arm.pose.bones["Shoulder_R"].keyframe_insert(data_path='ik_stiffness_x', frame=mixamo_action.frame_range[0])
+        retarget_arm.pose.bones["Shoulder_R"].keyframe_insert(data_path='ik_stiffness_y', frame=mixamo_action.frame_range[0])
+        retarget_arm.pose.bones["Shoulder_R"].keyframe_insert(data_path='ik_stiffness_z', frame=mixamo_action.frame_range[0])
         
         #清空部分位置关键帧
         #clear certain keyframe

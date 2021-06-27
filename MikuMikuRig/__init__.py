@@ -53,7 +53,6 @@ class PT_MikuMikuRig_1(Mmr_Panel_Base,bpy.types.Panel):
         layout = self.layout
         layout.label(text="Select MMD armature then press the button")
         layout.operator("mmr.generate_rig",text="Generate MMD rig",icon="CUBE")
-        layout.operator("mmr.fix_axial",text="Fix axial",icon="CUBE")
         layout.prop(mmr_property,'upper_body_controller',text="Upper body controller")
         layout.prop(mmr_property,'wrist_rotation_follow',text="Wrist rotation follow arm")
         layout.prop(mmr_property,'auto_shoulder',text="Shoulder IK")
@@ -72,6 +71,7 @@ class PT_MikuMikuRig_2(Mmr_Panel_Base,bpy.types.Panel):
         layout = self.layout
         layout.prop(mmr_property,'min_ik_loop',text="Min IK loop")
         layout.operator("mmr.set_min_ik_loop",text="Set min IK loop",icon="CUBE")
+        layout.operator("mmr.fix_axial",text="Fix axial",icon="CUBE")
 
 class PT_MikuMikuRig_3(Mmr_Panel_Base,bpy.types.Panel):
     bl_idname="mmr.mmr_panel_3"
