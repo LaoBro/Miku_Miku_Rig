@@ -89,6 +89,10 @@ msgctxt "Operator"
 msgid "Import VMD animation as NLA"
 msgstr "导入VMD动画为NLA片段"
 
+msgctxt "Operator"
+msgid "Bake and export VMD animation"
+msgstr "烘焙并导出VMD动画"
+
 #PT_MikuMikuRig_4
 msgid "Auto cloth(experimental)"
 msgstr "一键布料(测试功能)"

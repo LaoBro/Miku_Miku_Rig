@@ -94,6 +94,7 @@ class PT_MikuMikuRig_3(Mmr_Panel_Base,bpy.types.Panel):
         layout.label(text="1=Undefined 2=IK 3=FK")
         layout.operator("mmr.import_mixamo",text="Import mixamo animation as NLA",icon="CUBE")
         layout.operator("mmr.import_vmd",text="Import VMD animation as NLA",icon="CUBE")
+        layout.operator("mmr.export_vmd",text="Bake and export VMD animation",icon="CUBE")
 
 class PT_MikuMikuRig_4(Mmr_Panel_Base,bpy.types.Panel):
     bl_idname="mmr.mmr_panel_4"
@@ -206,13 +207,51 @@ class OT_Convert_Rigid_Body_To_Cloth(bpy.types.Operator):
         MMR_Class.convert_rigid_body_to_cloth(mmr_property.subdivide,mmr_property.cloth_convert_mod)
         return{"FINISHED"}
 
+class OT_Export_Vmd(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
+    bl_idname = "mmr.export_vmd" 
+    bl_label = "Export vmd action"
+
+    filename_ext = ".vmd"
+
+    filter_glob: bpy.props.StringProperty( 
+    default='*.vmd;', 
+    options={'HIDDEN'} ,
+    maxlen=255
+    )
+
+    scale: bpy.props.FloatProperty(
+        name="Action Scale",
+        description="Action scale",
+        default=1,
+        min=0
+    )
+
+    use_pose_mode: bpy.props.BoolProperty(
+        name="Use Pose Mod",
+        description="Use Pose Mod",
+        default=False,
+    )
+    
+    use_frame_range: bpy.props.BoolProperty(
+        name="Use Frame Range",
+        description="Use Frame Range",
+        default=False,
+    )
+
+    def execute(self,context):
+        scene=context.scene
+        mmr_property=scene.mmr_property
+        MMR_Class=MMR_Core.MMR(context)
+        MMR_Class.export_vmd(self.filepath,context.view_layer.objects.active,self.scale,self.use_pose_mode,self.use_frame_range)
+        return{"FINISHED"}
+
 
 def alert_error(title,message):
     def draw(self,context):
         self.layout.label(text=str(message))
     bpy.context.window_manager.popup_menu(draw,title=title,icon='ERROR')
 
-class_list=[OT_Generate_Rig,PT_MikuMikuRig_1,PT_MikuMikuRig_2,PT_MikuMikuRig_3,PT_MikuMikuRig_4,OT_Fix_Axial,OT_Load_Pose,OT_Set_Min_IK_Loop,OT_Import_Mixamo,OT_Import_Vmd,OT_Convert_Rigid_Body_To_Cloth]
+class_list=[OT_Generate_Rig,PT_MikuMikuRig_1,PT_MikuMikuRig_2,PT_MikuMikuRig_3,PT_MikuMikuRig_4,OT_Fix_Axial,OT_Load_Pose,OT_Set_Min_IK_Loop,OT_Import_Mixamo,OT_Import_Vmd,OT_Convert_Rigid_Body_To_Cloth,OT_Export_Vmd]
 def register(): #启用插件时候执行
     bpy.utils.register_class(MMR_property)
     bpy.types.Scene.mmr_property = bpy.props.PointerProperty(type=MMR_property)
@@ -224,6 +263,7 @@ def register(): #启用插件时候执行
 def unregister(): #关闭插件时候执行
     for Class in class_list:
         bpy.utils.unregister_class(Class)
+    bpy.utils.unregister_class(MMR_property)
     print('zx')
 
 

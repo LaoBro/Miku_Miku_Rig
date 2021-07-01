@@ -43,6 +43,7 @@ class MMR():
     def check_arm(self):
         global mmd_arm
         global mmd_bones_list
+        global mmd_bones_dict_e
 
         mmd_arm=bpy.context.object
         have_rigify=False
@@ -71,9 +72,14 @@ class MMR():
             return(False) 
         bpy.ops.mmd_tools.translate_mmd_model(dictionary='INTERNAL', types={'BONE'}, modes={'MMD', 'BLENDER'})
         mmd_bones_list=mmd_arm.data.bones.keys()
+        mmd_bones_dict_e={}
         if "UpperBodyB" in mmd_bones_list:
             mmd_arm.data.bones["UpperBodyB"].name="UpperBody2"
             mmd_bones_list=mmd_arm.data.bones.keys()
+
+        for bone in mmd_arm.pose.bones:
+            bone.bone.hide=True
+            mmd_bones_dict_e[bone.mmd_bone.name_e]=bone.name
         return (True)
 
     #Outdated methods
@@ -237,6 +243,7 @@ class MMR():
                 COPY_LOCATION.target = rig
                 COPY_LOCATION.subtarget = To
                 COPY_LOCATION.name="rel_location"
+            mmd_arm.data.bones[From].hide=False
 
     def RIG(self):
 
@@ -244,6 +251,7 @@ class MMR():
         global mmd_arm
         global mmd_arm2
         global mmd_bones_list
+        global mmd_bones_dict_e
         global rig
         global constraints_from
         global constraints_to
@@ -282,11 +290,7 @@ class MMR():
         rigify_bones_list=rigify_arm.data.bones.keys()
         exist_bones=list(set(mmd_bones_list).intersection(rigify_bones_list))
 
-        #隐藏多余骨骼
-        #hide useless bone
-        for bone in mmd_arm.data.bones:
-            if bone.name not in rigify_bones_list:
-                bone.hide=True
+
             
 
         bpy.ops.object.select_all(action='DESELECT')
@@ -769,96 +773,6 @@ class MMR():
             c2.subtarget='ORG-Elbow_R'
             mmd_arm.data.bones['ArmTwist_R'].hide=False
         
-        #眼睛控制器
-        #eyes controller
-        '''if 'Eyes' in mmd_bones_list and 'Eye_L'in mmd_bones_list and 'Eye_R' in mmd_bones_list:
-            bpy.ops.object.mode_set(mode = 'EDIT')
-            head_L=mmd_arm2.data.edit_bones["Eye_L"].head
-            head_R=mmd_arm2.data.edit_bones["Eye_R"].head
-            center=[(head_L[0]+head_R[0])/2,(head_L[1]+head_R[1])/2,(head_L[2]+head_R[2])/2]
-            eye_distance=abs(head_L[0]-head_R[0])
-
-            eyes_parent=rig.data.edit_bones.new(name="eyes_parent")
-            eyes_parent.head=eyes_parent.tail=center
-            eyes_parent.tail[1]-=eye_distance
-            eyes_parent.parent=rig.data.edit_bones['head']
-
-            eyes_parent2=rig.data.edit_bones.new(name="eyes_parent2")
-            eyes_parent2.head=mmd_arm2.data.edit_bones["Eyes"].head
-            eyes_parent2.tail=mmd_arm2.data.edit_bones["Eyes"].tail
-            eyes_parent2.roll=mmd_arm2.data.edit_bones["Eyes"].roll
-            eyes_parent2.parent=eyes_parent
-
-            eyes_parent_L=rig.data.edit_bones.new(name="eyes_parent_L")
-            eyes_parent_L.head=eyes_parent_L.tail=head_L
-            eyes_parent_L.tail[1]-=eye_distance
-            eyes_parent_L.parent=rig.data.edit_bones['head']
-
-            eyes_parent2_L=rig.data.edit_bones.new(name="eyes_parent2_L")
-            eyes_parent2_L.head=head_L
-            eyes_parent2_L.tail=mmd_arm2.data.edit_bones["Eye_L"].tail
-            eyes_parent2_L.roll=mmd_arm2.data.edit_bones["Eye_L"].roll
-            eyes_parent2_L.parent=eyes_parent_L
-
-            eyes_parent_R=rig.data.edit_bones.new(name="eyes_parent_R")
-            eyes_parent_R.head=eyes_parent_R.tail=head_R
-            eyes_parent_R.tail[1]-=eye_distance
-            eyes_parent_R.parent=rig.data.edit_bones['head']
-
-            eyes_parent2_R=rig.data.edit_bones.new(name="eyes_parent2_R")
-            eyes_parent2_R.head=head_R
-            eyes_parent2_R.tail=mmd_arm2.data.edit_bones["Eye_R"].tail
-            eyes_parent2_R.roll=mmd_arm2.data.edit_bones["Eye_R"].roll
-            eyes_parent2_R.parent=eyes_parent_R
-
-            eyes_controller_C=rig.data.edit_bones.new(name="eyes_controller_C")
-            eyes_controller_C.head=eyes_controller_C.tail=[center[0],center[1]-eye_distance*2,center[2]]
-            eyes_controller_C.tail[2]+=eye_distance
-            eyes_controller_C.parent=rig.data.edit_bones['head']
-
-            eyes_controller_L=rig.data.edit_bones.new(name="eyes_controller_L")
-            eyes_controller_L.head=eyes_controller_L.tail=[head_L[0],head_L[1]-eye_distance*2,head_L[2]]
-            eyes_controller_L.tail[2]+=eye_distance
-            eyes_controller_L.parent=eyes_controller_C
-
-            eyes_controller_R=rig.data.edit_bones.new(name="eyes_controller_R")
-            eyes_controller_R.head=eyes_controller_R.tail=[head_R[0],head_R[1]-eye_distance*2,head_R[2]]
-            eyes_controller_R.tail[2]+=eye_distance
-            eyes_controller_R.parent=eyes_controller_C
-
-            bpy.ops.object.mode_set(mode = 'POSE')
-            rig.pose.bones['Eyes_Rig'].custom_shape = bpy.data.objects["WGT-rig_Arm_ik_L"]
-            rig.pose.bones["Eyes_Rig"].lock_location[0] = True
-            rig.pose.bones["Eyes_Rig"].lock_location[1] = True
-            rig.pose.bones["Eyes_Rig"].lock_location[2] = True
-
-            c=mmd_arm.pose.bones['Eyes'].constraints.new(type='COPY_ROTATION')
-            c.target=rig
-            c.subtarget='eyes_parent2'
-            c.mix_mode = 'BEFORE'
-            c.target_space = 'LOCAL'
-            c.owner_space = 'LOCAL'
-            mmd_arm.data.bones['Eyes'].hide=False
-
-            c=mmd_arm.pose.bones['Eye_L'].constraints.new(type='COPY_ROTATION')
-            c.target=rig
-            c.subtarget='eyes_parent2_L'
-            c=rig.pose.bones['eyes_parent_L'].constraints.new(type='DAMPED_TRACK')
-            c.target=rig
-            c.subtarget='eyes_controller_L'
-            mmd_arm.data.bones['Eye_L'].hide=False
-            rig.data.bones['eyes_parent_L'].hide=True
-            rig.data.bones['eyes_parent2_L'].hide=True
-
-            c=mmd_arm.pose.bones['Eye_R'].constraints.new(type='COPY_ROTATION')
-            c.target=rig
-            c.subtarget='eyes_parent2_R'
-            c=rig.pose.bones['eyes_parent_R'].constraints.new(type='DAMPED_TRACK')
-            c.target=rig
-            c.subtarget='eyes_controller_R'
-            mmd_arm.data.bones['Eye_R'].hide=False
-            rig.data.bones['eyes_parent_R'].hide=True
-            rig.data.bones['eyes_parent2_R'].hide=True'''
 
         #脚掌IK
         #ToeTipIK
@@ -1004,7 +918,8 @@ class MMR():
         #reduce size
         rig.pose.bones["root"].custom_shape_scale = 0.4
 
-        mmd_arm.data.bones['ParentNode'].hide=False
+        if 'master' in mmd_bones_dict_e:
+            mmd_arm.data.bones[mmd_bones_dict_e['master']].hide=False
 
 
         #隐藏部分控制器
@@ -1263,7 +1178,7 @@ class MMR():
             return(False)
 
 
-        fname,fename=os.path.split(vmd_path)
+        fename=os.path.split(vmd_path)
         action_name=str(os.path.splitext(fename)[0])
         bpy.ops.object.mode_set(mode = 'OBJECT')
         bpy.ops.object.select_all(action='DESELECT')
@@ -1789,3 +1704,41 @@ class MMR():
             bpy.ops.object.surfacedeform_bind(modifier=mod.name)
 
         bm.free()
+
+    def export_vmd(self,vmd_path,rigify_arm,scale,use_pose_mode,use_frame_range):
+        if rigify_arm.type!='ARMATURE':
+            return(False)
+        if vmd_path==None:
+            return(False)
+
+        rigify_action=rigify_arm.animation_data.action
+        if rigify_action ==None:
+            return(False)
+
+        bpy.ops.object.mode_set(mode = 'OBJECT')
+        bpy.ops.object.select_all(action='DESELECT')
+        #复制骨骼
+        #duplicate armature
+        mmd_arm=None
+        for obj in rigify_arm.children[0].children:
+            if obj.type=='ARMATURE':
+                mmd_arm=obj
+                break
+        if mmd_arm==None:
+            return(False)
+
+        mmd_arm2=mmd_arm.copy()
+        self.context.collection.objects.link(mmd_arm2)
+        bpy.ops.object.select_all(action='DESELECT')
+        bpy.context.view_layer.objects.active=mmd_arm2
+        mmd_arm2.select=True
+        print(vmd_path)
+
+        bpy.ops.object.mode_set(mode = 'POSE')
+        bpy.ops.pose.select_all(action='SELECT')
+        bpy.ops.nla.bake(frame_start=rigify_action.frame_range[0], frame_end=rigify_action.frame_range[1], only_selected=True, visual_keying=True,clear_constraints=True, bake_types={'POSE'})
+        bpy.ops.object.mode_set(mode = 'OBJECT')
+        bpy.ops.mmd_tools.export_vmd(filepath=vmd_path,scale=scale, use_pose_mode=use_pose_mode,use_frame_range=use_frame_range)
+        bpy.data.objects.remove(mmd_arm2)
+
+        return(True)
