@@ -1178,7 +1178,9 @@ class MMR():
             return(False)
 
 
-        fename=os.path.split(vmd_path)
+        fename=str(os.path.split(vmd_path))
+        print('path=')
+        print(fename)
         action_name=str(os.path.splitext(fename)[0])
         bpy.ops.object.mode_set(mode = 'OBJECT')
         bpy.ops.object.select_all(action='DESELECT')
@@ -1705,14 +1707,10 @@ class MMR():
 
         bm.free()
 
-    def export_vmd(self,vmd_path,rigify_arm,scale,use_pose_mode,use_frame_range):
+    def export_vmd(self,vmd_path,rigify_arm,scale,use_pose_mode,set_action_range,start_frame,end_frame):
         if rigify_arm.type!='ARMATURE':
             return(False)
         if vmd_path==None:
-            return(False)
-
-        rigify_action=rigify_arm.animation_data.action
-        if rigify_action ==None:
             return(False)
 
         bpy.ops.object.mode_set(mode = 'OBJECT')
@@ -1734,11 +1732,21 @@ class MMR():
         mmd_arm2.select=True
         print(vmd_path)
 
+        if set_action_range:
+            start_frame1=start_frame
+            end_frame1=end_frame
+        else:
+            rigify_action=rigify_arm.animation_data.action
+            if rigify_action ==None:
+                return(False)
+            start_frame1=rigify_action.frame_range[0]
+            end_frame1=rigify_action.frame_range[1]
+
         bpy.ops.object.mode_set(mode = 'POSE')
         bpy.ops.pose.select_all(action='SELECT')
-        bpy.ops.nla.bake(frame_start=rigify_action.frame_range[0], frame_end=rigify_action.frame_range[1], only_selected=True, visual_keying=True,clear_constraints=True, bake_types={'POSE'})
+        bpy.ops.nla.bake(frame_start=start_frame1, frame_end=end_frame1, only_selected=True, visual_keying=True,clear_constraints=True, bake_types={'POSE'})
         bpy.ops.object.mode_set(mode = 'OBJECT')
-        bpy.ops.mmd_tools.export_vmd(filepath=vmd_path,scale=scale, use_pose_mode=use_pose_mode,use_frame_range=use_frame_range)
+        bpy.ops.mmd_tools.export_vmd(filepath=vmd_path,scale=scale, use_pose_mode=use_pose_mode,use_frame_range=False)
         bpy.data.objects.remove(mmd_arm2)
 
         return(True)

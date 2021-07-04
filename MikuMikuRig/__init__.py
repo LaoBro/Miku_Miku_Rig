@@ -114,6 +114,8 @@ class PT_MikuMikuRig_4(Mmr_Panel_Base,bpy.types.Panel):
         layout.prop(mmr_property,'auto_select_rigid_body',text="Auto select rigid body")
         layout.prop(mmr_property,'extend_ribbon',text="Extend ribbon area")
         layout.operator("mmr.convert_rigid_body_to_cloth",text="Convert rigid body to cloth",icon="CUBE")
+        layout.label(text="This featur is developed in cooperation with")
+        layout.label(text="UuuNyaa")
 
 class OT_Generate_Rig(bpy.types.Operator):
     bl_idname = "mmr.generate_rig" # python 提示
@@ -220,29 +222,40 @@ class OT_Export_Vmd(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
     )
 
     scale: bpy.props.FloatProperty(
-        name="Action Scale",
+        name="Action scale",
         description="Action scale",
         default=1,
         min=0
     )
 
     use_pose_mode: bpy.props.BoolProperty(
-        name="Use Pose Mod",
+        name="Use pose mod",
         description="Use Pose Mod",
-        default=False,
+        default=False
     )
     
-    use_frame_range: bpy.props.BoolProperty(
-        name="Use Frame Range",
+    set_action_range: bpy.props.BoolProperty(
+        name="Set action range",
         description="Use Frame Range",
-        default=False,
+        default=False
     )
+    start_frame: bpy.props.IntProperty(
+        name="Start frame",
+        description="Action start frame",
+        default=1
+    )
+    end_frame: bpy.props.IntProperty(
+        name="End frame",
+        description="Action end frame",
+        default=1
+    )
+
 
     def execute(self,context):
         scene=context.scene
         mmr_property=scene.mmr_property
         MMR_Class=MMR_Core.MMR(context)
-        MMR_Class.export_vmd(self.filepath,context.view_layer.objects.active,self.scale,self.use_pose_mode,self.use_frame_range)
+        MMR_Class.export_vmd(self.filepath,context.view_layer.objects.active,self.scale,self.use_pose_mode,self.set_action_range,self.start_frame,self.end_frame)
         return{"FINISHED"}
 
 

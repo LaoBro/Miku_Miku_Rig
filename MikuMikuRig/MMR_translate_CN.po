@@ -97,6 +97,9 @@ msgstr "烘焙并导出VMD动画"
 msgid "Auto cloth(experimental)"
 msgstr "一键布料(测试功能)"
 
+msgid "This feature is developed in cooperation with"
+msgstr "这个功能是与下列开发者合作开发的"
+
 msgid "Select mesh and rigidbody then press the button"
 msgstr "选中MMD刚体和网格后点击按钮"
 
