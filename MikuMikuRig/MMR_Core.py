@@ -43,7 +43,6 @@ class MMR():
     def check_arm(self):
         global mmd_arm
         global mmd_bones_list
-        global mmd_bones_dict_e
 
         mmd_arm=bpy.context.object
         have_rigify=False
@@ -72,14 +71,10 @@ class MMR():
             return(False) 
         bpy.ops.mmd_tools.translate_mmd_model(dictionary='INTERNAL', types={'BONE'}, modes={'MMD', 'BLENDER'})
         mmd_bones_list=mmd_arm.data.bones.keys()
-        mmd_bones_dict_e={}
         if "UpperBodyB" in mmd_bones_list:
             mmd_arm.data.bones["UpperBodyB"].name="UpperBody2"
             mmd_bones_list=mmd_arm.data.bones.keys()
 
-        for bone in mmd_arm.pose.bones:
-            bone.bone.hide=True
-            mmd_bones_dict_e[bone.mmd_bone.name_e]=bone.name
         return (True)
 
     #Outdated methods
@@ -251,7 +246,6 @@ class MMR():
         global mmd_arm
         global mmd_arm2
         global mmd_bones_list
-        global mmd_bones_dict_e
         global rig
         global constraints_from
         global constraints_to
@@ -262,7 +256,15 @@ class MMR():
         if self.check_arm()==False:
             return{False}
 
-
+        #建立骨骼关系字典
+        mmd_bones_dict_j={}
+        mmd_bones_dict_e={}
+        for bone in mmd_arm.pose.bones:
+            bone.bone.hide=True
+            if bone.mmd_bone.name_e not in mmd_bones_dict_e:
+                mmd_bones_dict_e[bone.mmd_bone.name_e]=bone.name
+            if bone.mmd_bone.name_j not in mmd_bones_dict_j:
+                mmd_bones_dict_j[bone.mmd_bone.name_j]=bone.name
 
         self.load_pose()
 
@@ -322,12 +324,13 @@ class MMR():
             parent_bone=None
             parent_bone=bone.parent
             if parent_bone!=None:
-                parent_bone.constraints['location'].target=mmd_arm2
-                parent_bone.constraints['location'].subtarget=bone.parent.name
                 parent_bone.constraints['stretch'].target=mmd_arm2
                 parent_bone.constraints['stretch'].subtarget=name
                 parent_bone.constraints["stretch"].rest_length = parent_bone.length
-            if name not in exist_bones:
+            if name in exist_bones:
+                bone.constraints['location'].target=mmd_arm2
+                bone.constraints['location'].subtarget=bone.name
+            else:
                 bone.constraints['location'].mute=True
                 bone.constraints['stretch'].mute=True
 
@@ -359,7 +362,6 @@ class MMR():
         #spine.001，Neck_Middle是多余骨骼
         rigify_arm.pose.bones['spine.001'].constraints["location"].mute=True
         rigify_arm.pose.bones['spine.001'].constraints["stretch"].mute=True
-
 
         rigify_arm.pose.bones['Neck_Middle'].constraints["location"].mute=True
         rigify_arm.pose.bones['Neck_Middle'].constraints["stretch"].mute=True
@@ -409,18 +411,12 @@ class MMR():
         rigify_arm.pose.bones['eye.L'].constraints['location'].target=mmd_arm
         rigify_arm.pose.bones['eye.L'].constraints['location'].subtarget='Eye_L'
         rigify_arm.pose.bones['eye.L'].constraints['location'].head_tail = 1
-        #rigify_arm.pose.bones['eye.L'].constraints['stretch'].target=mmd_arm
-        #rigify_arm.pose.bones['eye.L'].constraints['stretch'].subtarget='Eye_L'
-        #rigify_arm.pose.bones['eye.L'].constraints["stretch"].head_tail = 1
 
         rigify_arm.pose.bones['eye.R'].constraints['location'].mute=False
         rigify_arm.pose.bones['eye.R'].constraints['stretch'].mute=False
         rigify_arm.pose.bones['eye.R'].constraints['location'].target=mmd_arm
         rigify_arm.pose.bones['eye.R'].constraints['location'].subtarget='Eye_R'
         rigify_arm.pose.bones['eye.R'].constraints['location'].head_tail = 1
-        #rigify_arm.pose.bones['eye.R'].constraints['stretch'].target=mmd_arm
-        #rigify_arm.pose.bones['eye.R'].constraints['stretch'].subtarget='Eye_R'
-        #rigify_arm.pose.bones['eye.R'].constraints["stretch"].head_tail = 1
 
         bpy.ops.pose.armature_apply(selected=False)
         bpy.ops.pose.select_all(action='SELECT')
@@ -445,10 +441,6 @@ class MMR():
         rigify_arm.data.edit_bones["ToeTipIK_R"].length=rigify_arm.data.edit_bones["Ankle_R"].length/2
         rigify_arm.data.edit_bones["Wrist_L"].length=rigify_arm.data.edit_bones["Elbow_L"].length/4
         rigify_arm.data.edit_bones["Wrist_R"].length=rigify_arm.data.edit_bones["Elbow_R"].length/4
-
-
-
-
 
         #生成控制器
         bpy.ops.object.mode_set(mode = 'OBJECT')
@@ -882,7 +874,8 @@ class MMR():
         #写入PMX骨骼名称数据
         #write PMX bone name
         rig_bones_list=rig.data.bones.keys()
-        PMX_list=['root','全ての親','torso','センター','hips','下半身','UpperBody_fk','上半身','UpperBody2_fk','上半身2','neck','首','head','頭','Eyes_Rig','両目',
+        PMX_list=[
+        'root','全ての親','torso','センター','hips','下半身','UpperBody_fk','上半身','UpperBody2_fk','上半身2','neck','首','head','頭','Eyes_Rig','両目',
         'Leg_ik_L','左足','Ankle_ik_L','左足ＩＫ','ToeTipIK_L','左つま先ＩＫ','Leg_ik_R','右足','Ankle_ik_R','右足ＩＫ','ToeTipIK_R','右つま先ＩＫ',
         'Shoulder_L','左肩','Arm_fk_L','左腕','Elbow_fk_L','左ひじ','Wrist_fk_L','左手首','Shoulder_R','右肩','Arm_fk_R','右腕','Elbow_fk_R','右ひじ','Wrist_fk_R','右手首',
         'Thumb0_L','左親指０','Thumb1_L','左親指１','Thumb2_L','左親指２',
@@ -894,7 +887,8 @@ class MMR():
         'IndexFinger1_R','右人指１','IndexFinger2_R','右人指２','IndexFinger3_R','右人指３',
         'MiddleFinger1_R','右中指１','MiddleFinger2_R','右中指２','MiddleFinger3_R','右中指３',
         'RingFinger1_R','右薬指１','RingFinger2_R','右薬指２','RingFinger3_R','右薬指３',
-        'LittleFinger1_R','右小指１','LittleFinger2_R','右小指２','LittleFinger3_R','右小指３']
+        'LittleFinger1_R','右小指１','LittleFinger2_R','右小指２','LittleFinger3_R','右小指３'
+        ]
         for i in range(int(len(PMX_list)/2)):
             if PMX_list[2*i] in rig_bones_list:
                 rig.pose.bones[PMX_list[2*i]].mmd_bone.name_j=PMX_list[2*i+1]
@@ -1708,6 +1702,22 @@ class MMR():
         bm.free()
 
     def export_vmd(self,vmd_path,rigify_arm,scale,use_pose_mode,set_action_range,start_frame,end_frame):
+        PMX_list=[
+        '全ての親','センター','下半身','上半身','上半身2','首','頭','両目','左目','右目',
+        '左足','左足ＩＫ','左つま先ＩＫ','右足','右足ＩＫ','右つま先ＩＫ',
+        '左肩','左腕','左ひじ','左手首','右肩','右腕','右ひじ','右手首',
+        '左親指０','左親指１','左親指２',
+        '左人指１','左人指２','左人指３',
+        '左中指１','左中指２','左中指３',
+        '左薬指１','左薬指２','左薬指３',
+        '左小指１','左小指２','左小指３',
+        '右親指０','右親指１','右親指２',
+        '右人指１','右人指２','右人指３',
+        '右中指１','右中指２','右中指３',
+        '右薬指１','右薬指２','右薬指３',
+        '右小指１','右小指２','右小指３'
+        ]
+
         if rigify_arm.type!='ARMATURE':
             return(False)
         if vmd_path==None:
@@ -1744,6 +1754,13 @@ class MMR():
 
         bpy.ops.object.mode_set(mode = 'POSE')
         bpy.ops.pose.select_all(action='SELECT')
+
+        for bone in mmd_arm2.pose.bones:
+            if bone.mmd_bone.name_j in PMX_list:
+                bone.bone.select=True
+            else:
+                bone.bone.select=False
+
         bpy.ops.nla.bake(frame_start=start_frame1, frame_end=end_frame1, only_selected=True, visual_keying=True,clear_constraints=True, bake_types={'POSE'})
         bpy.ops.object.mode_set(mode = 'OBJECT')
         bpy.ops.mmd_tools.export_vmd(filepath=vmd_path,scale=scale, use_pose_mode=use_pose_mode,use_frame_range=False)
