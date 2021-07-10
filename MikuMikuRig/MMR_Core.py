@@ -1266,7 +1266,7 @@ class MMR():
                         select_mesh.append(obj)
                         break
                 if hasattr(obj,'mmd_rigid'):
-                    if obj.mmd_rigid.name!='':
+                    if obj.mmd_rigid.name != ''and obj.mmd_rigid.type != '0':
                         select_rigid_body.append(obj)
 
         if len(select_rigid_body)==0:
@@ -1277,7 +1277,11 @@ class MMR():
             bpy.ops.object.select_all(action='DESELECT')
             bpy.context.view_layer.objects.active=select_rigid_body[0]
             bpy.ops.mmd_tools.rigid_body_select(properties={'collision_group_number'})
-            rigid_bodys=bpy.context.selected_objects
+            rigid_bodys=[]
+            for obj in bpy.context.selected_objects:
+                if hasattr(obj,'mmd_rigid'):
+                    if obj.mmd_rigid.name != ''and obj.mmd_rigid.type != '0':
+                        rigid_bodys.append(obj)
         else:
             rigid_bodys=select_rigid_body
 
@@ -1482,7 +1486,6 @@ class MMR():
 
         #延长头部顶点 
         #extend root vertex
-        deform_layer = bm.verts.layers.deform.active
         new_up_verts=[None for i in range(len(bm.verts))]
         new_down_verts=[None for i in range(len(bm.verts))]
         for v in up_verts:
@@ -1498,10 +1501,12 @@ class MMR():
             new_vert=bm.verts.new(new_location,v)
             new_edge=bm.edges.new([v,new_vert])
 
-            deform_vert = v[deform_layer]
-            for i in skin_vertex_groups_index:
-                if i in deform_vert:
-                    deform_vert[i]=0
+            deform_layer = bm.verts.layers.deform.active
+            if deform_layer != None:
+                deform_vert = v[deform_layer]
+                for i in skin_vertex_groups_index:
+                    if i in deform_vert:
+                        deform_vert[i]=0
 
             new_up_verts[v.index]=new_vert
             if v in side_verts:
