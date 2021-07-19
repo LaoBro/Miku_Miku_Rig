@@ -6,7 +6,7 @@ bl_info = {
     "location": "3DView > Tools", #插件所在位置
     "description": "自动为MMD模型生成rigify控制器", #描述
     #"warning": "不稳定", #警告
-    "support": 'OFFICIAL', #支持??
+    "support": 'COMMUNITY', #支持等级（社区支持）
     "category": "Rigging", #分类
 }
 import bpy
