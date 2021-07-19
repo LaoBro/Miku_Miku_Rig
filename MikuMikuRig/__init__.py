@@ -1,7 +1,7 @@
 bl_info = {
     "name": "MikuMikuRig", #插件名字
     "author": "William", #作者名字
-    "version": (0, 3, 8,4), #插件版本
+    "version": (0, 3, 8,5), #插件版本
     "blender": (2, 92, 0), #blender版本
     "location": "3DView > Tools", #插件所在位置
     "description": "自动为MMD模型生成rigify控制器", #描述
@@ -33,6 +33,7 @@ class MMR_property(bpy.types.PropertyGroup):
     auto_select_mesh:bpy.props.BoolProperty(default=True,description="自动选择模型")
     auto_select_rigid_body:bpy.props.BoolProperty(default=True,description="自动选择刚体")
     extend_ribbon:bpy.props.BoolProperty(default=True,description="延展飘带区域")
+    debug:bpy.props.BoolProperty(default=False,description="debug")
 
 class Mmr_Panel_Base(object):
     bl_space_type = 'VIEW_3D'
@@ -58,6 +59,7 @@ class PT_MikuMikuRig_1(Mmr_Panel_Base,bpy.types.Panel):
         layout.prop(mmr_property,'auto_shoulder',text="Shoulder IK")
         layout.prop(mmr_property,'solid_rig',text="Replace the controller")
         layout.prop(mmr_property,'pole_target',text="Use pole target")
+        layout.prop(mmr_property,'debug',text="Debug")
 
 class PT_MikuMikuRig_2(Mmr_Panel_Base,bpy.types.Panel):
     bl_idname="mmr.mmr_panel_2"
@@ -127,6 +129,7 @@ class OT_Generate_Rig(bpy.types.Operator):
         mmr_property=scene.mmr_property
         MMR_Class=MMR_Core.MMR(context)
         MMR_Class.RIG()
+        del MMR_Class
         return{"FINISHED"}
 
 class OT_Load_Pose(bpy.types.Operator):
@@ -139,6 +142,7 @@ class OT_Load_Pose(bpy.types.Operator):
         mmr_property=scene.mmr_property
         MMR_Class=MMR_Core.MMR(context)
         MMR_Class.load_pose()
+        del MMR_Class
         return{"FINISHED"}
 
 class OT_Fix_Axial(bpy.types.Operator):
@@ -153,7 +157,9 @@ class OT_Fix_Axial(bpy.types.Operator):
             bpy.ops.object.mode_set(mode = 'EDIT')
             MMR_Class.fix_axial()
             bpy.ops.object.mode_set(mode = 'OBJECT')
+            del MMR_Class
         else:
+            del MMR_Class
             return {"CANCELLED"}
         return{"FINISHED"}
 
@@ -167,6 +173,7 @@ class OT_Set_Min_IK_Loop(bpy.types.Operator):
         mmr_property=scene.mmr_property
         MMR_Class=MMR_Core.MMR(context)
         MMR_Class.set_min_ik_loop(mmr_property.min_ik_loop)
+        del MMR_Class
         return{"FINISHED"}
 
 class OT_Import_Mixamo(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
@@ -181,6 +188,7 @@ class OT_Import_Mixamo(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
         mmr_property=scene.mmr_property
         MMR_Class=MMR_Core.MMR(context)
         MMR_Class.retarget_mixmao(self.filepath,context.view_layer.objects.active,mmr_property.lock_location,mmr_property.fade_in_out,mmr_property.action_scale,mmr_property.auto_action_scale,mmr_property.ik_fk_hand,mmr_property.ik_fk_leg)
+        del MMR_Class
         return{"FINISHED"}
 
 class OT_Import_Vmd(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
@@ -195,6 +203,7 @@ class OT_Import_Vmd(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
         mmr_property=scene.mmr_property
         MMR_Class=MMR_Core.MMR(context)
         MMR_Class.load_vmd(self.filepath,context.view_layer.objects.active,mmr_property.fade_in_out,mmr_property.action_scale)
+        del MMR_Class
         return{"FINISHED"}
 
 class OT_Convert_Rigid_Body_To_Cloth(bpy.types.Operator):
@@ -207,6 +216,7 @@ class OT_Convert_Rigid_Body_To_Cloth(bpy.types.Operator):
         mmr_property=scene.mmr_property
         MMR_Class=MMR_Core.MMR(context)
         MMR_Class.convert_rigid_body_to_cloth(mmr_property.subdivide,mmr_property.cloth_convert_mod)
+        del MMR_Class
         return{"FINISHED"}
 
 class OT_Export_Vmd(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
@@ -256,6 +266,7 @@ class OT_Export_Vmd(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
         mmr_property=scene.mmr_property
         MMR_Class=MMR_Core.MMR(context)
         MMR_Class.export_vmd(self.filepath,context.view_layer.objects.active,self.scale,self.use_pose_mode,self.set_action_range,self.start_frame,self.end_frame)
+        del MMR_Class
         return{"FINISHED"}
 
 

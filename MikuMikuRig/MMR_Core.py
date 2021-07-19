@@ -358,7 +358,6 @@ class MMR():
                         bone.length=parent_bone.length*scale_list[i]'''
 
 
-
         #spine.001，Neck_Middle是多余骨骼
         rigify_arm.pose.bones['spine.001'].constraints["location"].mute=True
         rigify_arm.pose.bones['spine.001'].constraints["stretch"].mute=True
@@ -394,7 +393,9 @@ class MMR():
         rigify_arm.pose.bones['ToeTipIK_R'].constraints["stretch"].mute=True
 
         #调整缺失UpperBody2情况
+        no_UpperBody2=False
         if 'UpperBody2' not in exist_bones and 'UpperBody' in exist_bones:
+            no_UpperBody2=True
             rigify_arm.pose.bones['UpperBody'].scale[0] = 0.0001
             rigify_arm.pose.bones['UpperBody'].scale[1] = 0.0001
             rigify_arm.pose.bones['UpperBody'].scale[2] = 0.0001
@@ -404,19 +405,6 @@ class MMR():
             rigify_arm.pose.bones['UpperBody2'].constraints['stretch'].subtarget='UpperBody'
             rigify_arm.pose.bones['UpperBody2'].constraints['location'].mute=False
             rigify_arm.pose.bones['UpperBody2'].constraints['stretch'].mute=False
-
-        #匹配眼睛骨骼
-        rigify_arm.pose.bones['eye.L'].constraints['location'].mute=False
-        rigify_arm.pose.bones['eye.L'].constraints['stretch'].mute=False
-        rigify_arm.pose.bones['eye.L'].constraints['location'].target=mmd_arm
-        rigify_arm.pose.bones['eye.L'].constraints['location'].subtarget='Eye_L'
-        rigify_arm.pose.bones['eye.L'].constraints['location'].head_tail = 1
-
-        rigify_arm.pose.bones['eye.R'].constraints['location'].mute=False
-        rigify_arm.pose.bones['eye.R'].constraints['stretch'].mute=False
-        rigify_arm.pose.bones['eye.R'].constraints['location'].target=mmd_arm
-        rigify_arm.pose.bones['eye.R'].constraints['location'].subtarget='Eye_R'
-        rigify_arm.pose.bones['eye.R'].constraints['location'].head_tail = 1
 
         bpy.ops.pose.armature_apply(selected=False)
         bpy.ops.pose.select_all(action='SELECT')
@@ -442,7 +430,34 @@ class MMR():
         rigify_arm.data.edit_bones["Wrist_L"].length=rigify_arm.data.edit_bones["Elbow_L"].length/4
         rigify_arm.data.edit_bones["Wrist_R"].length=rigify_arm.data.edit_bones["Elbow_R"].length/4
 
+        #匹配眼睛骨骼
+        eye_L=rigify_arm.data.edit_bones['eye.L']
+        mmd_eye_L=mmd_arm2.data.edit_bones['Eye_L']
+        eye_L.head[2]=mmd_eye_L.head[2]
+        eye_L.head[0]=max(mmd_eye_L.head[0],mmd_eye_L.tail[0])
+        eye_L.head[1]=min(mmd_eye_L.head[1],mmd_eye_L.tail[1])
+        eye_L.tail=eye_L.head
+        eye_L.tail[1]-=0.1
+
+        eye_R=rigify_arm.data.edit_bones['eye.R']
+        mmd_eye_R=mmd_arm2.data.edit_bones['Eye_R']
+        eye_R.head[2]=mmd_eye_R.head[2]
+        eye_R.head[0]=min(mmd_eye_R.head[0],mmd_eye_R.tail[0])
+        eye_R.head[1]=min(mmd_eye_R.head[1],mmd_eye_R.tail[1])
+        eye_R.tail=eye_R.head
+        eye_R.tail[1]-=0.1
+
+        invert_eyes=False
+        if eye_L.head[0]<eye_R.head[0]:
+            eye_R.name='1'
+            eye_L.name='eye.R'
+            eye_R.name='eye.L'
+            invert_eyes=True
+
         #生成控制器
+        if self.mmr_property.debug:
+            return
+
         bpy.ops.object.mode_set(mode = 'OBJECT')
         bpy.ops.object.select_all(action='DESELECT')
         bpy.context.view_layer.objects.active=rigify_arm
@@ -477,7 +492,6 @@ class MMR():
         self.add_constraint("ORG-Wrist_L","Wrist_L",True)
         self.add_constraint("ORG-Wrist_R","Wrist_R",True)
 
-        
         self.add_constraint("ORG-Leg_L","Leg_L",True)
         self.add_constraint("ORG-Leg_R","Leg_R",True)
         self.add_constraint("ORG-Knee_L","Knee_L",True)
@@ -492,11 +506,12 @@ class MMR():
 
         #修正缺少UpperBody2的骨骼
         #fix the armature that lack upperbody2
-        if 'UpperBody2' not in exist_bones and 'UpperBody' in exist_bones:
+        if no_UpperBody2:
             self.add_constraint("UpperBody2_fk","UpperBody",True)
         else:
             self.add_constraint("UpperBody2_fk","UpperBody2",True)
             self.add_constraint("UpperBody_fk","UpperBody",True)
+
         self.add_constraint("LowerBody_fk","LowerBody",True)
         self.add_constraint("torso","Center",True)
         self.add_constraint("DEF-Neck","Neck",True)
@@ -547,13 +562,18 @@ class MMR():
         eyes_parent_L.head=mmd_arm2.data.edit_bones['Eye_L'].head
         eyes_parent_L.tail=mmd_arm2.data.edit_bones['Eye_L'].tail
         eyes_parent_L.roll=mmd_arm2.data.edit_bones['Eye_L'].roll
-        eyes_parent_L.parent=rig.data.edit_bones['ORG-eye.L']
 
         eyes_parent_R=rig.data.edit_bones.new(name='eyes_parent_R')
         eyes_parent_R.head=mmd_arm2.data.edit_bones['Eye_R'].head
         eyes_parent_R.tail=mmd_arm2.data.edit_bones['Eye_R'].tail
         eyes_parent_R.roll=mmd_arm2.data.edit_bones['Eye_R'].roll
-        eyes_parent_R.parent=rig.data.edit_bones['ORG-eye.R']
+
+        if invert_eyes:
+            eyes_parent_L.parent=rig.data.edit_bones['ORG-eye.R']
+            eyes_parent_R.parent=rig.data.edit_bones['ORG-eye.L']
+        else:
+            eyes_parent_L.parent=rig.data.edit_bones['ORG-eye.L']
+            eyes_parent_R.parent=rig.data.edit_bones['ORG-eye.R']
 
         bpy.ops.object.mode_set(mode = 'POSE')
         con= mmd_arm.pose.bones['Eye_L'].constraints
@@ -942,12 +962,14 @@ class MMR():
         #hide these bone
         hide_bone_list=[
             "Leg_parent_L","Leg_parent_R","Arm_parent_L","Arm_parent_R","Ankle_heel_ik_L","Ankle_heel_ik_R",'master_eye.L','master_eye.R',
-            'ear.L','ear.R','nose_master','teeth.T','teeth.B','tongue_master','jaw_master']
+            'ear.L','ear.R','nose_master','teeth.T','teeth.B','tongue_master','jaw_master'
+            ]
         #锁定缩放的骨骼列表
         #lock the scale of these bone
         lock_scale_bone_list=[
             "root","torso","Ankle_ik_L","Ankle_ik_R","toe.L","toe.R","Wrist_ik_L","Wrist_ik_R","Arm_ik_L","Arm_ik_R","Leg_ik_L","Leg_ik_R",
-            "hips","chest","neck","head","Shoulder_L","Shoulder_R"]
+            "hips","chest","neck","head","Shoulder_L","Shoulder_R"
+            ]
         for name in lock_location_bone_list:
             if name in rig.data.bones.keys():              
                 rig.pose.bones[name].lock_location = [True,True,True]
