@@ -65,7 +65,7 @@ def load_l10n_dict(popath):
     return l10n_dict
 
 #自定义
-addon_name = 'flaredvfx'
+addon_name = 'MikuMikuRig'
 def register_module():
     os.path.dirname(__file__)
     my_dir = os.path.dirname(os.path.realpath(__file__))
