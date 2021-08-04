@@ -431,28 +431,29 @@ class MMR():
         rigify_arm.data.edit_bones["Wrist_R"].length=rigify_arm.data.edit_bones["Elbow_R"].length/4
 
         #匹配眼睛骨骼
-        eye_L=rigify_arm.data.edit_bones['eye.L']
-        mmd_eye_L=mmd_arm2.data.edit_bones['Eye_L']
-        eye_L.head[2]=mmd_eye_L.head[2]
-        eye_L.head[0]=max(mmd_eye_L.head[0],mmd_eye_L.tail[0])
-        eye_L.head[1]=min(mmd_eye_L.head[1],mmd_eye_L.tail[1])
-        eye_L.tail=eye_L.head
-        eye_L.tail[1]-=0.1
+        if 'Eye_L' in mmd_bones_list and 'Eye_R' in mmd_bones_list:
+            eye_L=rigify_arm.data.edit_bones['eye.L']
+            mmd_eye_L=mmd_arm2.data.edit_bones['Eye_L']
+            eye_L.head[2]=mmd_eye_L.head[2]
+            eye_L.head[0]=max(mmd_eye_L.head[0],mmd_eye_L.tail[0])
+            eye_L.head[1]=min(mmd_eye_L.head[1],mmd_eye_L.tail[1])
+            eye_L.tail=eye_L.head
+            eye_L.tail[1]-=0.1
 
-        eye_R=rigify_arm.data.edit_bones['eye.R']
-        mmd_eye_R=mmd_arm2.data.edit_bones['Eye_R']
-        eye_R.head[2]=mmd_eye_R.head[2]
-        eye_R.head[0]=min(mmd_eye_R.head[0],mmd_eye_R.tail[0])
-        eye_R.head[1]=min(mmd_eye_R.head[1],mmd_eye_R.tail[1])
-        eye_R.tail=eye_R.head
-        eye_R.tail[1]-=0.1
+            eye_R=rigify_arm.data.edit_bones['eye.R']
+            mmd_eye_R=mmd_arm2.data.edit_bones['Eye_R']
+            eye_R.head[2]=mmd_eye_R.head[2]
+            eye_R.head[0]=min(mmd_eye_R.head[0],mmd_eye_R.tail[0])
+            eye_R.head[1]=min(mmd_eye_R.head[1],mmd_eye_R.tail[1])
+            eye_R.tail=eye_R.head
+            eye_R.tail[1]-=0.1
 
-        invert_eyes=False
-        if eye_L.head[0]<eye_R.head[0]:
-            eye_R.name='1'
-            eye_L.name='eye.R'
-            eye_R.name='eye.L'
-            invert_eyes=True
+            invert_eyes=False
+            if eye_L.head[0]<eye_R.head[0]:
+                eye_R.name='1'
+                eye_L.name='eye.R'
+                eye_R.name='eye.L'
+                invert_eyes=True
 
         #生成控制器
         if self.mmr_property.debug:
