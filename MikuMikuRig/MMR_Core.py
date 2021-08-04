@@ -982,6 +982,11 @@ class MMR():
             if name in rig.data.bones.keys():  
                 rig.data.bones[name].hide=True
 
+        if 'Eye_L' not in mmd_bones_list or 'Eye_R' not in mmd_bones_list:
+            rig.data.bones['eyes'].hide=True
+            rig.data.bones['eye.L'].hide=True
+            rig.data.bones['eye.R'].hide=True
+
         #将IK拉伸设为0
         #set IK stretch to 0
         rig.pose.bones["Arm_parent_L"]["IK_Stretch"] = 0
