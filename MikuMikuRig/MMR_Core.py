@@ -431,28 +431,29 @@ class MMR():
         rigify_arm.data.edit_bones["Wrist_R"].length=rigify_arm.data.edit_bones["Elbow_R"].length/4
 
         #匹配眼睛骨骼
-        eye_L=rigify_arm.data.edit_bones['eye.L']
-        mmd_eye_L=mmd_arm2.data.edit_bones['Eye_L']
-        eye_L.head[2]=mmd_eye_L.head[2]
-        eye_L.head[0]=max(mmd_eye_L.head[0],mmd_eye_L.tail[0])
-        eye_L.head[1]=min(mmd_eye_L.head[1],mmd_eye_L.tail[1])
-        eye_L.tail=eye_L.head
-        eye_L.tail[1]-=0.1
+        if 'Eye_L' in mmd_bones_list and 'Eye_R' in mmd_bones_list:
+            eye_L=rigify_arm.data.edit_bones['eye.L']
+            mmd_eye_L=mmd_arm2.data.edit_bones['Eye_L']
+            eye_L.head[2]=mmd_eye_L.head[2]
+            eye_L.head[0]=max(mmd_eye_L.head[0],mmd_eye_L.tail[0])
+            eye_L.head[1]=min(mmd_eye_L.head[1],mmd_eye_L.tail[1])
+            eye_L.tail=eye_L.head
+            eye_L.tail[1]-=0.1
 
-        eye_R=rigify_arm.data.edit_bones['eye.R']
-        mmd_eye_R=mmd_arm2.data.edit_bones['Eye_R']
-        eye_R.head[2]=mmd_eye_R.head[2]
-        eye_R.head[0]=min(mmd_eye_R.head[0],mmd_eye_R.tail[0])
-        eye_R.head[1]=min(mmd_eye_R.head[1],mmd_eye_R.tail[1])
-        eye_R.tail=eye_R.head
-        eye_R.tail[1]-=0.1
+            eye_R=rigify_arm.data.edit_bones['eye.R']
+            mmd_eye_R=mmd_arm2.data.edit_bones['Eye_R']
+            eye_R.head[2]=mmd_eye_R.head[2]
+            eye_R.head[0]=min(mmd_eye_R.head[0],mmd_eye_R.tail[0])
+            eye_R.head[1]=min(mmd_eye_R.head[1],mmd_eye_R.tail[1])
+            eye_R.tail=eye_R.head
+            eye_R.tail[1]-=0.1
 
-        invert_eyes=False
-        if eye_L.head[0]<eye_R.head[0]:
-            eye_R.name='1'
-            eye_L.name='eye.R'
-            eye_R.name='eye.L'
-            invert_eyes=True
+            invert_eyes=False
+            if eye_L.head[0]<eye_R.head[0]:
+                eye_R.name='1'
+                eye_L.name='eye.R'
+                eye_R.name='eye.L'
+                invert_eyes=True
 
         #生成控制器
         if self.mmr_property.debug:
@@ -557,40 +558,41 @@ class MMR():
         self.add_constraint_execute()
 
         #眼睛约束
-        bpy.ops.object.mode_set(mode = 'EDIT')
-        eyes_parent_L=rig.data.edit_bones.new(name='eyes_parent_L')
-        eyes_parent_L.head=mmd_arm2.data.edit_bones['Eye_L'].head
-        eyes_parent_L.tail=mmd_arm2.data.edit_bones['Eye_L'].tail
-        eyes_parent_L.roll=mmd_arm2.data.edit_bones['Eye_L'].roll
+        if 'Eye_L'in mmd_bones_list and 'Eye_R' in mmd_bones_list:
+            bpy.ops.object.mode_set(mode = 'EDIT')
+            eyes_parent_L=rig.data.edit_bones.new(name='eyes_parent_L')
+            eyes_parent_L.head=mmd_arm2.data.edit_bones['Eye_L'].head
+            eyes_parent_L.tail=mmd_arm2.data.edit_bones['Eye_L'].tail
+            eyes_parent_L.roll=mmd_arm2.data.edit_bones['Eye_L'].roll
 
-        eyes_parent_R=rig.data.edit_bones.new(name='eyes_parent_R')
-        eyes_parent_R.head=mmd_arm2.data.edit_bones['Eye_R'].head
-        eyes_parent_R.tail=mmd_arm2.data.edit_bones['Eye_R'].tail
-        eyes_parent_R.roll=mmd_arm2.data.edit_bones['Eye_R'].roll
+            eyes_parent_R=rig.data.edit_bones.new(name='eyes_parent_R')
+            eyes_parent_R.head=mmd_arm2.data.edit_bones['Eye_R'].head
+            eyes_parent_R.tail=mmd_arm2.data.edit_bones['Eye_R'].tail
+            eyes_parent_R.roll=mmd_arm2.data.edit_bones['Eye_R'].roll
 
-        if invert_eyes:
-            eyes_parent_L.parent=rig.data.edit_bones['ORG-eye.R']
-            eyes_parent_R.parent=rig.data.edit_bones['ORG-eye.L']
-        else:
-            eyes_parent_L.parent=rig.data.edit_bones['ORG-eye.L']
-            eyes_parent_R.parent=rig.data.edit_bones['ORG-eye.R']
+            if invert_eyes:
+                eyes_parent_L.parent=rig.data.edit_bones['ORG-eye.R']
+                eyes_parent_R.parent=rig.data.edit_bones['ORG-eye.L']
+            else:
+                eyes_parent_L.parent=rig.data.edit_bones['ORG-eye.L']
+                eyes_parent_R.parent=rig.data.edit_bones['ORG-eye.R']
 
-        bpy.ops.object.mode_set(mode = 'POSE')
-        con= mmd_arm.pose.bones['Eye_L'].constraints
-        rig.data.bones['eyes_parent_L'].hide=True
-        mmd_arm.data.bones['Eye_L'].hide=False
-        COPY_ROTATION=con.new(type='COPY_ROTATION')
-        COPY_ROTATION.target = rig
-        COPY_ROTATION.subtarget = 'eyes_parent_L'
-        COPY_ROTATION.name="rel_rotation"
+            bpy.ops.object.mode_set(mode = 'POSE')
+            con= mmd_arm.pose.bones['Eye_L'].constraints
+            rig.data.bones['eyes_parent_L'].hide=True
+            mmd_arm.data.bones['Eye_L'].hide=False
+            COPY_ROTATION=con.new(type='COPY_ROTATION')
+            COPY_ROTATION.target = rig
+            COPY_ROTATION.subtarget = 'eyes_parent_L'
+            COPY_ROTATION.name="rel_rotation"
 
-        con= mmd_arm.pose.bones['Eye_R'].constraints
-        rig.data.bones['eyes_parent_R'].hide=True
-        mmd_arm.data.bones['Eye_R'].hide=False
-        COPY_ROTATION=con.new(type='COPY_ROTATION')
-        COPY_ROTATION.target = rig
-        COPY_ROTATION.subtarget = 'eyes_parent_R'
-        COPY_ROTATION.name="rel_rotation"
+            con= mmd_arm.pose.bones['Eye_R'].constraints
+            rig.data.bones['eyes_parent_R'].hide=True
+            mmd_arm.data.bones['Eye_R'].hide=False
+            COPY_ROTATION=con.new(type='COPY_ROTATION')
+            COPY_ROTATION.target = rig
+            COPY_ROTATION.subtarget = 'eyes_parent_R'
+            COPY_ROTATION.name="rel_rotation"
 
         #上半身控制器
 
@@ -979,6 +981,11 @@ class MMR():
         for name in hide_bone_list:
             if name in rig.data.bones.keys():  
                 rig.data.bones[name].hide=True
+
+        if 'Eye_L' not in mmd_bones_list or 'Eye_R' not in mmd_bones_list:
+            rig.data.bones['eyes'].hide=True
+            rig.data.bones['eye.L'].hide=True
+            rig.data.bones['eye.R'].hide=True
 
         #将IK拉伸设为0
         #set IK stretch to 0

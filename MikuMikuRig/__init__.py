@@ -2,8 +2,8 @@
 bl_info = {
     "name": "MikuMikuRig", #插件名字
     "author": "William", #作者名字
-    "version": (0, 3, 8,5), #插件版本
-    "blender": (2, 92, 0), #需要的*最低* blender 版本
+    "version": (0, 3, 8,6), #插件版本
+    "blender": (2, 80, 0), #需要的*最低* blender 版本
     "location": "3DView > Tools", #插件所在位置
     "description": "自动为MMD模型生成rigify控制器", #描述
     #"warning": "不稳定", #警告
@@ -12,9 +12,9 @@ bl_info = {
 }
 import bpy
 import bpy_extras
+from bpy.types import Operator
 from . import MMR_Core
 from . import translation
-translation.register_module()
 
 class MMR_property(bpy.types.PropertyGroup):
     upper_body_controller:bpy.props.BoolProperty(default=True,description="上半身控制器")
@@ -36,14 +36,14 @@ class MMR_property(bpy.types.PropertyGroup):
     extend_ribbon:bpy.props.BoolProperty(default=True,description="延展飘带区域")
     debug:bpy.props.BoolProperty(default=False,description="debug")
 
-class Mmr_Panel_Base(object):
+class Mmr_Panel_Base(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = "MMR"
     bl_context = "objectmode"
     #bl_options = {'DEFAULT_CLOSED'} # HIDE_HEADER 为隐藏菜单
 
-class PT_MikuMikuRig_1(Mmr_Panel_Base,bpy.types.Panel):
+class PT_MikuMikuRig_1(Mmr_Panel_Base):
     bl_idname="mmr.mmr_panel_1"
     bl_label = "Auto MMD rig" #菜单名字
 
@@ -62,7 +62,7 @@ class PT_MikuMikuRig_1(Mmr_Panel_Base,bpy.types.Panel):
         layout.prop(mmr_property,'pole_target',text="Use pole target")
         layout.prop(mmr_property,'debug',text="Debug")
 
-class PT_MikuMikuRig_2(Mmr_Panel_Base,bpy.types.Panel):
+class PT_MikuMikuRig_2(Mmr_Panel_Base):
     bl_idname="mmr.mmr_panel_2"
     bl_label = "Fixed MMD bone dislocation" #菜单名字
 
@@ -76,7 +76,7 @@ class PT_MikuMikuRig_2(Mmr_Panel_Base,bpy.types.Panel):
         layout.operator("mmr.set_min_ik_loop",text="Set min IK loop",icon="CUBE")
         layout.operator("mmr.fix_axial",text="Fix axial",icon="CUBE")
 
-class PT_MikuMikuRig_3(Mmr_Panel_Base,bpy.types.Panel):
+class PT_MikuMikuRig_3(Mmr_Panel_Base):
     bl_idname="mmr.mmr_panel_3"
     bl_label = "Auto animation import" #菜单名字
 
@@ -99,7 +99,7 @@ class PT_MikuMikuRig_3(Mmr_Panel_Base,bpy.types.Panel):
         layout.operator("mmr.import_vmd",text="Import VMD animation as NLA",icon="CUBE")
         layout.operator("mmr.export_vmd",text="Bake and export VMD animation",icon="CUBE")
 
-class PT_MikuMikuRig_4(Mmr_Panel_Base,bpy.types.Panel):
+class PT_MikuMikuRig_4(Mmr_Panel_Base):
     bl_idname="mmr.mmr_panel_4"
     bl_label = "Auto cloth(experimental)" #菜单名字
 
@@ -120,7 +120,7 @@ class PT_MikuMikuRig_4(Mmr_Panel_Base,bpy.types.Panel):
         layout.label(text="This featur is developed in cooperation with")
         layout.label(text="UuuNyaa")
 
-class OT_Generate_Rig(bpy.types.Operator):
+class OT_Generate_Rig(Operator):
     bl_idname = "mmr.generate_rig" # python 提示
     bl_label = "Interface"
     bl_options = {'REGISTER', 'UNDO'}
@@ -133,7 +133,7 @@ class OT_Generate_Rig(bpy.types.Operator):
         del MMR_Class
         return{"FINISHED"}
 
-class OT_Load_Pose(bpy.types.Operator):
+class OT_Load_Pose(Operator):
     bl_idname = "mmr.load_pose" # python 提示
     bl_label = "Interface"
     bl_options = {'REGISTER', 'UNDO'}
@@ -146,7 +146,7 @@ class OT_Load_Pose(bpy.types.Operator):
         del MMR_Class
         return{"FINISHED"}
 
-class OT_Fix_Axial(bpy.types.Operator):
+class OT_Fix_Axial(Operator):
     bl_idname = "mmr.fix_axial" # python 提示
     bl_label = "Interface"
     bl_options = {'REGISTER', 'UNDO'}
@@ -164,7 +164,7 @@ class OT_Fix_Axial(bpy.types.Operator):
             return {"CANCELLED"}
         return{"FINISHED"}
 
-class OT_Set_Min_IK_Loop(bpy.types.Operator):
+class OT_Set_Min_IK_Loop(Operator):
     bl_idname = "mmr.set_min_ik_loop" # python 提示
     bl_label = "Interface"
     bl_options = {'REGISTER', 'UNDO'}
@@ -177,7 +177,7 @@ class OT_Set_Min_IK_Loop(bpy.types.Operator):
         del MMR_Class
         return{"FINISHED"}
 
-class OT_Import_Mixamo(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
+class OT_Import_Mixamo(Operator, bpy_extras.io_utils.ImportHelper):
     bl_idname = "mmr.import_mixamo" 
     bl_label = "Import mixamo action"
     filter_glob: bpy.props.StringProperty( 
@@ -192,7 +192,7 @@ class OT_Import_Mixamo(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
         del MMR_Class
         return{"FINISHED"}
 
-class OT_Import_Vmd(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
+class OT_Import_Vmd(Operator, bpy_extras.io_utils.ImportHelper):
     bl_idname = "mmr.import_vmd" 
     bl_label = "Import vmd action"
     filter_glob: bpy.props.StringProperty( 
@@ -207,7 +207,7 @@ class OT_Import_Vmd(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
         del MMR_Class
         return{"FINISHED"}
 
-class OT_Convert_Rigid_Body_To_Cloth(bpy.types.Operator):
+class OT_Convert_Rigid_Body_To_Cloth(Operator):
     bl_idname = "mmr.convert_rigid_body_to_cloth" # python 提示
     bl_label = "Interface"
     bl_options = {'REGISTER', 'UNDO'}
@@ -220,7 +220,7 @@ class OT_Convert_Rigid_Body_To_Cloth(bpy.types.Operator):
         del MMR_Class
         return{"FINISHED"}
 
-class OT_Export_Vmd(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
+class OT_Export_Vmd(Operator, bpy_extras.io_utils.ExportHelper):
     bl_idname = "mmr.export_vmd" 
     bl_label = "Export vmd action"
 
@@ -283,12 +283,17 @@ def register(): #启用插件时候执行
     for Class in class_list:
         bpy.utils.register_class(Class)
         
+    translation.register_module()
+
     print('zc')
 
 def unregister(): #关闭插件时候执行
     for Class in class_list:
         bpy.utils.unregister_class(Class)
     bpy.utils.unregister_class(MMR_property)
+
+    translation.unregister_module()
+
     print('zx')
 
 
