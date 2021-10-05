@@ -728,6 +728,9 @@ class MMR():
         #捩骨约束
         #Twist constrains
         if 'HandTwist_L' in mmd_bones_list:
+            bpy.ops.object.mode_set(mode = 'EDIT')
+            mmd_arm.data.edit_bones['HandTwist_L'].tail=mmd_arm.data.edit_bones['Wrist_L'].head
+            bpy.ops.object.mode_set(mode = 'POSE')
             c1=mmd_arm.pose.bones['HandTwist_L'].constraints.new(type='COPY_ROTATION')
             c1.target=rig
             c1.subtarget='ORG-Wrist_L'
@@ -746,6 +749,9 @@ class MMR():
             mmd_arm.pose.bones["Elbow_L"].bbone_easeout = -1
 
         if 'HandTwist_R' in mmd_bones_list:
+            bpy.ops.object.mode_set(mode = 'EDIT')
+            mmd_arm.data.edit_bones['HandTwist_R'].tail=mmd_arm.data.edit_bones['Wrist_R'].head
+            bpy.ops.object.mode_set(mode = 'POSE')
             c1=mmd_arm.pose.bones['HandTwist_R'].constraints.new(type='COPY_ROTATION')
             c1.target=rig
             c1.subtarget='ORG-Wrist_R'
@@ -764,6 +770,9 @@ class MMR():
             mmd_arm.pose.bones["Elbow_R"].bbone_easeout = -1
 
         if 'ArmTwist_L' in mmd_bones_list:
+            bpy.ops.object.mode_set(mode = 'EDIT')
+            mmd_arm.data.edit_bones['ArmTwist_L'].tail=mmd_arm.data.edit_bones['Elbow_L'].head
+            bpy.ops.object.mode_set(mode = 'POSE')
             c1=mmd_arm.pose.bones['ArmTwist_L'].constraints.new(type='COPY_ROTATION')
             c1.target=rig
             c1.subtarget='ORG-Elbow_L'
@@ -776,6 +785,9 @@ class MMR():
             mmd_arm.data.bones['ArmTwist_L'].hide=False
 
         if 'ArmTwist_R' in mmd_bones_list:
+            bpy.ops.object.mode_set(mode = 'EDIT')
+            mmd_arm.data.edit_bones['ArmTwist_R'].tail=mmd_arm.data.edit_bones['Elbow_R'].head
+            bpy.ops.object.mode_set(mode = 'POSE')
             c1=mmd_arm.pose.bones['ArmTwist_R'].constraints.new(type='COPY_ROTATION')
             c1.target=rig
             c1.subtarget='ORG-Elbow_R'
