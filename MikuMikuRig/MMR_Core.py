@@ -742,11 +742,11 @@ class MMR():
             c2.subtarget='ORG-Wrist_L'
             mmd_arm.data.bones['HandTwist_L'].hide=False
         else:
-            mmd_arm.data.bones["Wrist_L"].bbone_segments = 2
+            '''mmd_arm.data.bones["Wrist_L"].bbone_segments = 2
             mmd_arm.data.bones["Elbow_L"].bbone_segments = 2
             mmd_arm.pose.bones["Wrist_L"].bbone_easein = -1
             mmd_arm.pose.bones["Elbow_L"].bbone_easein = -1
-            mmd_arm.pose.bones["Elbow_L"].bbone_easeout = -1
+            mmd_arm.pose.bones["Elbow_L"].bbone_easeout = -1'''
 
         if 'HandTwist_R' in mmd_bones_list:
             bpy.ops.object.mode_set(mode = 'EDIT')
@@ -763,11 +763,11 @@ class MMR():
             c2.subtarget='ORG-Wrist_R'
             mmd_arm.data.bones['HandTwist_R'].hide=False
         else:
-            mmd_arm.data.bones["Wrist_R"].bbone_segments = 2
+            '''mmd_arm.data.bones["Wrist_R"].bbone_segments = 2
             mmd_arm.data.bones["Elbow_R"].bbone_segments = 2
             mmd_arm.pose.bones["Wrist_R"].bbone_easein = -1
             mmd_arm.pose.bones["Elbow_R"].bbone_easein = -1
-            mmd_arm.pose.bones["Elbow_R"].bbone_easeout = -1
+            mmd_arm.pose.bones["Elbow_R"].bbone_easeout = -1'''
 
         if 'ArmTwist_L' in mmd_bones_list:
             bpy.ops.object.mode_set(mode = 'EDIT')
@@ -1053,7 +1053,7 @@ class MMR():
         return(True)
     
     #重定向mixamo动画
-    def retarget_mixmao(self,mixamo_path,rigify_arm,lock_location=True,fade_in_out=0,action_scale=1,auto_action_scale=False,ik_fk_hand=3,ik_fk_leg=3):
+    def retarget_mixmao(self,mixamo_path,rigify_arm,lock_location=True,fade_in_out=0,action_scale=1,auto_action_scale=False,ik_fk_hand=3,ik_fk_leg=3,debug=False):
 
         if rigify_arm.type!='ARMATURE':
             return(False)
@@ -1197,16 +1197,17 @@ class MMR():
         rigify_arm.animation_data.action_blend_type = 'COMBINE'
 
         bpy.ops.object.select_all(action='DESELECT')
-        bpy.data.objects.remove(mixamo_arm)
-        bpy.data.objects.remove(mixamo_arm2)
-        bpy.data.objects.remove(retarget_arm)
+        if debug==False:
+            bpy.data.objects.remove(mixamo_arm)
+            bpy.data.objects.remove(mixamo_arm2)
+            bpy.data.objects.remove(retarget_arm)
         bpy.context.view_layer.objects.active=rigify_arm
         rigify_arm.select=True
         alert_error("提示","导入完成")
         return(True)
         
 
-    def load_vmd(self,vmd_path,rigify_arm,fade_in_out,action_scale=1):
+    def load_vmd(self,vmd_path,rigify_arm,fade_in_out,action_scale=1,debug=False):
         if rigify_arm.type!='ARMATURE':
             return(False)
         if vmd_path==None:
@@ -1285,7 +1286,8 @@ class MMR():
 
         #更改原动作混合模式为合并
         rigify_arm.animation_data.action_blend_type = 'COMBINE'
-        bpy.data.objects.remove(rigify_arm2)
+        if debug==False:
+            bpy.data.objects.remove(rigify_arm2)
         bpy.context.view_layer.objects.active=rigify_arm
         rigify_arm.select=True
         alert_error("提示","导入完成")

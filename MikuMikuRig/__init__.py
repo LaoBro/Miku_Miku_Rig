@@ -1,7 +1,7 @@
 bl_info = {
     "name": "MikuMikuRig", #插件名字
     "author": "William", #作者名字
-    "version": (0, 3, 9), #插件版本
+    "version": (0, 3, 9, 1), #插件版本
     "blender": (2, 80, 0), #需要的*最低* blender 版本
     "location": "3DView > Tools", #插件所在位置
     "description": "自动为MMD模型生成rigify控制器", #描述
@@ -187,7 +187,7 @@ class OT_Import_Mixamo(Operator, bpy_extras.io_utils.ImportHelper):
         scene=context.scene
         mmr_property=scene.mmr_property
         MMR_Class=MMR_Core.MMR(context)
-        MMR_Class.retarget_mixmao(self.filepath,context.view_layer.objects.active,mmr_property.lock_location,mmr_property.fade_in_out,mmr_property.action_scale,mmr_property.auto_action_scale,mmr_property.ik_fk_hand,mmr_property.ik_fk_leg)
+        MMR_Class.retarget_mixmao(self.filepath,context.view_layer.objects.active,mmr_property.lock_location,mmr_property.fade_in_out,mmr_property.action_scale,mmr_property.auto_action_scale,mmr_property.ik_fk_hand,mmr_property.ik_fk_leg,mmr_property.debug)
         del MMR_Class
         return{"FINISHED"}
 
@@ -202,7 +202,7 @@ class OT_Import_Vmd(Operator, bpy_extras.io_utils.ImportHelper):
         scene=context.scene
         mmr_property=scene.mmr_property
         MMR_Class=MMR_Core.MMR(context)
-        MMR_Class.load_vmd(self.filepath,context.view_layer.objects.active,mmr_property.fade_in_out,mmr_property.action_scale)
+        MMR_Class.load_vmd(self.filepath,context.view_layer.objects.active,mmr_property.fade_in_out,mmr_property.action_scale,mmr_property.debug)
         del MMR_Class
         return{"FINISHED"}
 
