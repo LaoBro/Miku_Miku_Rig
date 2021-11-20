@@ -1,7 +1,7 @@
 bl_info = {
     "name": "MikuMikuRig", #插件名字
     "author": "William", #作者名字
-    "version": (0, 4, 0,), #插件版本
+    "version": (0, 4, 1,), #插件版本
     "blender": (2, 80, 0), #需要的*最低* blender 版本
     "location": "3DView > Tools", #插件所在位置
     "description": "自动为MMD模型生成rigify控制器", #描述
@@ -14,6 +14,10 @@ from bpy.types import Operator
 from . import MMR_Core
 from . import translation
 from . import operators
+from bpy.props import BoolProperty
+from bpy.props import IntProperty
+from bpy.props import FloatProperty
+from bpy.props import EnumProperty
 
 def get_preset_item(self,context):
     preset_items=[('None','None','')]
@@ -22,22 +26,22 @@ def get_preset_item(self,context):
     return(preset_items)
 
 class MMR_property(bpy.types.PropertyGroup):
-    upper_body_controller:bpy.props.BoolProperty(default=True,description="上半身控制器")
-    wrist_rotation_follow:bpy.props.BoolProperty(default=False,description="手腕旋转跟随手臂")
-    auto_shoulder:bpy.props.BoolProperty(default=False,description="肩膀联动")
-    solid_rig:bpy.props.BoolProperty(default=False,description="实心控制器")
-    pole_target:bpy.props.BoolProperty(default=False,description="极向目标")
-    min_ik_loop:bpy.props.IntProperty(default=10,description="最小IK迭代次数",min=1)
-    lock_location:bpy.props.BoolProperty(default=False,description="锁定动画位置")
-    fade_in_out:bpy.props.IntProperty(default=0,description="淡入淡出长度",min=0)
-    action_scale:bpy.props.FloatProperty(default=1,description="动作缩放",min=0)
-    auto_action_scale:bpy.props.BoolProperty(default=True,description="自动动作缩放")
-    subdivide:bpy.props.IntProperty(default=0,description="细分级别",min=0,max=5)
-    auto_select_mesh:bpy.props.BoolProperty(default=True,description="自动选择模型")
-    auto_select_rigid_body:bpy.props.BoolProperty(default=True,description="自动选择刚体")
-    extend_ribbon:bpy.props.BoolProperty(default=True,description="延展飘带区域")
-    debug:bpy.props.BoolProperty(default=False,description="debug")
-    preset_name_list:bpy.props.EnumProperty(
+    upper_body_controller:BoolProperty(default=True,description="上半身控制器")
+    wrist_rotation_follow:BoolProperty(default=False,description="手腕旋转跟随手臂")
+    auto_shoulder:BoolProperty(default=False,description="肩膀联动")
+    solid_rig:BoolProperty(default=False,description="实心控制器")
+    pole_target:BoolProperty(default=False,description="极向目标")
+    min_ik_loop:IntProperty(default=10,description="最小IK迭代次数",min=1)
+    lock_location:BoolProperty(default=False,description="锁定动画位置")
+    fade_in_out:IntProperty(default=0,description="淡入淡出长度",min=0)
+    action_scale:FloatProperty(default=1,description="动作缩放",min=0)
+    auto_action_scale:BoolProperty(default=True,description="自动动作缩放")
+    subdivide:IntProperty(default=0,description="细分级别",min=0,max=5)
+    auto_select_mesh:BoolProperty(default=True,description="自动选择模型")
+    auto_select_rigid_body:BoolProperty(default=True,description="自动选择刚体")
+    extend_ribbon:BoolProperty(default=True,description="延展飘带区域")
+    debug:BoolProperty(default=False,description="debug")
+    preset_name:EnumProperty(
         items=get_preset_item,
         description=('Choose the bone type you want to use'),
         default = None,
@@ -47,17 +51,17 @@ class MMR_property(bpy.types.PropertyGroup):
             ('IK','IK',''),
             ('FK',"FK",''),
         ]
-    IKFK_arm:bpy.props.EnumProperty(
+    IKFK_arm:EnumProperty(
         items=IKFK_list,
         description=('retarget mod'),
         default = 2,
     )
-    IKFK_leg:bpy.props.EnumProperty(
+    IKFK_leg:EnumProperty(
         items=IKFK_list,
         description=('retarget mod'),
         default = 2,
     )
-    cloth_convert_mod:bpy.props.EnumProperty(
+    cloth_convert_mod:EnumProperty(
         items=[
             ('Auto','Auto',''),
             ('Bone Constrain','Bone Constrain',''),
@@ -117,8 +121,12 @@ class MikuMikuRig_3(Mmr_Panel_Base):
         layout.prop(mmr_property,'action_scale',text="Animation scale")
         layout.prop(mmr_property,'auto_action_scale',text="Auto mixamo animation scale")
         layout.prop(mmr_property,'lock_location',text="Lock mixamo animation location")
-        layout.prop(mmr_property, 'IKFK_arm', text='arm')
-        layout.prop(mmr_property, 'IKFK_leg', text='leg')
+        row=layout.row()
+        row.label(text='Arm Type')
+        row.prop(mmr_property, 'IKFK_arm', text='')
+        row=layout.row()
+        row.label(text='Leg Type')
+        row.prop(mmr_property, 'IKFK_leg', text='')
         layout.operator("mmr.import_mixamo",text="Import mixamo animation as NLA",icon="CUBE")
         layout.operator("mmr.import_vmd",text="Import VMD animation as NLA",icon="CUBE")
         layout.operator("mmr.export_vmd",text="Bake and export VMD animation",icon="CUBE")
@@ -133,7 +141,9 @@ class MikuMikuRig_4(Mmr_Panel_Base):
         layout = self.layout
         layout.label(text="Select mesh and rigidbody then press the button")
         layout.prop(mmr_property,'subdivide',text="Subdivide level")
-        layout.prop(mmr_property,'cloth_convert_mod',text="Convert Mod")
+        row=layout.row()
+        row.label(text='Convert Mod')
+        row.prop(mmr_property,'cloth_convert_mod',text="")
         layout.prop(mmr_property,'auto_select_mesh',text="Auto select mesh")
         layout.prop(mmr_property,'auto_select_rigid_body',text="Auto select rigid body")
         layout.prop(mmr_property,'extend_ribbon',text="Extend ribbon area")
@@ -153,7 +163,6 @@ class MikuMikuRig_5(Mmr_Panel_Base):
         layout.label(text="MikuMikuRig")
         layout.label(text="版本号:"+str(bl_info["version"]))
         layout.label(text="作者:小威廉伯爵")
-        layout.label(text="声明：MMD刚体物理转布料的功能是与UuuNyaa共同开发的")
         layout.prop(mmr_property,'debug',text="Debug")
 
 def alert_error(title,message):
