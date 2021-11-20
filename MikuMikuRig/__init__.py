@@ -11,7 +11,6 @@ bl_info = {
 import bpy
 import bpy_extras
 from bpy.types import Operator
-from . import MMR_Core
 from . import translation
 from . import operators
 from bpy.props import BoolProperty
