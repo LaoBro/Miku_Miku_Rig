@@ -1,6 +1,6 @@
 [
     [
-        "vroid3",
+        "VRoid",
         {
             "Root": [
                 "Root",
@@ -28,6 +28,14 @@
             ],
             "J_Bip_C_Head": [
                 "Head",
+                false
+            ],
+            "J_Adj_L_FaceEye": [
+                "Eye_L",
+                false
+            ],
+            "J_Adj_R_FaceEye": [
+                "Eye_R",
                 false
             ],
             "J_Bip_L_Shoulder": [
@@ -211,6 +219,504 @@
                 false
             ],
             "J_Bip_R_ToeBase": [
+                "ToeTipIK_R",
+                false
+            ]
+        }
+    ],
+    [
+        "MMD_JP",
+        {
+            "\u5168\u3066\u306e\u89aa": [
+                "Root",
+                false
+            ],
+            "\u30bb\u30f3\u30bf\u30fc": [
+                "Center",
+                false
+            ],
+            "\u4e0a\u534a\u8eab": [
+                "UpperBody",
+                false
+            ],
+            "\u4e0a\u534a\u8eab2": [
+                "UpperBody2",
+                false
+            ],
+            "\u9996": [
+                "Neck",
+                false
+            ],
+            "\u982d": [
+                "Head",
+                false
+            ],
+            "\u76ee.L": [
+                "Eye_L",
+                false
+            ],
+            "\u76ee.R": [
+                "Eye_R",
+                false
+            ],
+            "\u80a9.L": [
+                "Shoulder_L",
+                false
+            ],
+            "\u8155.L": [
+                "Arm_L",
+                false
+            ],
+            "\u8155\u6369.L": [
+                "ArmTwist_L",
+                false
+            ],
+            "\u3072\u3058.L": [
+                "Elbow_L",
+                false
+            ],
+            "\u624b\u6369.L": [
+                "HandTwist_L",
+                false
+            ],
+            "\u624b\u9996.L": [
+                "Wrist_L",
+                false
+            ],
+            "\u89aa\u6307\uff10.L": [
+                "Thumb0_L",
+                false
+            ],
+            "\u89aa\u6307\uff11.L": [
+                "Thumb1_L",
+                false
+            ],
+            "\u89aa\u6307\uff12.L": [
+                "Thumb2_L",
+                false
+            ],
+            "\u4eba\u6307\uff11.L": [
+                "IndexFinger1_L",
+                false
+            ],
+            "\u4eba\u6307\uff12.L": [
+                "IndexFinger2_L",
+                false
+            ],
+            "\u4eba\u6307\uff13.L": [
+                "IndexFinger3_L",
+                false
+            ],
+            "\u4e2d\u6307\uff11.L": [
+                "MiddleFinger1_L",
+                false
+            ],
+            "\u4e2d\u6307\uff12.L": [
+                "MiddleFinger2_L",
+                false
+            ],
+            "\u4e2d\u6307\uff13.L": [
+                "MiddleFinger3_L",
+                false
+            ],
+            "\u85ac\u6307\uff11.L": [
+                "RingFinger1_L",
+                false
+            ],
+            "\u85ac\u6307\uff12.L": [
+                "RingFinger2_L",
+                false
+            ],
+            "\u85ac\u6307\uff13.L": [
+                "RingFinger3_L",
+                false
+            ],
+            "\u5c0f\u6307\uff11.L": [
+                "LittleFinger1_L",
+                false
+            ],
+            "\u5c0f\u6307\uff12.L": [
+                "LittleFinger2_L",
+                false
+            ],
+            "\u5c0f\u6307\uff13.L": [
+                "LittleFinger3_L",
+                false
+            ],
+            "\u80a9.R": [
+                "Shoulder_R",
+                false
+            ],
+            "\u8155.R": [
+                "Arm_R",
+                false
+            ],
+            "\u8155\u6369.R": [
+                "ArmTwist_R",
+                false
+            ],
+            "\u3072\u3058.R": [
+                "Elbow_R",
+                false
+            ],
+            "\u624b\u6369.R": [
+                "HandTwist_R",
+                false
+            ],
+            "\u624b\u9996.R": [
+                "Wrist_R",
+                false
+            ],
+            "\u89aa\u6307\uff10.R": [
+                "Thumb0_R",
+                false
+            ],
+            "\u89aa\u6307\uff11.R": [
+                "Thumb1_R",
+                false
+            ],
+            "\u89aa\u6307\uff12.R": [
+                "Thumb2_R",
+                false
+            ],
+            "\u4eba\u6307\uff11.R": [
+                "IndexFinger1_R",
+                false
+            ],
+            "\u4eba\u6307\uff12.R": [
+                "IndexFinger2_R",
+                false
+            ],
+            "\u4eba\u6307\uff13.R": [
+                "IndexFinger3_R",
+                false
+            ],
+            "\u4e2d\u6307\uff11.R": [
+                "MiddleFinger1_R",
+                false
+            ],
+            "\u4e2d\u6307\uff12.R": [
+                "MiddleFinger2_R",
+                false
+            ],
+            "\u4e2d\u6307\uff13.R": [
+                "MiddleFinger3_R",
+                false
+            ],
+            "\u85ac\u6307\uff11.R": [
+                "RingFinger1_R",
+                false
+            ],
+            "\u85ac\u6307\uff12.R": [
+                "RingFinger2_R",
+                false
+            ],
+            "\u85ac\u6307\uff13.R": [
+                "RingFinger3_R",
+                false
+            ],
+            "\u5c0f\u6307\uff11.R": [
+                "LittleFinger1_R",
+                false
+            ],
+            "\u5c0f\u6307\uff12.R": [
+                "LittleFinger2_R",
+                false
+            ],
+            "\u5c0f\u6307\uff13.R": [
+                "LittleFinger3_R",
+                false
+            ],
+            "\u4e0b\u534a\u8eab": [
+                "LowerBody",
+                true
+            ],
+            "\u8db3.L": [
+                "Leg_L",
+                false
+            ],
+            "\u3072\u3056.L": [
+                "Knee_L",
+                false
+            ],
+            "\u8db3\u9996.L": [
+                "Ankle_L",
+                false
+            ],
+            "\u8db3.R": [
+                "Leg_R",
+                false
+            ],
+            "\u3072\u3056.R": [
+                "Knee_R",
+                false
+            ],
+            "\u8db3\u9996.R": [
+                "Ankle_R",
+                false
+            ],
+            "\u8db3\uff29\uff2b.L": [
+                "LegIK_L",
+                false
+            ],
+            "\u3064\u307e\u5148\uff29\uff2b.L": [
+                "ToeTipIK_L",
+                false
+            ],
+            "\u8db3\uff29\uff2b.R": [
+                "LegIK_R",
+                false
+            ],
+            "\u3064\u307e\u5148\uff29\uff2b.R": [
+                "ToeTipIK_R",
+                false
+            ]
+        }
+    ],
+    [
+        "MMD_EN",
+        {
+            "ParentNode": [
+                "Root",
+                false
+            ],
+            "Center": [
+                "Center",
+                false
+            ],
+            "UpperBody": [
+                "UpperBody",
+                false
+            ],
+            "UpperBody2": [
+                "UpperBody2",
+                false
+            ],
+            "Neck": [
+                "Neck",
+                false
+            ],
+            "Head": [
+                "Head",
+                false
+            ],
+            "Eye_L": [
+                "Eye_L",
+                false
+            ],
+            "Eye_R": [
+                "Eye_R",
+                false
+            ],
+            "Shoulder_L": [
+                "Shoulder_L",
+                false
+            ],
+            "Arm_L": [
+                "Arm_L",
+                false
+            ],
+            "ArmTwist_L": [
+                "ArmTwist_L",
+                false
+            ],
+            "Elbow_L": [
+                "Elbow_L",
+                false
+            ],
+            "HandTwist_L": [
+                "HandTwist_L",
+                false
+            ],
+            "Wrist_L": [
+                "Wrist_L",
+                false
+            ],
+            "Thumb0_L": [
+                "Thumb0_L",
+                false
+            ],
+            "Thumb1_L": [
+                "Thumb1_L",
+                false
+            ],
+            "Thumb2_L": [
+                "Thumb2_L",
+                false
+            ],
+            "IndexFinger1_L": [
+                "IndexFinger1_L",
+                false
+            ],
+            "IndexFinger2_L": [
+                "IndexFinger2_L",
+                false
+            ],
+            "IndexFinger3_L": [
+                "IndexFinger3_L",
+                false
+            ],
+            "MiddleFinger1_L": [
+                "MiddleFinger1_L",
+                false
+            ],
+            "MiddleFinger2_L": [
+                "MiddleFinger2_L",
+                false
+            ],
+            "MiddleFinger3_L": [
+                "MiddleFinger3_L",
+                false
+            ],
+            "RingFinger1_L": [
+                "RingFinger1_L",
+                false
+            ],
+            "RingFinger2_L": [
+                "RingFinger2_L",
+                false
+            ],
+            "RingFinger3_L": [
+                "RingFinger3_L",
+                false
+            ],
+            "LittleFinger1_L": [
+                "LittleFinger1_L",
+                false
+            ],
+            "LittleFinger2_L": [
+                "LittleFinger2_L",
+                false
+            ],
+            "LittleFinger3_L": [
+                "LittleFinger3_L",
+                false
+            ],
+            "Shoulder_R": [
+                "Shoulder_R",
+                false
+            ],
+            "Arm_R": [
+                "Arm_R",
+                false
+            ],
+            "ArmTwist_R": [
+                "ArmTwist_R",
+                false
+            ],
+            "Elbow_R": [
+                "Elbow_R",
+                false
+            ],
+            "HandTwist_R": [
+                "HandTwist_R",
+                false
+            ],
+            "Wrist_R": [
+                "Wrist_R",
+                false
+            ],
+            "Thumb0_R": [
+                "Thumb0_R",
+                false
+            ],
+            "Thumb1_R": [
+                "Thumb1_R",
+                false
+            ],
+            "Thumb2_R": [
+                "Thumb2_R",
+                false
+            ],
+            "IndexFinger1_R": [
+                "IndexFinger1_R",
+                false
+            ],
+            "IndexFinger2_R": [
+                "IndexFinger2_R",
+                false
+            ],
+            "IndexFinger3_R": [
+                "IndexFinger3_R",
+                false
+            ],
+            "MiddleFinger1_R": [
+                "MiddleFinger1_R",
+                false
+            ],
+            "MiddleFinger2_R": [
+                "MiddleFinger2_R",
+                false
+            ],
+            "MiddleFinger3_R": [
+                "MiddleFinger3_R",
+                false
+            ],
+            "RingFinger1_R": [
+                "RingFinger1_R",
+                false
+            ],
+            "RingFinger2_R": [
+                "RingFinger2_R",
+                false
+            ],
+            "RingFinger3_R": [
+                "RingFinger3_R",
+                false
+            ],
+            "LittleFinger1_R": [
+                "LittleFinger1_R",
+                false
+            ],
+            "LittleFinger2_R": [
+                "LittleFinger2_R",
+                false
+            ],
+            "LittleFinger3_R": [
+                "LittleFinger3_R",
+                false
+            ],
+            "LowerBody": [
+                "LowerBody",
+                true
+            ],
+            "Leg_L": [
+                "Leg_L",
+                false
+            ],
+            "Knee_L": [
+                "Knee_L",
+                false
+            ],
+            "Ankle_L": [
+                "Ankle_L",
+                false
+            ],
+            "Leg_R": [
+                "Leg_R",
+                false
+            ],
+            "Knee_R": [
+                "Knee_R",
+                false
+            ],
+            "Ankle_R": [
+                "Ankle_R",
+                false
+            ],
+            "LegIK_L": [
+                "LegIK_L",
+                false
+            ],
+            "ToeTipIK_L": [
+                "ToeTipIK_L",
+                false
+            ],
+            "LegIK_R": [
+                "LegIK_R",
+                false
+            ],
+            "ToeTipIK_R": [
                 "ToeTipIK_R",
                 false
             ]

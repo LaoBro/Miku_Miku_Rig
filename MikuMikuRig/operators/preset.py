@@ -8,34 +8,37 @@ from . import rig
 
 bone_type_dict={
 'None':[],
-'Root':['Root'],
+'Root':['Root','Center'],
 'Center':['LowerBody','UpperBody0','UpperBody','UpperBody2','Neck','Head'],
-'Left_Arm':['Shoulder_L','Arm_L','Elbow_L','HandTwist_L','Wrist_L'],
+'Face':['Eye_L','Eye_R'],
+'Left_Arm':['Shoulder_L','Arm_L','ArmTwist_L','Elbow_L','HandTwist_L','Wrist_L'],
 'Left_Thumb':['Thumb0_L','Thumb1_L','Thumb2_L'],
 'Left_Index':['IndexFinger1_L','IndexFinger2_L','IndexFinger3_L'],
 'Left_Middle':['MiddleFinger1_L','MiddleFinger2_L','MiddleFinger3_L'],
 'Left_Ring':['RingFinger1_L','RingFinger2_L','RingFinger3_L'],
 'Left_Little':['LittleFinger1_L','LittleFinger2_L','LittleFinger3_L'],
-'Left_Leg':['Leg_L','Knee_L','Ankle_L','ToeTipIK_L'],
-'Left_IK':['LegIK_L'],
-'Left_Tip':['LegTipEX_L'],
-'Right_Arm':['Shoulder_R','Arm_R','Elbow_R','HandTwist_R','Wrist_R'],
+'Right_Arm':['Shoulder_R','Arm_R','ArmTwist_R','Elbow_R','HandTwist_R','Wrist_R'],
 'Right_Thumb':['Thumb0_R','Thumb1_R','Thumb2_R'],
 'Right_Index':['IndexFinger1_R','IndexFinger2_R','IndexFinger3_R'],
 'Right_Middle':['MiddleFinger1_R','MiddleFinger2_R','MiddleFinger3_R'],
 'Right_Ring':['RingFinger1_R','RingFinger2_R','RingFinger3_R'],
 'Right_Little':['LittleFinger1_R','LittleFinger2_R','LittleFinger3_R'],
+'Left_Leg':['Leg_L','Knee_L','Ankle_L','ToeTipIK_L'],
+'Left_IK':['LegIK_L'],
+'Left_Tip':['LegTipEX_L'],
 'Right_Leg':['Leg_R','Knee_R','Ankle_R','ToeTipIK_R'],
 'Right_IK':['LegIK_R'],
 'Right_Tip':['LegTipEX_R'],
 }
 
+built_in_dict_list=["VRoid",'MMD_JP','MMD_EN']
+
 bone_type1_list=[]
-bone_type2_list=['None']
+bone_type_list=['None']
 for type1,type2_list in bone_type_dict.items():
     bone_type1_list.append(type1)
     for name2 in type2_list:
-        bone_type2_list.append(name2)
+        bone_type_list.append(name2)
 
 def get_type2_items(self,context):
     type2_items=[('None','None','')]
@@ -54,7 +57,7 @@ bpy.types.PoseBone.mmr_bone_invert=bpy.props.BoolProperty(
 
 bpy.types.PoseBone.mmr_bone_type=bpy.props.EnumProperty(
         items=[
-            (name, name, '') for name in bone_type2_list
+            (name, name, '') for name in bone_type_list
         ],
         description=('Choose the bone type2 you want to use'),
     )
@@ -82,7 +85,7 @@ def set_bone_type(name,pose):
         if bone.name in preset_dict_list[index]:
             item=preset_dict_list[index][bone.name]
             bone.mmr_bone_invert=item[1]
-            if item[0] in bone_type2_list:
+            if item[0] in bone_type_list:
                 bone.mmr_bone_type=item[0]
                 continue
         bone.mmr_bone_type='None'
@@ -137,14 +140,12 @@ def overwrite_preset(name,dict):
         write_preset()
 
 def get_preset_item(self,context):
-    preset_items=[('None','None','')]
+    preset_items=[]
     for name in preset_name_list:
         preset_items.append((name,name,''))
     return(preset_items)
 
 read_preset()
-#print(preset_name_list)
-#print(preset_dict_list)
 
 #操作器部分
 
@@ -160,6 +161,8 @@ class OT_Add_Preset(bpy.types.Operator):
         return context.window_manager.invoke_props_dialog(self)
 
     def execute(self,context):
+        if rig.check_arm()==False:
+            return{"CANCELLED"}
         obj = context.object
         pose=obj.pose
         preset_dict=get_bone_type(pose)
@@ -181,6 +184,8 @@ class OT_Delete_Preset(bpy.types.Operator):
     def execute(self,context):
         scene=context.scene
         mmr_property=scene.mmr_property
+        if rig.check_arm()==False:
+            return{"CANCELLED"}
         delete_preset(mmr_property.preset_name)
         return{"FINISHED"}
 
@@ -200,6 +205,8 @@ class OT_Read_Preset(bpy.types.Operator):
     def execute(self,context):
         scene=context.scene
         mmr_property=scene.mmr_property
+        if rig.check_arm()==False:
+            return{"CANCELLED"}
         preset_name=mmr_property.preset_name
         obj = context.object
         pose=obj.pose
@@ -222,6 +229,8 @@ class OT_Overwrite_Preset(bpy.types.Operator):
     def execute(self,context):
         scene=context.scene
         mmr_property=scene.mmr_property
+        if rig.check_arm()==False:
+            return{"CANCELLED"}
         preset_name=mmr_property.preset_name
         obj = context.object
         pose=obj.pose
@@ -235,24 +244,167 @@ class OT_Rig_Preset(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self,context):
+        scene=context.scene
+        mmr_property=scene.mmr_property
+        if rig.check_arm()==False:
+            return{"CANCELLED"}
+        preset_name=mmr_property.preset_name
+        obj = context.object
+        pose=obj.pose
+        set_bone_type(preset_name,pose)
         rig.RIG2(context)
         return{"FINISHED"}
+
+mmr_keymaps=[]
+
+class OT_QA_Start(bpy.types.Operator):
+    bl_idname = "mmr.qa_start" # python 提示
+    bl_label = "QA Start"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self,context):
+        scene=context.scene
+        mmr_property=scene.mmr_property
+        if rig.check_arm()==False:
+            return{"CANCELLED"}
+        mmr_property.quick_assign_mod=True
+        mmr_property.quick_assign_index=1
+        wm = context.window_manager
+        km = wm.keyconfigs.addon.keymaps.new(name='MMR_QA')
+        km.active()
+        kmi = km.keymap_items.new('mmr.qa_assign', 'A', 'CLICK')
+        kmi.active=True
+        kmi = km.keymap_items.new('mmr.qa_assign_invert', 'I', 'CLICK')
+        kmi.active=True
+        kmi = km.keymap_items.new('mmr.qa_skip', 'S', 'CLICK')
+        kmi.active=True
+        mmr_keymaps.append(km)
+        bpy.ops.object.mode_set(mode = 'POSE')
+
+        return{"FINISHED"}
+
+def QA_End(context):
+    scene=context.scene
+    mmr_property=scene.mmr_property
+    mmr_property.quick_assign_mod=False
+    mmr_property.quick_assign_index=1
+    wm = context.window_manager
+    for km in mmr_keymaps:
+        wm.keyconfigs.addon.keymaps.remove(km)
+    mmr_keymaps.clear()
+
+class OT_QA_End(bpy.types.Operator):
+    bl_idname = "mmr.qa_end" # python 提示
+    bl_label = "QA End"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self,context):
+        QA_End(context)
+        
+        return{"FINISHED"}
+
+class OT_QA_Assign(bpy.types.Operator):
+    bl_idname = "mmr.qa_assign" # python 提示
+    bl_label = "QA Assign"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self,context):
+        scene=context.scene
+        mmr_property=scene.mmr_property
+        if mmr_property.quick_assign_mod==False:
+            return{"FINISHED"}
+
+        pose_bone = context.active_pose_bone or \
+                    context.active_object.pose.bones.get(context.active_bone.name, None)
+        if pose_bone is None:
+            return{"FINISHED"}
+
+        bone=pose_bone.bone
+
+        if len(bone.children)!=0:
+            child_bone=bone.children[0]
+            bone.select=False
+            child_bone.select=True
+            context.view_layer.objects.active.data.bones.active=child_bone
+
+        bone_type=bone_type_list[mmr_property.quick_assign_index]
+
+        pose_bone.mmr_bone_type=bone_type
+        pose_bone.mmr_bone_invert=False
+
+        mmr_property.quick_assign_index+=1
+        if mmr_property.quick_assign_index > len(bone_type_list)-1:
+            QA_End(context)
+        
+        return{"FINISHED"}
+
+class OT_QA_Assign_Invert(bpy.types.Operator):
+    bl_idname = "mmr.qa_assign_invert" # python 提示
+    bl_label = "QA Assign Invert"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self,context):
+        scene=context.scene
+        mmr_property=scene.mmr_property
+        if mmr_property.quick_assign_mod==False:
+            return{"FINISHED"}
+
+        pose_bone = context.active_pose_bone or \
+                    context.active_object.pose.bones.get(context.active_bone.name, None)
+        if pose_bone is None:
+            return{"FINISHED"}
+
+        bone=pose_bone.bone
+
+        if len(bone.children)!=0:
+            child_bone=bone.children[0]
+            bone.select=False
+            child_bone.select=True
+            context.view_layer.objects.active.data.bones.active=child_bone
+
+        bone_type=bone_type_list[mmr_property.quick_assign_index]
+
+        pose_bone.mmr_bone_type=bone_type
+        pose_bone.mmr_bone_invert=True
+
+        mmr_property.quick_assign_index+=1
+        if mmr_property.quick_assign_index > len(bone_type_list)-1:
+            QA_End(context)
+        
+        return{"FINISHED"}
+
+class OT_QA_Skip(bpy.types.Operator):
+    bl_idname = "mmr.qa_skip" # python 提示
+    bl_label = "QA Skip"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self,context):
+        scene=context.scene
+        mmr_property=scene.mmr_property
+        if mmr_property.quick_assign_mod==False:
+            return{"FINISHED"}
+        mmr_property.quick_assign_index+=1
+        if mmr_property.quick_assign_index > len(bone_type_list)-1:
+            QA_End(context)
+
+        return{"FINISHED"}
+
 
 #UI菜单部分
 
 class MMR_Arm_Panel(bpy.types.Panel):
     bl_idname="MMR_PT_panel_12"
-    bl_label = "MMR Arm Panel"
-    bl_space_type = 'PROPERTIES'
-    bl_region_type = 'WINDOW'
-    bl_context = "data"
-    
+    bl_label = "Controller Preset"
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    #bl_context = "data"
+    bl_category = "MMR"
 
-    @classmethod
+    '''@classmethod
     def poll(cls, context):
         if not context.object:
             return False
-        return context.object.type == 'ARMATURE' and context.active_object.data.get("rig_id") is None
+        return context.object.type == 'ARMATURE' and context.active_object.data.get("rig_id") is None'''
 
     def draw(self, context):
         C = context
@@ -260,24 +412,39 @@ class MMR_Arm_Panel(bpy.types.Panel):
         obj = context.object
         scene=context.scene
         mmr_property=scene.mmr_property
-
-        if obj.mode in {'POSE', 'OBJECT'}:
-
+        row = layout.row()
+        # Rig type field
+        if mmr_property.quick_assign_mod:
             row = layout.row()
-            # Rig type field
-
-            col = layout.column(align=True)
-            col.active = (not 'rig_id' in C.object.data)
-
-            col.separator()
-            row = col.row()
-            #row.operator("pose.rigify_generate", text="Generate Rig", icon='POSE_HLT')
+            row.label(text="正在指定骨骼：")
+            row.label(text=bone_type_list[mmr_property.quick_assign_index],translate =False)
+            layout.operator("mmr.qa_assign",text='Assign (Hot Key:A)')
+            layout.operator("mmr.qa_assign_invert",text='Assign Invert (Hot Key:I)')
+            layout.operator("mmr.qa_skip",text='Skip (Hot Key:S)')
+            layout.operator("mmr.qa_end",text='End Quick Assign')
+            layout.label(text="快捷键暂时没用")
+        else:
             row.prop(mmr_property, 'preset_name', text='preset')
-            layout.operator("mmr.add_preset")
-            layout.operator("mmr.delete_preset")
-            layout.operator("mmr.read_preset")
-            layout.operator("mmr.overwrite_preset")
+            if mmr_property.preset_name in built_in_dict_list and mmr_property.debug==False:
+                row = layout.row()
+                row.operator("mmr.add_preset")
+                row.operator("mmr.read_preset")
+            else:
+                row = layout.row()
+                row.operator("mmr.add_preset")
+                row.operator("mmr.delete_preset")
+                row = layout.row()
+                row.operator("mmr.read_preset")
+                row.operator("mmr.overwrite_preset")
+            layout.label(text="请选择对应的骨骼与预设")
             layout.operator("mmr.rig_preset")
+            layout.prop(mmr_property, "mmr_advanced_generation", toggle=True,text='高级选项')
+            if mmr_property.mmr_advanced_generation:
+                layout.prop(mmr_property,'wrist_rotation_follow',text="Wrist rotation follow arm")
+                layout.prop(mmr_property,'auto_shoulder',text="Shoulder IK")
+                layout.prop(mmr_property,'solid_rig',text="Replace the controller")
+                layout.prop(mmr_property,'pole_target',text="Use pole target")
+            layout.operator("mmr.qa_start",text='Start Quick Assign')
 
 
 class MMR_Bone_Panel(bpy.types.Panel):
@@ -302,8 +469,10 @@ class MMR_Bone_Panel(bpy.types.Panel):
         c = layout.column()
 
         row = c.row(align=True)
-        layout.prop(pose_bone, 'mmr_bone_invert', text='mmr_bone_invert')
-        layout.prop(pose_bone, 'mmr_bone_type', text='mmr_bone_type')
-        layout.prop_search(pose_bone, "mmr_bone_type", pose_bone, "mmr_bone_type", text="Rig type")
+        layout.prop(pose_bone, 'mmr_bone_type', text='Bone Type',translate =False)
+        layout.prop(pose_bone, 'mmr_bone_invert', text='Invert')
 
-Class_list=[MMR_Bone_Panel,MMR_Arm_Panel,OT_Add_Preset,OT_Delete_Preset,OT_Read_Preset,OT_Overwrite_Preset,OT_Rig_Preset]
+Class_list=[
+    MMR_Bone_Panel,MMR_Arm_Panel,OT_Add_Preset,OT_Delete_Preset,OT_Read_Preset,OT_Overwrite_Preset,OT_Rig_Preset,
+    OT_QA_Start,OT_QA_End,OT_QA_Assign,OT_QA_Assign_Invert,OT_QA_Skip
+]

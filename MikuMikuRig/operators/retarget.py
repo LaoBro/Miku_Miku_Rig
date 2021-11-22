@@ -93,7 +93,7 @@ def retarget_mixmao(OT,context):
     elif IKFK_arm=='FK':
         retarget_arm.pose.bones["Arm_parent_L"]["IK_FK"]=1
         retarget_arm.pose.bones["Arm_parent_R"]["IK_FK"]=1
-    if IKFK_arm !="unified":
+    if IKFK_arm !="None":
         retarget_arm.pose.bones["Arm_parent_L"].keyframe_insert(data_path='["IK_FK"]', frame=mixamo_action.frame_range[0])
         retarget_arm.pose.bones["Arm_parent_R"].keyframe_insert(data_path='["IK_FK"]', frame=mixamo_action.frame_range[0])
 
@@ -103,7 +103,7 @@ def retarget_mixmao(OT,context):
     elif IKFK_leg=='FK':
         retarget_arm.pose.bones["Leg_parent_L"]["IK_FK"]=1
         retarget_arm.pose.bones["Leg_parent_R"]["IK_FK"]=1
-    if IKFK_leg !='unified':
+    if IKFK_leg !='None':
         retarget_arm.pose.bones["Leg_parent_L"].keyframe_insert(data_path='["IK_FK"]', frame=mixamo_action.frame_range[0])
         retarget_arm.pose.bones["Leg_parent_R"].keyframe_insert(data_path='["IK_FK"]', frame=mixamo_action.frame_range[0])
 

@@ -9,7 +9,9 @@ def alert_error(title,message):
         self.layout.label(text=str(message))
     bpy.context.window_manager.popup_menu(draw,title=title,icon='ERROR')
 
-def check_arm(arm):
+def check_arm():
+    
+    arm=bpy.context.view_layer.objects.active
 
     if 'rigify' not in bpy.context.preferences.addons.keys():
         logging.info("检测到未开启rigify，已自动开启")
@@ -123,8 +125,9 @@ def add_constraint3(constraint_List,preset_dict):
 
     for i in index_list:
         From = preset_dict[constraint_List[i][1]]
+        From1=constraint_List[i][1]
         To = constraint_List[i][0]
-        parent_name=From + '_parent'
+        parent_name=From1 + '_parent'
         parent_bone=rig.data.edit_bones.new(name=parent_name)
         parent_bone.head=mmd_arm2.data.edit_bones[From].head
         parent_bone.tail=mmd_arm2.data.edit_bones[From].tail
@@ -135,12 +138,13 @@ def add_constraint3(constraint_List,preset_dict):
 
     for i in index_list:
         From = preset_dict[constraint_List[i][1]]
+        From1=constraint_List[i][1]
         To = constraint_List[i][0]
         location=constraint_List[i][3]
         con= mmd_arm.pose.bones[From].constraints
         for c in con:
             c.mute=True
-        parent_name=From + '_parent'
+        parent_name=From1 + '_parent'
         rig.data.bones[parent_name].hide=True
         if location:
             COPY_TRANSFORMS=con.new(type='COPY_TRANSFORMS')
@@ -180,7 +184,7 @@ def RIG(context):
     mmd_arm.select=True
 
     #检查骨架并翻译
-    if check_arm(mmd_arm)==False:
+    if check_arm()==False:
         return{False}
     bpy.ops.mmd_tools.translate_mmd_model(dictionary='INTERNAL', types={'BONE'}, modes={'MMD', 'BLENDER'})
 
@@ -578,8 +582,8 @@ def RIG(context):
     #捩骨约束
     #Twist constrains
     if 'HandTwist_L' in mmd_bones_list:
-        bpy.ops.object.mode_set(mode = 'EDIT')
-        mmd_arm.data.edit_bones['HandTwist_L'].tail=mmd_arm.data.edit_bones['Wrist_L'].head
+        #bpy.ops.object.mode_set(mode = 'EDIT')
+        #mmd_arm.data.edit_bones['HandTwist_L'].tail=mmd_arm.data.edit_bones['Wrist_L'].head
         bpy.ops.object.mode_set(mode = 'POSE')
         c1=mmd_arm.pose.bones['HandTwist_L'].constraints.new(type='COPY_ROTATION')
         c1.target=rig
@@ -594,8 +598,8 @@ def RIG(context):
         mmd_arm.data.bones['HandTwist_L'].hide=False
 
     if 'HandTwist_R' in mmd_bones_list:
-        bpy.ops.object.mode_set(mode = 'EDIT')
-        mmd_arm.data.edit_bones['HandTwist_R'].tail=mmd_arm.data.edit_bones['Wrist_R'].head
+        #bpy.ops.object.mode_set(mode = 'EDIT')
+        #mmd_arm.data.edit_bones['HandTwist_R'].tail=mmd_arm.data.edit_bones['Wrist_R'].head
         bpy.ops.object.mode_set(mode = 'POSE')
         c1=mmd_arm.pose.bones['HandTwist_R'].constraints.new(type='COPY_ROTATION')
         c1.target=rig
@@ -610,8 +614,8 @@ def RIG(context):
         mmd_arm.data.bones['HandTwist_R'].hide=False
 
     if 'ArmTwist_L' in mmd_bones_list:
-        bpy.ops.object.mode_set(mode = 'EDIT')
-        mmd_arm.data.edit_bones['ArmTwist_L'].tail=mmd_arm.data.edit_bones['Elbow_L'].head
+        #bpy.ops.object.mode_set(mode = 'EDIT')
+        #mmd_arm.data.edit_bones['ArmTwist_L'].tail=mmd_arm.data.edit_bones['Elbow_L'].head
         bpy.ops.object.mode_set(mode = 'POSE')
         c1=mmd_arm.pose.bones['ArmTwist_L'].constraints.new(type='COPY_ROTATION')
         c1.target=rig
@@ -625,8 +629,8 @@ def RIG(context):
         mmd_arm.data.bones['ArmTwist_L'].hide=False
 
     if 'ArmTwist_R' in mmd_bones_list:
-        bpy.ops.object.mode_set(mode = 'EDIT')
-        mmd_arm.data.edit_bones['ArmTwist_R'].tail=mmd_arm.data.edit_bones['Elbow_R'].head
+        #bpy.ops.object.mode_set(mode = 'EDIT')
+        #mmd_arm.data.edit_bones['ArmTwist_R'].tail=mmd_arm.data.edit_bones['Elbow_R'].head
         bpy.ops.object.mode_set(mode = 'POSE')
         c1=mmd_arm.pose.bones['ArmTwist_R'].constraints.new(type='COPY_ROTATION')
         c1.target=rig
@@ -800,7 +804,7 @@ def RIG2(context):
     mmd_arm.select=True
 
     #检查骨架并翻译
-    if check_arm(mmd_arm)==False:
+    if check_arm()==False:
         return{False}
 
     #生成字典
@@ -836,12 +840,24 @@ def RIG2(context):
 
     rigify_arm=data_to.objects[0]
     context.collection.objects.link(rigify_arm)
+    rigify_arm.dimensions=mmd_arm2.dimensions
 
     bpy.ops.object.select_all(action='DESELECT')
     context.view_layer.objects.active=rigify_arm
     rigify_arm.select=True
+    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
     bpy.ops.object.mode_set(mode = 'EDIT')
     bpy.ops.armature.select_all(action='DESELECT')
+
+    if "Thumb0_L" not in preset_dict:
+        rigify_arm.data.edit_bones.remove(rigify_arm.data.edit_bones["Thumb2_L"])
+        rigify_arm.data.edit_bones["Thumb1_L"].name='Thumb2_L'
+        rigify_arm.data.edit_bones["Thumb0_L"].name='Thumb1_L'
+
+    if "Thumb0_R" not in preset_dict:
+        rigify_arm.data.edit_bones.remove(rigify_arm.data.edit_bones["Thumb2_R"])
+        rigify_arm.data.edit_bones["Thumb1_R"].name='Thumb2_R'
+        rigify_arm.data.edit_bones["Thumb0_R"].name='Thumb1_R'
 
     rigify_bones_list=rigify_arm.data.edit_bones.keys()
     remain_bone=set(rigify_bones_list)
@@ -924,13 +940,11 @@ def RIG2(context):
     rigify_arm.data.edit_bones["Wrist_L"].tail=(np.array(rigify_arm.data.edit_bones["MiddleFinger1_L"].head)+np.array(rigify_arm.data.edit_bones["RingFinger1_L"].head))/2
     rigify_arm.data.edit_bones["Wrist_R"].tail=(np.array(rigify_arm.data.edit_bones["MiddleFinger1_R"].head)+np.array(rigify_arm.data.edit_bones["RingFinger1_R"].head))/2
 
-    if 'ToeTipIK_L' in remain_bone:
-        rigify_arm.data.edit_bones["ToeTipIK_L"].tail=rigify_arm.data.edit_bones["ToeTipIK_L"].head
-        rigify_arm.data.edit_bones["ToeTipIK_L"].tail[1]+=rigify_arm.data.edit_bones["Ankle_L"].length/2
+    rigify_arm.data.edit_bones["ToeTipIK_L"].tail=rigify_arm.data.edit_bones["ToeTipIK_L"].head
+    rigify_arm.data.edit_bones["ToeTipIK_L"].tail[1]+=rigify_arm.data.edit_bones["Ankle_L"].length/2
 
-    if 'ToeTipIK_L' in remain_bone:
-        rigify_arm.data.edit_bones["ToeTipIK_L"].tail=rigify_arm.data.edit_bones["ToeTipIK_L"].head
-        rigify_arm.data.edit_bones["ToeTipIK_L"].tail[1]+=rigify_arm.data.edit_bones["Ankle_L"].length/2
+    rigify_arm.data.edit_bones["ToeTipIK_R"].tail=rigify_arm.data.edit_bones["ToeTipIK_R"].head
+    rigify_arm.data.edit_bones["ToeTipIK_R"].tail[1]+=rigify_arm.data.edit_bones["Ankle_R"].length/2
 
     extend_bone=['Thumb2_L','IndexFinger3_L','MiddleFinger3_L','RingFinger3_L','LittleFinger3_L','Thumb2_R','IndexFinger3_R','MiddleFinger3_R','RingFinger3_R','LittleFinger3_R']
     for name in extend_bone:
@@ -939,10 +953,10 @@ def RIG2(context):
         bone.tail=np.array(parent_bone.tail)*2-np.array(parent_bone.head)
 
     #匹配眼睛骨骼
-    '''invert_eyes=False
-    if 'Eye_L' in mmd_bones_list and 'Eye_R' in mmd_bones_list:
+    invert_eyes=False
+    if 'Eye_L' in preset_dict and 'Eye_R' in preset_dict:
         eye_L=rigify_arm.data.edit_bones['eye.L']
-        mmd_eye_L=mmd_arm2.pose.bones['Eye_L']
+        mmd_eye_L=mmd_arm2.pose.bones[preset_dict['Eye_L']]
         eye_L.head[2]=mmd_eye_L.head[2]
         eye_L.head[0]=max(mmd_eye_L.head[0],mmd_eye_L.tail[0])
         eye_L.head[1]=min(mmd_eye_L.head[1],mmd_eye_L.tail[1])
@@ -950,7 +964,7 @@ def RIG2(context):
         eye_L.tail[1]-=0.1
 
         eye_R=rigify_arm.data.edit_bones['eye.R']
-        mmd_eye_R=mmd_arm2.pose.bones['Eye_R']
+        mmd_eye_R=mmd_arm2.pose.bones[preset_dict['Eye_R']]
         eye_R.head[2]=mmd_eye_R.head[2]
         eye_R.head[0]=min(mmd_eye_R.head[0],mmd_eye_R.tail[0])
         eye_R.head[1]=min(mmd_eye_R.head[1],mmd_eye_R.tail[1])
@@ -961,7 +975,7 @@ def RIG2(context):
             eye_R.name='1'
             eye_L.name='eye.R'
             eye_R.name='eye.L'
-            invert_eyes=True'''
+            invert_eyes=True
 
     #生成控制器
     if mmr_property.debug:
@@ -1057,12 +1071,12 @@ def RIG2(context):
         ("ORG-LittleFinger3_R","LittleFinger3_R",True,True),
     ]
 
-    '''if invert_eyes:
+    if invert_eyes:
         constraints_list.append(("ORG-eye.L","Eye_R",True,False))
         constraints_list.append(("ORG-eye.R","Eye_L",True,False))
     else:
         constraints_list.append(("ORG-eye.L","Eye_L",True,False))
-        constraints_list.append(("ORG-eye.R","Eye_R",True,False))'''
+        constraints_list.append(("ORG-eye.R","Eye_R",True,False))
 
     add_constraint3(constraints_list,preset_dict)
 
@@ -1093,43 +1107,6 @@ def RIG2(context):
 
     else:
         rig.pose.bones['MCH-torso.parent'].mmd_bone.name_j='グルーブ'
-
-
-
-    #手腕旋转跟随上半身开关
-    '''if mmr_property.wrist_rotation_follow:
-        bpy.ops.object.mode_set(mode = 'EDIT')
-        parent_bone=rig.data.edit_bones.new(name="Wrist_ik_L_parent")
-        parent_bone.head=rig.data.edit_bones["Wrist_ik_L"].head
-        parent_bone.tail=rig.data.edit_bones["Wrist_ik_L"].tail
-        parent_bone.roll=rig.data.edit_bones["Wrist_ik_L"].roll
-        parent_bone.parent=rig.data.edit_bones["MCH-Elbow_ik_L"]
-        parent_bone=rig.data.edit_bones.new(name="Wrist_ik_R_parent")
-        parent_bone.head=rig.data.edit_bones["Wrist_ik_R"].head
-        parent_bone.tail=rig.data.edit_bones["Wrist_ik_R"].tail
-        parent_bone.roll=rig.data.edit_bones["Wrist_ik_R"].roll
-        parent_bone.parent=rig.data.edit_bones["MCH-Elbow_ik_R"]
-
-        bpy.ops.object.mode_set(mode = 'POSE')
-
-        wrist_rotation=rig.pose.bones["Wrist_ik_L"].constraints.new(type='COPY_ROTATION')
-        wrist_rotation.target = rig
-        wrist_rotation.subtarget = "Wrist_ik_L_parent"
-        wrist_rotation.name="wrist_rotation"
-        wrist_rotation.mix_mode = 'BEFORE'
-        wrist_rotation.owner_space = 'LOCAL_WITH_PARENT'
-        wrist_rotation.target_space = 'LOCAL_WITH_PARENT'
-
-        wrist_rotation=rig.pose.bones["Wrist_ik_R"].constraints.new(type='COPY_ROTATION')
-        wrist_rotation.target = rig
-        wrist_rotation.subtarget = "Wrist_ik_R_parent"
-        wrist_rotation.name="wrist_rotation"
-        wrist_rotation.mix_mode = 'BEFORE'
-        wrist_rotation.owner_space = 'LOCAL_WITH_PARENT'
-        wrist_rotation.target_space = 'LOCAL_WITH_PARENT'
-
-        rig.data.bones["Wrist_ik_L_parent"].hide=True
-        rig.data.bones["Wrist_ik_R_parent"].hide=True'''
 
 
     #肩膀联动
@@ -1180,67 +1157,55 @@ def RIG2(context):
 
     #捩骨约束
     #Twist constrains
-    '''if 'HandTwist_L' in mmd_bones_list:
-        bpy.ops.object.mode_set(mode = 'EDIT')
-        mmd_arm.data.edit_bones['HandTwist_L'].tail=mmd_arm.data.edit_bones['Wrist_L'].head
-        bpy.ops.object.mode_set(mode = 'POSE')
-        c1=mmd_arm.pose.bones['HandTwist_L'].constraints.new(type='COPY_ROTATION')
+    if 'HandTwist_L' in preset_dict and 'Wrist_L' in preset_dict:
+        c1=mmd_arm.pose.bones[preset_dict['HandTwist_L']].constraints.new(type='COPY_ROTATION')
         c1.target=rig
         c1.subtarget='ORG-Wrist_L'
         c1.mix_mode = 'BEFORE'
         c1.target_space = 'LOCAL'
         c1.owner_space = 'LOCAL'
         c1.influence = 0.5
-        c2=mmd_arm.pose.bones['HandTwist_L'].constraints.new(type='DAMPED_TRACK')
+        c2=mmd_arm.pose.bones[preset_dict['HandTwist_L']].constraints.new(type='DAMPED_TRACK')
         c2.target=rig
         c2.subtarget='ORG-Wrist_L'
-        mmd_arm.data.bones['HandTwist_L'].hide=False
+        mmd_arm.data.bones[preset_dict['HandTwist_L']].hide=False
 
     if 'HandTwist_R' in mmd_bones_list:
-        bpy.ops.object.mode_set(mode = 'EDIT')
-        mmd_arm.data.edit_bones['HandTwist_R'].tail=mmd_arm.data.edit_bones['Wrist_R'].head
-        bpy.ops.object.mode_set(mode = 'POSE')
-        c1=mmd_arm.pose.bones['HandTwist_R'].constraints.new(type='COPY_ROTATION')
+        c1=mmd_arm.pose.bones[preset_dict['HandTwist_R']].constraints.new(type='COPY_ROTATION')
         c1.target=rig
         c1.subtarget='ORG-Wrist_R'
         c1.mix_mode = 'BEFORE'
         c1.target_space = 'LOCAL'
         c1.owner_space = 'LOCAL'
         c1.influence = 0.5
-        c2=mmd_arm.pose.bones['HandTwist_R'].constraints.new(type='DAMPED_TRACK')
+        c2=mmd_arm.pose.bones[preset_dict['HandTwist_R']].constraints.new(type='DAMPED_TRACK')
         c2.target=rig
         c2.subtarget='ORG-Wrist_R'
-        mmd_arm.data.bones['HandTwist_R'].hide=False
+        mmd_arm.data.bones[preset_dict['HandTwist_R']].hide=False
 
     if 'ArmTwist_L' in mmd_bones_list:
-        bpy.ops.object.mode_set(mode = 'EDIT')
-        mmd_arm.data.edit_bones['ArmTwist_L'].tail=mmd_arm.data.edit_bones['Elbow_L'].head
-        bpy.ops.object.mode_set(mode = 'POSE')
-        c1=mmd_arm.pose.bones['ArmTwist_L'].constraints.new(type='COPY_ROTATION')
+        c1=mmd_arm.pose.bones[preset_dict['ArmTwist_L']].constraints.new(type='COPY_ROTATION')
         c1.target=rig
         c1.subtarget='ORG-Elbow_L'
         c1.mix_mode = 'BEFORE'
         c1.target_space = 'LOCAL'
         c1.owner_space = 'LOCAL'
-        c2=mmd_arm.pose.bones['ArmTwist_L'].constraints.new(type='DAMPED_TRACK')
+        c2=mmd_arm.pose.bones[preset_dict['ArmTwist_L']].constraints.new(type='DAMPED_TRACK')
         c2.target=rig
         c2.subtarget='ORG-Elbow_L'
-        mmd_arm.data.bones['ArmTwist_L'].hide=False
+        mmd_arm.data.bones[preset_dict['ArmTwist_L']].hide=False
 
     if 'ArmTwist_R' in mmd_bones_list:
-        bpy.ops.object.mode_set(mode = 'EDIT')
-        mmd_arm.data.edit_bones['ArmTwist_R'].tail=mmd_arm.data.edit_bones['Elbow_R'].head
-        bpy.ops.object.mode_set(mode = 'POSE')
-        c1=mmd_arm.pose.bones['ArmTwist_R'].constraints.new(type='COPY_ROTATION')
+        c1=mmd_arm.pose.bones[preset_dict['ArmTwist_R']].constraints.new(type='COPY_ROTATION')
         c1.target=rig
         c1.subtarget='ORG-Elbow_R'
         c1.mix_mode = 'BEFORE'
         c1.target_space = 'LOCAL'
         c1.owner_space = 'LOCAL'
-        c2=mmd_arm.pose.bones['ArmTwist_R'].constraints.new(type='DAMPED_TRACK')
+        c2=mmd_arm.pose.bones[preset_dict['ArmTwist_R']].constraints.new(type='DAMPED_TRACK')
         c2.target=rig
         c2.subtarget='ORG-Elbow_R'
-        mmd_arm.data.bones['ArmTwist_R'].hide=False'''
+        mmd_arm.data.bones[preset_dict['ArmTwist_R']].hide=False
 
     #写入PMX骨骼名称数据
     #write PMX bone name
@@ -1298,6 +1263,8 @@ def RIG2(context):
     rig.data.layers[15] = False
     rig.data.layers[17] = False
     rig.data.layers[18] = False
+    if 'Eye_L' not in preset_dict or 'Eye_R' not in preset_dict:
+        rig.data.layers[0] = False
 
     #锁定移动的骨骼列表
     #lock the location of these bone
