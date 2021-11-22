@@ -1,7 +1,7 @@
 bl_info = {
     "name": "MikuMikuRig", #插件名字
     "author": "William", #作者名字
-    "version": (0, 4, 1,), #插件版本
+    "version": (0, 4, 2,), #插件版本
     "blender": (2, 80, 0), #需要的*最低* blender 版本
     "location": "3DView > Tools", #插件所在位置
     "description": "自动为MMD模型生成rigify控制器", #描述
@@ -19,7 +19,7 @@ from bpy.props import FloatProperty
 from bpy.props import EnumProperty
 
 def get_preset_item(self,context):
-    preset_items=[('None','None','')]
+    preset_items=[]
     for name in operators.preset.preset_name_list:
         preset_items.append((name,name,''))
     return(preset_items)
@@ -42,11 +42,11 @@ class MMR_property(bpy.types.PropertyGroup):
     debug:BoolProperty(default=False,description="debug")
     preset_name:EnumProperty(
         items=get_preset_item,
-        description=('Choose the bone type you want to use'),
-        default = None,
+        description=('Choose the preset you want to use'),
+        default = 1,
     )
     IKFK_list=[
-            ('unified','unified',''),
+            ('None','None',''),
             ('IK','IK',''),
             ('FK',"FK",''),
         ]
@@ -58,7 +58,7 @@ class MMR_property(bpy.types.PropertyGroup):
     IKFK_leg:EnumProperty(
         items=IKFK_list,
         description=('retarget mod'),
-        default = 2,
+        default = 1,
     )
     cloth_convert_mod:EnumProperty(
         items=[
@@ -69,6 +69,9 @@ class MMR_property(bpy.types.PropertyGroup):
         description=('retarget mod'),
         default = 0,
     )
+    quick_assign_index:IntProperty(default=1,description="快速指定序号",min=1)
+    quick_assign_mod:BoolProperty(default=False,description="快速指定模式")
+    mmr_advanced_generation:bpy.props.BoolProperty(default=False,description="高级选项")
 
 class Mmr_Panel_Base(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'
@@ -88,7 +91,7 @@ class MikuMikuRig_1(Mmr_Panel_Base):
         mmr_property=scene.mmr_property
         layout = self.layout
         layout.label(text="Select MMD armature then press the button")
-        layout.operator("mmr.generate_rig",text="Generate MMD rig",icon="CUBE")
+        layout.operator("mmr.generate_rig",text="Generate MMD rig")
         layout.prop(mmr_property,'wrist_rotation_follow',text="Wrist rotation follow arm")
         layout.prop(mmr_property,'auto_shoulder',text="Shoulder IK")
         layout.prop(mmr_property,'solid_rig',text="Replace the controller")
@@ -105,7 +108,7 @@ class MikuMikuRig_2(Mmr_Panel_Base):
         mmr_property=scene.mmr_property
         layout = self.layout
         layout.prop(mmr_property,'min_ik_loop',text="Min IK loop")
-        layout.operator("mmr.set_min_ik_loop",text="Set min IK loop",icon="CUBE")
+        layout.operator("mmr.set_min_ik_loop",text="Set min IK loop")
 
 class MikuMikuRig_3(Mmr_Panel_Base):
     bl_idname="MMR_PT_panel_3"
@@ -118,17 +121,17 @@ class MikuMikuRig_3(Mmr_Panel_Base):
         layout.label(text="Select rigify controller then press the button")
         layout.prop(mmr_property,'fade_in_out',text="Fade in out")
         layout.prop(mmr_property,'action_scale',text="Animation scale")
-        layout.prop(mmr_property,'auto_action_scale',text="Auto mixamo animation scale")
-        layout.prop(mmr_property,'lock_location',text="Lock mixamo animation location")
+        layout.prop(mmr_property,'auto_action_scale',text="Auto mixamo animation scale",toggle=True)
+        layout.prop(mmr_property,'lock_location',text="Lock mixamo animation location",toggle=True)
         row=layout.row()
-        row.label(text='Arm Type')
-        row.prop(mmr_property, 'IKFK_arm', text='')
+        row.label(text='Arm:',translate =False)
+        row.prop(mmr_property, 'IKFK_arm',expand=True)
         row=layout.row()
-        row.label(text='Leg Type')
-        row.prop(mmr_property, 'IKFK_leg', text='')
-        layout.operator("mmr.import_mixamo",text="Import mixamo animation as NLA",icon="CUBE")
-        layout.operator("mmr.import_vmd",text="Import VMD animation as NLA",icon="CUBE")
-        layout.operator("mmr.export_vmd",text="Bake and export VMD animation",icon="CUBE")
+        row.label(text='Leg:',translate =False)
+        row.prop(mmr_property, 'IKFK_leg',expand=True)
+        layout.operator("mmr.import_mixamo",text="Import mixamo animation as NLA")
+        layout.operator("mmr.import_vmd",text="Import VMD animation as NLA")
+        layout.operator("mmr.export_vmd",text="Bake and export VMD animation")
 
 class MikuMikuRig_4(Mmr_Panel_Base):
     bl_idname="MMR_PT_panel_4"
@@ -139,14 +142,14 @@ class MikuMikuRig_4(Mmr_Panel_Base):
         mmr_property=scene.mmr_property
         layout = self.layout
         layout.label(text="Select mesh and rigidbody then press the button")
+        layout.operator("mmr.convert_rigid_body_to_cloth",text="Convert rigid body to cloth")
         layout.prop(mmr_property,'subdivide',text="Subdivide level")
-        row=layout.row()
-        row.label(text='Convert Mod')
-        row.prop(mmr_property,'cloth_convert_mod',text="")
-        layout.prop(mmr_property,'auto_select_mesh',text="Auto select mesh")
-        layout.prop(mmr_property,'auto_select_rigid_body',text="Auto select rigid body")
-        layout.prop(mmr_property,'extend_ribbon',text="Extend ribbon area")
-        layout.operator("mmr.convert_rigid_body_to_cloth",text="Convert rigid body to cloth",icon="CUBE")
+        layout.label(text='Convert Mod:')
+        layout.props_enum(mmr_property,'cloth_convert_mod')
+        layout.label(text='Options:')
+        layout.prop(mmr_property,'auto_select_mesh',text="Auto select mesh",toggle=True)
+        layout.prop(mmr_property,'auto_select_rigid_body',text="Auto select rigid body",toggle=True)
+        layout.prop(mmr_property,'extend_ribbon',text="Extend ribbon area",toggle=True)
         layout.label(text="This featur is developed in cooperation with")
         layout.label(text="UuuNyaa")
 
@@ -169,25 +172,29 @@ def alert_error(title,message):
         self.layout.label(text=str(message))
     bpy.context.window_manager.popup_menu(draw,title=title,icon='ERROR')
 
-class_list=[MikuMikuRig_1,MikuMikuRig_2,MikuMikuRig_3,MikuMikuRig_4,MikuMikuRig_5]
+class_list=[MikuMikuRig_2,MikuMikuRig_3,MikuMikuRig_4,MikuMikuRig_5]
 Model_list=[operators]
 def register(): #启用插件时候执行
     bpy.utils.register_class(MMR_property)
     bpy.types.Scene.mmr_property = bpy.props.PointerProperty(type=MMR_property)
+
     for Model in Model_list:
         Model.register()
+
     for Class in class_list:
         bpy.utils.register_class(Class)
-        
+
     translation.register_module()
 
     print('register')
 
 def unregister(): #关闭插件时候执行
-    for Class in class_list:
-        bpy.utils.unregister_class(Class)
     for Model in Model_list:
         Model.unregister()
+
+    for Class in class_list:
+        bpy.utils.unregister_class(Class)
+
     bpy.utils.unregister_class(MMR_property)
 
     translation.unregister_module()

@@ -106,11 +106,11 @@ msgstr "选中MMD刚体和网格后点击按钮"
 msgid "Subdivide level"
 msgstr "细分等级"
 
-msgid "Cloth convert mod"
-msgstr "布料转换模式"
+msgid "Convert Mod:"
+msgstr "转换模式"
 
-msgid "1=Auto 2=Bone constrain 3=Surface deform"
-msgstr "1=自动检测 2=骨骼约束 3=表面形变"
+msgid "Bone Constrain"
+msgstr "骨骼约束"
 
 msgid "Auto select mesh"
 msgstr "自动选择模型"
@@ -125,3 +125,49 @@ msgctxt "Operator"
 msgid "Convert rigid body to cloth"
 msgstr "把刚体转换为布料"
 
+#MMR_Arm_Panel
+msgctxt "Operator"
+msgid "Assign (Hot Key:A)"
+msgstr "指定（快捷键:A）"
+
+msgctxt "Operator"
+msgid "Assign Invert (Hot Key:I)"
+msgstr "指定反向（快捷键:I）"
+
+msgctxt "Operator"
+msgid "Skip (Hot Key:S)"
+msgstr "跳过（快捷键:S）"
+
+msgctxt "Operator"
+msgid "End Quick Assign"
+msgstr "结束快速指定"
+
+msgctxt "Operator"
+msgid "Start Quick Assign"
+msgstr "开始快速指定"
+
+msgid "preset"
+msgstr "预设"
+
+msgid "Controller Preset"
+msgstr "控制器预设"
+
+msgctxt "Operator"
+msgid "Add Preset"
+msgstr "添加预设"
+
+msgctxt "Operator"
+msgid "Delete Preset"
+msgstr "删除预设"
+
+msgctxt "Operator"
+msgid "Read Preset"
+msgstr "读取预设"
+
+msgctxt "Operator"
+msgid "Overwrite Preset"
+msgstr "覆盖预设"
+
+msgctxt "Operator"
+msgid "Rig Preset"
+msgstr "生成控制器"
