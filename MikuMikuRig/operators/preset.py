@@ -269,7 +269,7 @@ class OT_QA_Start(bpy.types.Operator):
             return{"CANCELLED"}
         mmr_property.quick_assign_mod=True
         mmr_property.quick_assign_index=1
-        wm = context.window_manager
+        '''wm = context.window_manager
         km = wm.keyconfigs.addon.keymaps.new(name='MMR_QA')
         km.active()
         kmi = km.keymap_items.new('mmr.qa_assign', 'A', 'CLICK')
@@ -278,7 +278,7 @@ class OT_QA_Start(bpy.types.Operator):
         kmi.active=True
         kmi = km.keymap_items.new('mmr.qa_skip', 'S', 'CLICK')
         kmi.active=True
-        mmr_keymaps.append(km)
+        mmr_keymaps.append(km)'''
         bpy.ops.object.mode_set(mode = 'POSE')
 
         return{"FINISHED"}
@@ -288,9 +288,9 @@ def QA_End(context):
     mmr_property=scene.mmr_property
     mmr_property.quick_assign_mod=False
     mmr_property.quick_assign_index=1
-    wm = context.window_manager
+    '''wm = context.window_manager
     for km in mmr_keymaps:
-        wm.keyconfigs.addon.keymaps.remove(km)
+        wm.keyconfigs.addon.keymaps.remove(km)'''
     mmr_keymaps.clear()
 
 class OT_QA_End(bpy.types.Operator):

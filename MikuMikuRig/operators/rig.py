@@ -790,6 +790,9 @@ def RIG2(context):
     global mmd_bones_list
     global rig_bones_list
 
+    area = bpy.context.area.type
+    bpy.context.area.type = 'VIEW_3D'
+
     mmd_arm=context.view_layer.objects.active
 
     scene=context.scene
@@ -802,6 +805,7 @@ def RIG2(context):
     bpy.ops.object.select_all(action='DESELECT')
     context.view_layer.objects.active=mmd_arm
     mmd_arm.select=True
+    
 
     #检查骨架并翻译
     if check_arm()==False:
@@ -826,6 +830,8 @@ def RIG2(context):
     context.collection.objects.link(mmd_arm2)
     mmd_arm2.data=mmd_arm.data.copy()
     context.view_layer.objects.active=mmd_arm2
+    mmd_arm2.select=True
+    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
     bpy.ops.object.mode_set(mode = 'POSE')
     bpy.ops.pose.armature_apply(selected=False)
     bpy.ops.object.mode_set(mode = 'OBJECT')
@@ -865,24 +871,6 @@ def RIG2(context):
 
     #新骨骼匹配方法
 
-    positive_z_bone=[
-        'Shoulder_L','Arm_L','Elbow_L','Shoulder_R','Arm_R','Elbow_R',
-        'IndexFinger1_L','IndexFinger2_L','IndexFinger3_L',
-        'MiddleFinger1_L','MiddleFinger2_L','MiddleFinger3_L',
-        'RingFinger1_L','RingFinger2_L','RingFinger3_L',
-        'LittleFinger1_L','LittleFinger2_L','LittleFinger3_L',
-        'IndexFinger1_R','IndexFinger2_R','IndexFinger3_R',
-        'MiddleFinger1_R','MiddleFinger2_R','MiddleFinger3_R',
-        'RingFinger1_R','RingFinger2_R','RingFinger3_R',
-        'LittleFinger1_R','LittleFinger2_R','LittleFinger3_R',
-    ]
-    negative_y_bone=[
-        'Wrist_L','Wrist_R',
-        'Thumb0_L','Thumb1_L','Thumb2_L',
-        'Thumb0_R','Thumb1_R','Thumb2_R',
-    ]
-
-
     for bone in mmd_arm2.pose.bones:
         bone_type2=bone.mmr_bone_type
         if bone_type2!="None" and bone_type2 in rigify_bones_list:
@@ -902,26 +890,14 @@ def RIG2(context):
             else:
                 rigify_bone.head=bone.head
 
-    bpy.ops.armature.select_all(action='DESELECT')
-
-    for name in positive_z_bone:
-        rigify_arm.data.edit_bones[name].select=True
-
-    bpy.ops.armature.calculate_roll(type='GLOBAL_POS_Z')
-    bpy.ops.armature.select_all(action='DESELECT')
-
-    for name in negative_y_bone:
-        rigify_arm.data.edit_bones[name].select=True
-    
-    bpy.ops.armature.calculate_roll(type='GLOBAL_NEG_Y')
-
-
     #修正部分骨骼
 
     rigify_arm.data.edit_bones["UpperBody2"].tail=rigify_arm.data.edit_bones["Neck"].head
     if rigify_arm.data.edit_bones["LowerBody"].tail==rigify_arm.data.edit_bones["UpperBody"].head:
         rigify_arm.data.edit_bones["LowerBody"].tail[2]-=0.01
 
+    rigify_arm.data.edit_bones["Head"].tail=rigify_arm.data.edit_bones["Head"].head
+    rigify_arm.data.edit_bones["Head"].tail[2]+=rigify_arm.data.edit_bones["Neck"].length*3
     if rigify_arm.data.edit_bones["Neck"].tail==rigify_arm.data.edit_bones["Head"].head:
         rigify_arm.data.edit_bones["Neck"].tail[2]-=0.01
 
@@ -977,8 +953,45 @@ def RIG2(context):
             eye_R.name='eye.L'
             invert_eyes=True
 
+    positive_z_bone=[
+        'Shoulder_L','Arm_L','Elbow_L','Shoulder_R','Arm_R','Elbow_R',
+        'IndexFinger1_L','IndexFinger2_L','IndexFinger3_L',
+        'MiddleFinger1_L','MiddleFinger2_L','MiddleFinger3_L',
+        'RingFinger1_L','RingFinger2_L','RingFinger3_L',
+        'LittleFinger1_L','LittleFinger2_L','LittleFinger3_L',
+        'IndexFinger1_R','IndexFinger2_R','IndexFinger3_R',
+        'MiddleFinger1_R','MiddleFinger2_R','MiddleFinger3_R',
+        'RingFinger1_R','RingFinger2_R','RingFinger3_R',
+        'LittleFinger1_R','LittleFinger2_R','LittleFinger3_R',
+    ]
+    negative_y_bone=[
+        'Wrist_L','Wrist_R',
+        'Thumb0_L','Thumb1_L','Thumb2_L',
+        'Thumb0_R','Thumb1_R','Thumb2_R',
+    ]
+
+    bpy.ops.armature.select_all(action='DESELECT')
+    rigify_arm.data.show_axes = True
+
+    for name in positive_z_bone:
+        rigify_arm.data.edit_bones[name].select=True
+        rigify_arm.data.edit_bones[name].select_head=True
+        rigify_arm.data.edit_bones[name].select_tail=True
+
+    bpy.ops.armature.calculate_roll(type='GLOBAL_POS_Z')
+    
+    bpy.ops.armature.select_all(action='DESELECT')
+
+    for name in negative_y_bone:
+        rigify_arm.data.edit_bones[name].select=True
+        rigify_arm.data.edit_bones[name].select_head=True
+        rigify_arm.data.edit_bones[name].select_tail=True
+    
+    bpy.ops.armature.calculate_roll(type='GLOBAL_NEG_Y')
+
     #生成控制器
     if mmr_property.debug:
+        bpy.context.area.type = area
         return
 
     bpy.ops.object.mode_set(mode = 'OBJECT')
@@ -986,10 +999,7 @@ def RIG2(context):
     context.view_layer.objects.active=rigify_arm
     rigify_arm.select=True
 
-    area = bpy.context.area.type
-    bpy.context.area.type = 'VIEW_3D'
     bpy.ops.pose.rigify_generate()
-    bpy.context.area.type = area
     rig=bpy.data.objects["rig"]
     rig_bones_list=rig.data.bones.keys()
 
@@ -1144,6 +1154,11 @@ def RIG2(context):
     rig.pose.bones["MCH-Knee_ik_R"].use_ik_limit_x = True
     rig.pose.bones["MCH-Knee_ik_L"].ik_min_x = -0.0174533
     rig.pose.bones["MCH-Knee_ik_R"].ik_min_x = -0.0174533
+
+    rig.pose.bones["MCH-Elbow_ik_L"].use_ik_limit_z = True
+    rig.pose.bones["MCH-Elbow_ik_R"].use_ik_limit_z = True
+    rig.pose.bones["MCH-Elbow_ik_L"].ik_max_z = 0
+    rig.pose.bones["MCH-Elbow_ik_R"].ik_min_z = 0
 
     #极向目标开关
     #pole target
@@ -1334,6 +1349,7 @@ def RIG2(context):
     bpy.context.view_layer.objects.active=rig
     rig.select=True
     bpy.context.scene.tool_settings.transform_pivot_point = 'INDIVIDUAL_ORIGINS'
+    bpy.context.area.type = area
     logging.info("完成")
     alert_error("提示","完成")
     return(True)
