@@ -31,6 +31,31 @@ bone_type_dict={
 'Right_Tip':['LegTipEX_R'],
 }
 
+bone_type_dict2={
+'None':[],
+'Root':['Root','Center'],
+'Center':['spine','spine.001','spine.002','spine.003','spine.004','spine.006'],
+'Face':['eye.L','eye.R'],
+'Left_Arm':['shoulder.L','upper_arm.L','ArmTwist_L','forearm.L','HandTwist_L','hand.L'],
+'Left_Thumb':['thumb.01.L','thumb.02.L','thumb.03.L'],
+'Left_Index':['f_index.01.L','f_index.02.L','f_index.03.L'],
+'Left_Middle':['f_middle.01.L','f_middle.02.L','f_middle.03.L'],
+'Left_Ring':['f_ring.01.L','f_ring.02.L','f_ring.03.L'],
+'Left_Little':['f_pinky.01.L','f_pinky.02.L','f_pinky.03.L'],
+'Right_Arm':['shoulder.R','upper_arm.R','ArmTwist_R','forearm.R','HandTwist_R','hand.R'],
+'Right_Thumb':['thumb.01.R','thumb.02.R','thumb.03.R'],
+'Right_Index':['f_index.01.R','f_index.02.R','f_index.03.R'],
+'Right_Middle':['f_middle.01.R','f_middle.02.R','f_middle.03.R'],
+'Right_Ring':['f_ring.01.R','f_ring.02.R','f_ring.03.R'],
+'Right_Little':['f_pinky.01.R','f_pinky.02.R','f_pinky.03.R'],
+'Left_Leg':['thigh.L','shin.L','foot.L','toe.L'],
+'Left_IK':['LegIK_L'],
+'Left_Tip':['LegTipEX_L'],
+'Right_Leg':['thigh.R','shin.R','foot.R','toe.R'],
+'Right_IK':['LegIK_R'],
+'Right_Tip':['LegTipEX_R'],
+}
+
 built_in_dict_list=["VRoid",'MMD_JP','MMD_EN']
 
 bone_type1_list=[]
@@ -109,14 +134,14 @@ def read_preset():
     global preset_name_list
     global preset_dict_list
     preset_list=read_json()
-    print(preset_list)
+    #print(preset_list)
     preset_name_list=[preset[0] for preset in preset_list]
     preset_dict_list=[preset[1] for preset in preset_list]
 
 def write_preset():
     preset_len=len(preset_name_list)
     preset_list=[(preset_name_list[i],preset_dict_list[i]) for i in range(preset_len)]
-    print(preset_list)
+    #print(preset_list)
     write_json(preset_list)
 
 
@@ -243,6 +268,8 @@ class OT_Rig_Preset(bpy.types.Operator):
     bl_label = "Rig Preset"
     bl_options = {'REGISTER', 'UNDO'}
 
+    read:bpy.props.BoolProperty(default=True,description="读取预设")
+
     def execute(self,context):
         scene=context.scene
         mmr_property=scene.mmr_property
@@ -251,11 +278,37 @@ class OT_Rig_Preset(bpy.types.Operator):
         preset_name=mmr_property.preset_name
         obj = context.object
         pose=obj.pose
-        set_bone_type(preset_name,pose)
+        if self.read:
+            set_bone_type(preset_name,pose)
         rig.RIG2(context)
         return{"FINISHED"}
 
-mmr_keymaps=[]
+def set_keymap():
+    wm = bpy.context.window_manager
+    km = wm.keyconfigs['Blender user'].keymaps['3D View']
+    for kmi in km.keymap_items:
+        if kmi.type=='S' and kmi.shift==False and kmi.ctrl==False and kmi.alt==False:
+            kmi.active=False
+    km = wm.keyconfigs['Blender user'].keymaps['Pose']
+    for kmi in km.keymap_items:
+        if kmi.type=='A' and kmi.shift==False and kmi.ctrl==False:
+            kmi.active=False
+    kmi = km.keymap_items.new('mmr.qa_assign', 'A', 'PRESS')
+    kmi = km.keymap_items.new('mmr.qa_assign_invert', 'A', 'PRESS',alt=True)
+    kmi = km.keymap_items.new('mmr.qa_skip', 'S', 'PRESS')
+
+def reset_keymap():
+    wm = bpy.context.window_manager
+    km = wm.keyconfigs['Blender user'].keymaps['Pose']
+    for kmi in km.keymap_items:
+        if kmi.type=='A' and kmi.shift==False and kmi.ctrl==False:
+            kmi.active=True
+        if kmi.idname=='mmr.qa_assign' or kmi.idname== 'mmr.qa_assign_invert' or kmi.idname=='mmr.qa_skip':
+            km.keymap_items.remove(kmi)
+    km = wm.keyconfigs['Blender user'].keymaps['3D View']
+    for kmi in km.keymap_items:
+        if kmi.type=='S' and kmi.shift==False and kmi.ctrl==False and kmi.alt==False:
+            kmi.active=True
 
 class OT_QA_Start(bpy.types.Operator):
     bl_idname = "mmr.qa_start" # python 提示
@@ -269,16 +322,8 @@ class OT_QA_Start(bpy.types.Operator):
             return{"CANCELLED"}
         mmr_property.quick_assign_mod=True
         mmr_property.quick_assign_index=1
-        '''wm = context.window_manager
-        km = wm.keyconfigs.addon.keymaps.new(name='MMR_QA')
-        km.active()
-        kmi = km.keymap_items.new('mmr.qa_assign', 'A', 'CLICK')
-        kmi.active=True
-        kmi = km.keymap_items.new('mmr.qa_assign_invert', 'I', 'CLICK')
-        kmi.active=True
-        kmi = km.keymap_items.new('mmr.qa_skip', 'S', 'CLICK')
-        kmi.active=True
-        mmr_keymaps.append(km)'''
+        set_keymap()
+        
         bpy.ops.object.mode_set(mode = 'POSE')
 
         return{"FINISHED"}
@@ -288,10 +333,7 @@ def QA_End(context):
     mmr_property=scene.mmr_property
     mmr_property.quick_assign_mod=False
     mmr_property.quick_assign_index=1
-    '''wm = context.window_manager
-    for km in mmr_keymaps:
-        wm.keyconfigs.addon.keymaps.remove(km)'''
-    mmr_keymaps.clear()
+    reset_keymap()
 
 class OT_QA_End(bpy.types.Operator):
     bl_idname = "mmr.qa_end" # python 提示
@@ -320,10 +362,9 @@ class OT_QA_Assign(bpy.types.Operator):
             return{"FINISHED"}
 
         bone=pose_bone.bone
-
+        bone.select=False
         if len(bone.children)!=0:
             child_bone=bone.children[0]
-            bone.select=False
             child_bone.select=True
             context.view_layer.objects.active.data.bones.active=child_bone
 
@@ -355,10 +396,9 @@ class OT_QA_Assign_Invert(bpy.types.Operator):
             return{"FINISHED"}
 
         bone=pose_bone.bone
-
+        bone.select=False
         if len(bone.children)!=0:
             child_bone=bone.children[0]
-            bone.select=False
             child_bone.select=True
             context.view_layer.objects.active.data.bones.active=child_bone
 
@@ -381,6 +421,14 @@ class OT_QA_Skip(bpy.types.Operator):
     def execute(self,context):
         scene=context.scene
         mmr_property=scene.mmr_property
+
+        pose_bone = context.active_pose_bone or \
+                    context.active_object.pose.bones.get(context.active_bone.name, None)
+
+        bone=pose_bone.bone
+        bone.select=False
+        bone.select=True
+
         if mmr_property.quick_assign_mod==False:
             return{"FINISHED"}
         mmr_property.quick_assign_index+=1
@@ -419,10 +467,9 @@ class MMR_Arm_Panel(bpy.types.Panel):
             row.label(text="正在指定骨骼：")
             row.label(text=bone_type_list[mmr_property.quick_assign_index],translate =False)
             layout.operator("mmr.qa_assign",text='Assign (Hot Key:A)')
-            layout.operator("mmr.qa_assign_invert",text='Assign Invert (Hot Key:I)')
+            layout.operator("mmr.qa_assign_invert",text='Assign Invert (Hot Key:Alt+A)')
             layout.operator("mmr.qa_skip",text='Skip (Hot Key:S)')
             layout.operator("mmr.qa_end",text='End Quick Assign')
-            layout.label(text="快捷键暂时没用")
         else:
             row.prop(mmr_property, 'preset_name', text='preset')
             if mmr_property.preset_name in built_in_dict_list and mmr_property.debug==False:
@@ -436,8 +483,10 @@ class MMR_Arm_Panel(bpy.types.Panel):
                 row = layout.row()
                 row.operator("mmr.read_preset")
                 row.operator("mmr.overwrite_preset")
-            layout.label(text="请选择对应的骨骼与预设")
+            layout.label(text="建议：改成Apose再生成控制器")
             layout.operator("mmr.rig_preset")
+            ot=layout.operator("mmr.rig_preset",text='生成控制器(不读取预设)')
+            ot.read=False
             layout.prop(mmr_property, "mmr_advanced_generation", toggle=True,text='高级选项')
             if mmr_property.mmr_advanced_generation:
                 layout.prop(mmr_property,'wrist_rotation_follow',text="Wrist rotation follow arm")
@@ -474,5 +523,5 @@ class MMR_Bone_Panel(bpy.types.Panel):
 
 Class_list=[
     MMR_Bone_Panel,MMR_Arm_Panel,OT_Add_Preset,OT_Delete_Preset,OT_Read_Preset,OT_Overwrite_Preset,OT_Rig_Preset,
-    OT_QA_Start,OT_QA_End,OT_QA_Assign,OT_QA_Assign_Invert,OT_QA_Skip
+    OT_QA_Start,OT_QA_End,OT_QA_Assign,OT_QA_Assign_Invert,OT_QA_Skip,
 ]
