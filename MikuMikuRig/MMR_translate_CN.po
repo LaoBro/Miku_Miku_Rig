@@ -131,8 +131,8 @@ msgid "Assign (Hot Key:A)"
 msgstr "指定（快捷键:A）"
 
 msgctxt "Operator"
-msgid "Assign Invert (Hot Key:I)"
-msgstr "指定反向（快捷键:I）"
+msgid "Assign Invert (Hot Key:Alt+A)"
+msgstr "指定反向（快捷键:Alt+A）"
 
 msgctxt "Operator"
 msgid "Skip (Hot Key:S)"
