@@ -972,20 +972,23 @@ def RIG2(context):
 
     bpy.ops.armature.select_all(action='DESELECT')
     rigify_arm.data.show_axes = True
+    rigify_bones_list=rigify_arm.data.edit_bones.keys()
 
     for name in positive_z_bone:
-        rigify_arm.data.edit_bones[name].select=True
-        rigify_arm.data.edit_bones[name].select_head=True
-        rigify_arm.data.edit_bones[name].select_tail=True
+        if name in rigify_bones_list:
+            rigify_arm.data.edit_bones[name].select=True
+            rigify_arm.data.edit_bones[name].select_head=True
+            rigify_arm.data.edit_bones[name].select_tail=True
 
     bpy.ops.armature.calculate_roll(type='GLOBAL_POS_Z')
     
     bpy.ops.armature.select_all(action='DESELECT')
 
     for name in negative_y_bone:
-        rigify_arm.data.edit_bones[name].select=True
-        rigify_arm.data.edit_bones[name].select_head=True
-        rigify_arm.data.edit_bones[name].select_tail=True
+        if name in rigify_bones_list:
+            rigify_arm.data.edit_bones[name].select=True
+            rigify_arm.data.edit_bones[name].select_head=True
+            rigify_arm.data.edit_bones[name].select_tail=True
     
     bpy.ops.armature.calculate_roll(type='GLOBAL_NEG_Y')
 
