@@ -400,6 +400,12 @@ def convert_rigid_body_to_cloth(context):
 
     mod=cloth_obj.modifiers.new('mmd_cloth','CLOTH')
     mod.settings.vertex_group_mass = "mmd_cloth_pin"
+    mod.settings.compression_stiffness = 0
+    mod.settings.compression_damping = 0
+    mod.settings.shear_stiffness = 0
+    mod.settings.shear_damping = 0
+
+
 
     mod=cloth_obj.modifiers.new('mmd_cloth_smooth','CORRECTIVE_SMOOTH')
     mod.smooth_type = 'LENGTH_WEIGHTED'
@@ -475,4 +481,20 @@ class OT_Convert_Rigid_Body_To_Cloth(Operator):
         convert_rigid_body_to_cloth(context)
         return{"FINISHED"}
 
-Class_list=[OT_Convert_Rigid_Body_To_Cloth]
+class OT_Rigid_Body_mass_Multiply(Operator):
+    bl_idname = "mmr.rigid_body_mass_multiply" # python 提示
+    bl_label = "Interface"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self,context):
+        scene=context.scene
+        mmr_property=scene.mmr_property
+        for obj in bpy.data.objects:
+            if hasattr(obj,'mmd_rigid'):
+                if obj.mmd_rigid.name != ''and obj.mmd_rigid.type != '0':
+                    obj.rigid_body.mass*=mmr_property.mass_multiply_rate
+                    obj.rigid_body.mass*=mmr_property.mass_multiply_rate
+                    obj.rigid_body.mass*=mmr_property.mass_multiply_rate
+        return{"FINISHED"}
+
+Class_list=[OT_Convert_Rigid_Body_To_Cloth,OT_Rigid_Body_mass_Multiply]

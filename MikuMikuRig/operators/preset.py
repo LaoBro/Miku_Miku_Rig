@@ -325,6 +325,10 @@ class OT_QA_Start(bpy.types.Operator):
         set_keymap()
         
         bpy.ops.object.mode_set(mode = 'POSE')
+        bpy.ops.pose.select_all(action='DESELECT')
+        first_bone=context.view_layer.objects.active.data.bones[0]
+        first_bone.select=True
+        context.view_layer.objects.active.data.bones.active=first_bone
 
         return{"FINISHED"}
 
