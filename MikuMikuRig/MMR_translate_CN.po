@@ -43,8 +43,8 @@ msgstr "替换实心控制器"
 msgid "Use pole target"
 msgstr "使用极向目标"
 #PT_MikuMikuRig_2
-msgid "Fixed MMD bone dislocation"
-msgstr "修正MMD骨骼错位"
+msgid "Fixed MMD model"
+msgstr "修正MMD模型"
 
 msgid "Min IK loop"
 msgstr "最小IK迭代次数"
@@ -52,6 +52,13 @@ msgstr "最小IK迭代次数"
 msgctxt "Operator"
 msgid "Set min IK loop"
 msgstr "设置最小IK迭代次数"
+
+msgid "Multiply Rate"
+msgstr "倍率"
+
+msgctxt "Operator"
+msgid "Rigid Body Mass Multiply"
+msgstr "刚体质量倍增"
 
 #PT_MikuMikuRig_3
 msgid "Auto animation import"

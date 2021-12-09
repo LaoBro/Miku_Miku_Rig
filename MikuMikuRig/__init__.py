@@ -1,7 +1,7 @@
 bl_info = {
     "name": "MikuMikuRig", #插件名字
     "author": "William", #作者名字
-    "version": (0, 4, 3, 1), #插件版本
+    "version": (0, 4, 4), #插件版本
     "blender": (2, 80, 0), #需要的*最低* blender 版本
     "location": "3DView > Tools", #插件所在位置
     "description": "自动为MMD模型生成rigify控制器", #描述
@@ -72,6 +72,7 @@ class MMR_property(bpy.types.PropertyGroup):
     quick_assign_index:IntProperty(default=1,description="快速指定序号",min=1)
     quick_assign_mod:BoolProperty(default=False,description="快速指定模式")
     mmr_advanced_generation:bpy.props.BoolProperty(default=False,description="高级选项")
+    mass_multiply_rate:FloatProperty(default=12.5,description="刚体质量倍率",min=0)
 
 class Mmr_Panel_Base(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'
@@ -99,7 +100,7 @@ class MikuMikuRig_1(Mmr_Panel_Base):
 
 class MikuMikuRig_2(Mmr_Panel_Base):
     bl_idname="MMR_PT_panel_2"
-    bl_label = "Fixed MMD bone dislocation" #菜单名字
+    bl_label = "Fixed MMD model" #菜单名字
 
     def draw(self, context):
         prefs = context.preferences
@@ -109,6 +110,8 @@ class MikuMikuRig_2(Mmr_Panel_Base):
         layout = self.layout
         layout.prop(mmr_property,'min_ik_loop',text="Min IK loop")
         layout.operator("mmr.set_min_ik_loop",text="Set min IK loop")
+        layout.prop(mmr_property,'mass_multiply_rate',text="Multiply Rate")
+        layout.operator("mmr.rigid_body_mass_multiply",text="Rigid Body Mass Multiply")
 
 class MikuMikuRig_3(Mmr_Panel_Base):
     bl_idname="MMR_PT_panel_3"
