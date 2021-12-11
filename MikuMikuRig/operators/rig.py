@@ -1232,6 +1232,7 @@ def RIG2(context):
     PMX_dict={
     'root':'全ての親','torso':'センター','hips':'下半身','UpperBody_fk':'上半身','UpperBody2_fk':'上半身2','neck':'首','head':'頭','Eyes_Rig':'両目',
     'Leg_ik_L':'左足','Ankle_ik_L':'左足ＩＫ','ToeTipIK_L':'左つま先ＩＫ','Leg_ik_R':'右足','Ankle_ik_R':'右足ＩＫ','ToeTipIK_R':'右つま先ＩＫ',
+    'Knee_fk_L':'左ひざ','Knee_fk_R':'右ひざ','Ankle_fk_L':'左足首','Ankle_fk_R':'右足首',
     'Shoulder_L':'左肩','Arm_fk_L':'左腕','Elbow_fk_L':'左ひじ','Wrist_fk_L':'左手首','Shoulder_R':'右肩','Arm_fk_R':'右腕','Elbow_fk_R':'右ひじ','Wrist_fk_R':'右手首',
     'Thumb0_L':'左親指０','Thumb1_L':'左親指１','Thumb2_L':'左親指２',
     'IndexFinger1_L':'左人指１','IndexFinger2_L':'左人指２','IndexFinger3_L':'左人指３',

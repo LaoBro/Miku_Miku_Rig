@@ -182,10 +182,13 @@ def load_vmd(OT,context):
     fade_in_out=mmr_property.fade_in_out
     action_scale=mmr_property.action_scale
     debug=mmr_property.debug
+    IKFK_leg=mmr_property.IKFK_leg
 
     if rigify_arm.type!='ARMATURE':
+        alert_error('所选对象不是骨骼')
         return(False)
     if vmd_path==None:
+        alert_error('找不到VMD文件')
         return(False)
 
 
@@ -205,6 +208,13 @@ def load_vmd(OT,context):
     rigify_arm2.select=True
     print(vmd_path)
     old_frame_end=bpy.context.scene.frame_end
+    #修复FK脚
+    if IKFK_leg=='FK':
+        rigify_arm2.pose.bones['Leg_ik_L'].mmd_bone.name_j=''
+        rigify_arm2.pose.bones['Leg_ik_R'].mmd_bone.name_j=''
+        rigify_arm2.pose.bones['Leg_fk_L'].mmd_bone.name_j='左足'
+        rigify_arm2.pose.bones['Leg_fk_R'].mmd_bone.name_j='右足'
+
     bpy.ops.mmd_tools.import_vmd(filepath=vmd_path,scale=action_scale, margin=0)
     bpy.context.scene.frame_end=old_frame_end
     
@@ -215,8 +225,12 @@ def load_vmd(OT,context):
     #insert IKFK keyframe
     rigify_arm2.pose.bones["Arm_parent_L"]["IK_FK"]=1
     rigify_arm2.pose.bones["Arm_parent_R"]["IK_FK"]=1
-    rigify_arm2.pose.bones["Leg_parent_L"]["IK_FK"]=0
-    rigify_arm2.pose.bones["Leg_parent_R"]["IK_FK"]=0
+    if IKFK_leg=='FK':
+        rigify_arm2.pose.bones["Leg_parent_L"]["IK_FK"]=1
+        rigify_arm2.pose.bones["Leg_parent_R"]["IK_FK"]=1
+    else:
+        rigify_arm2.pose.bones["Leg_parent_L"]["IK_FK"]=0
+        rigify_arm2.pose.bones["Leg_parent_R"]["IK_FK"]=0
     rigify_arm2.pose.bones["head"]["neck_follow"]=1
     rigify_arm2.pose.bones["head"]["head_follow"]=1
     
@@ -296,8 +310,10 @@ def export_vmd(OT,context):
     ]
 
     if rigify_arm.type!='ARMATURE':
+        alert_error('所选对象不是骨骼')
         return(False)
     if vmd_path==None:
+        alert_error('导出路径错误')
         return(False)
 
     bpy.ops.object.mode_set(mode = 'OBJECT')
@@ -305,11 +321,15 @@ def export_vmd(OT,context):
     #复制骨骼
     #duplicate armature
     mmd_arm=None
-    for obj in rigify_arm.children[0].children:
+    mmd_name=rigify_arm.name.replace('_Rig','')
+    '''for obj in rigify_arm.children[0].children:
         if obj.type=='ARMATURE':
             mmd_arm=obj
-            break
-    if mmd_arm==None:
+            break'''
+    if mmd_name in bpy.data.objects.keys():
+        mmd_arm=bpy.data.objects[mmd_name]
+    else:
+        alert_error('找不到骨骼')
         return(False)
 
     mmd_arm2=mmd_arm.copy()

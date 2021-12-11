@@ -209,8 +209,6 @@ class OT_Delete_Preset(bpy.types.Operator):
     def execute(self,context):
         scene=context.scene
         mmr_property=scene.mmr_property
-        if rig.check_arm()==False:
-            return{"CANCELLED"}
         delete_preset(mmr_property.preset_name)
         return{"FINISHED"}
 
