@@ -1,12 +1,13 @@
 bl_info = {
     "name": "MikuMikuRig", #插件名字
     "author": "William", #作者名字
-    "version": (0, 4, 4), #插件版本
+    "version": (0, 4, 5), #插件版本
     "blender": (2, 80, 0), #需要的*最低* blender 版本
     "location": "3DView > Tools", #插件所在位置
-    "description": "自动为MMD模型生成rigify控制器", #描述
+    "description": "快速为各种人形模型生成rigify控制器,一键套mixamo动作", #描述
     "support": 'COMMUNITY', #支持等级（社区支持）
     "category": "Rigging", #分类
+    "warning": "暂不支持Blender3.0及以上版本",
 }
 import bpy
 import bpy_extras
@@ -43,7 +44,6 @@ class MMR_property(bpy.types.PropertyGroup):
     preset_name:EnumProperty(
         items=get_preset_item,
         description=('Choose the preset you want to use'),
-        default = 1,
     )
     IKFK_list=[
             ('None','None',''),
@@ -53,12 +53,12 @@ class MMR_property(bpy.types.PropertyGroup):
     IKFK_arm:EnumProperty(
         items=IKFK_list,
         description=('retarget mod'),
-        default = 2,
+        default = 'FK',
     )
     IKFK_leg:EnumProperty(
         items=IKFK_list,
         description=('retarget mod'),
-        default = 1,
+        default = 'IK',
     )
     cloth_convert_mod:EnumProperty(
         items=[
@@ -67,7 +67,7 @@ class MMR_property(bpy.types.PropertyGroup):
             ('Surface Deform','Surface Deform','')
         ],
         description=('retarget mod'),
-        default = 0,
+        default = 'Auto',
     )
     quick_assign_index:IntProperty(default=1,description="快速指定序号",min=1)
     quick_assign_mod:BoolProperty(default=False,description="快速指定模式")
