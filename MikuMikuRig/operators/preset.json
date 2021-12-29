@@ -1,230 +1,5 @@
 [
     [
-        "VRoid",
-        {
-            "Root": [
-                "Root",
-                false
-            ],
-            "J_Bip_C_Hips": [
-                "LowerBody",
-                true
-            ],
-            "J_Bip_C_Spine": [
-                "UpperBody0",
-                false
-            ],
-            "J_Bip_C_Chest": [
-                "UpperBody",
-                false
-            ],
-            "J_Bip_C_UpperChest": [
-                "UpperBody2",
-                false
-            ],
-            "J_Bip_C_Neck": [
-                "Neck",
-                false
-            ],
-            "J_Bip_C_Head": [
-                "Head",
-                false
-            ],
-            "J_Adj_L_FaceEye": [
-                "Eye_L",
-                false
-            ],
-            "J_Adj_R_FaceEye": [
-                "Eye_R",
-                false
-            ],
-            "J_Bip_L_Shoulder": [
-                "Shoulder_L",
-                false
-            ],
-            "J_Bip_L_UpperArm": [
-                "Arm_L",
-                false
-            ],
-            "J_Bip_L_LowerArm": [
-                "Elbow_L",
-                false
-            ],
-            "J_Bip_L_Hand": [
-                "Wrist_L",
-                false
-            ],
-            "J_Bip_L_Index1": [
-                "IndexFinger1_L",
-                false
-            ],
-            "J_Bip_L_Index2": [
-                "IndexFinger2_L",
-                false
-            ],
-            "J_Bip_L_Index3": [
-                "IndexFinger3_L",
-                false
-            ],
-            "J_Bip_L_Little1": [
-                "LittleFinger1_L",
-                false
-            ],
-            "J_Bip_L_Little2": [
-                "LittleFinger2_L",
-                false
-            ],
-            "J_Bip_L_Little3": [
-                "LittleFinger3_L",
-                false
-            ],
-            "J_Bip_L_Middle1": [
-                "MiddleFinger1_L",
-                false
-            ],
-            "J_Bip_L_Middle2": [
-                "MiddleFinger2_L",
-                false
-            ],
-            "J_Bip_L_Middle3": [
-                "MiddleFinger3_L",
-                false
-            ],
-            "J_Bip_L_Ring1": [
-                "RingFinger1_L",
-                false
-            ],
-            "J_Bip_L_Ring2": [
-                "RingFinger2_L",
-                false
-            ],
-            "J_Bip_L_Ring3": [
-                "RingFinger3_L",
-                false
-            ],
-            "J_Bip_L_Thumb1": [
-                "Thumb0_L",
-                false
-            ],
-            "J_Bip_L_Thumb2": [
-                "Thumb1_L",
-                false
-            ],
-            "J_Bip_L_Thumb3": [
-                "Thumb2_L",
-                false
-            ],
-            "J_Bip_R_Shoulder": [
-                "Shoulder_R",
-                false
-            ],
-            "J_Bip_R_UpperArm": [
-                "Arm_R",
-                false
-            ],
-            "J_Bip_R_LowerArm": [
-                "Elbow_R",
-                false
-            ],
-            "J_Bip_R_Hand": [
-                "Wrist_R",
-                false
-            ],
-            "J_Bip_R_Index1": [
-                "IndexFinger1_R",
-                false
-            ],
-            "J_Bip_R_Index2": [
-                "IndexFinger2_R",
-                false
-            ],
-            "J_Bip_R_Index3": [
-                "IndexFinger3_R",
-                false
-            ],
-            "J_Bip_R_Little1": [
-                "LittleFinger1_R",
-                false
-            ],
-            "J_Bip_R_Little2": [
-                "LittleFinger2_R",
-                false
-            ],
-            "J_Bip_R_Little3": [
-                "LittleFinger3_R",
-                false
-            ],
-            "J_Bip_R_Middle1": [
-                "MiddleFinger1_R",
-                false
-            ],
-            "J_Bip_R_Middle2": [
-                "MiddleFinger2_R",
-                false
-            ],
-            "J_Bip_R_Middle3": [
-                "MiddleFinger3_R",
-                false
-            ],
-            "J_Bip_R_Ring1": [
-                "RingFinger1_R",
-                false
-            ],
-            "J_Bip_R_Ring2": [
-                "RingFinger2_R",
-                false
-            ],
-            "J_Bip_R_Ring3": [
-                "RingFinger3_R",
-                false
-            ],
-            "J_Bip_R_Thumb1": [
-                "Thumb0_R",
-                false
-            ],
-            "J_Bip_R_Thumb2": [
-                "Thumb1_R",
-                false
-            ],
-            "J_Bip_R_Thumb3": [
-                "Thumb2_R",
-                false
-            ],
-            "J_Bip_L_UpperLeg": [
-                "Leg_L",
-                false
-            ],
-            "J_Bip_L_LowerLeg": [
-                "Knee_L",
-                false
-            ],
-            "J_Bip_L_Foot": [
-                "Ankle_L",
-                false
-            ],
-            "J_Bip_L_ToeBase": [
-                "ToeTipIK_L",
-                false
-            ],
-            "J_Bip_R_UpperLeg": [
-                "Leg_R",
-                false
-            ],
-            "J_Bip_R_LowerLeg": [
-                "Knee_R",
-                false
-            ],
-            "J_Bip_R_Foot": [
-                "Ankle_R",
-                false
-            ],
-            "J_Bip_R_ToeBase": [
-                "ToeTipIK_R",
-                false
-            ]
-        }
-    ],
-    [
         "MMD_JP",
         {
             "\u5168\u3066\u306e\u89aa": [
@@ -718,6 +493,456 @@
             ],
             "ToeTipIK_R": [
                 "ToeTipIK_R",
+                false
+            ]
+        }
+    ],
+    [
+        "VRoid",
+        {
+            "Root": [
+                "Root",
+                false
+            ],
+            "J_Bip_C_Hips": [
+                "LowerBody",
+                true
+            ],
+            "J_Bip_C_Spine": [
+                "UpperBody0",
+                false
+            ],
+            "J_Bip_C_Chest": [
+                "UpperBody",
+                false
+            ],
+            "J_Bip_C_UpperChest": [
+                "UpperBody2",
+                false
+            ],
+            "J_Bip_C_Neck": [
+                "Neck",
+                false
+            ],
+            "J_Bip_C_Head": [
+                "Head",
+                false
+            ],
+            "J_Adj_L_FaceEye": [
+                "Eye_L",
+                false
+            ],
+            "J_Adj_R_FaceEye": [
+                "Eye_R",
+                false
+            ],
+            "J_Bip_L_Shoulder": [
+                "Shoulder_L",
+                false
+            ],
+            "J_Bip_L_UpperArm": [
+                "Arm_L",
+                false
+            ],
+            "J_Bip_L_LowerArm": [
+                "Elbow_L",
+                false
+            ],
+            "J_Bip_L_Hand": [
+                "Wrist_L",
+                false
+            ],
+            "J_Bip_L_Index1": [
+                "IndexFinger1_L",
+                false
+            ],
+            "J_Bip_L_Index2": [
+                "IndexFinger2_L",
+                false
+            ],
+            "J_Bip_L_Index3": [
+                "IndexFinger3_L",
+                false
+            ],
+            "J_Bip_L_Little1": [
+                "LittleFinger1_L",
+                false
+            ],
+            "J_Bip_L_Little2": [
+                "LittleFinger2_L",
+                false
+            ],
+            "J_Bip_L_Little3": [
+                "LittleFinger3_L",
+                false
+            ],
+            "J_Bip_L_Middle1": [
+                "MiddleFinger1_L",
+                false
+            ],
+            "J_Bip_L_Middle2": [
+                "MiddleFinger2_L",
+                false
+            ],
+            "J_Bip_L_Middle3": [
+                "MiddleFinger3_L",
+                false
+            ],
+            "J_Bip_L_Ring1": [
+                "RingFinger1_L",
+                false
+            ],
+            "J_Bip_L_Ring2": [
+                "RingFinger2_L",
+                false
+            ],
+            "J_Bip_L_Ring3": [
+                "RingFinger3_L",
+                false
+            ],
+            "J_Bip_L_Thumb1": [
+                "Thumb0_L",
+                false
+            ],
+            "J_Bip_L_Thumb2": [
+                "Thumb1_L",
+                false
+            ],
+            "J_Bip_L_Thumb3": [
+                "Thumb2_L",
+                false
+            ],
+            "J_Bip_R_Shoulder": [
+                "Shoulder_R",
+                false
+            ],
+            "J_Bip_R_UpperArm": [
+                "Arm_R",
+                false
+            ],
+            "J_Bip_R_LowerArm": [
+                "Elbow_R",
+                false
+            ],
+            "J_Bip_R_Hand": [
+                "Wrist_R",
+                false
+            ],
+            "J_Bip_R_Index1": [
+                "IndexFinger1_R",
+                false
+            ],
+            "J_Bip_R_Index2": [
+                "IndexFinger2_R",
+                false
+            ],
+            "J_Bip_R_Index3": [
+                "IndexFinger3_R",
+                false
+            ],
+            "J_Bip_R_Little1": [
+                "LittleFinger1_R",
+                false
+            ],
+            "J_Bip_R_Little2": [
+                "LittleFinger2_R",
+                false
+            ],
+            "J_Bip_R_Little3": [
+                "LittleFinger3_R",
+                false
+            ],
+            "J_Bip_R_Middle1": [
+                "MiddleFinger1_R",
+                false
+            ],
+            "J_Bip_R_Middle2": [
+                "MiddleFinger2_R",
+                false
+            ],
+            "J_Bip_R_Middle3": [
+                "MiddleFinger3_R",
+                false
+            ],
+            "J_Bip_R_Ring1": [
+                "RingFinger1_R",
+                false
+            ],
+            "J_Bip_R_Ring2": [
+                "RingFinger2_R",
+                false
+            ],
+            "J_Bip_R_Ring3": [
+                "RingFinger3_R",
+                false
+            ],
+            "J_Bip_R_Thumb1": [
+                "Thumb0_R",
+                false
+            ],
+            "J_Bip_R_Thumb2": [
+                "Thumb1_R",
+                false
+            ],
+            "J_Bip_R_Thumb3": [
+                "Thumb2_R",
+                false
+            ],
+            "J_Bip_L_UpperLeg": [
+                "Leg_L",
+                false
+            ],
+            "J_Bip_L_LowerLeg": [
+                "Knee_L",
+                false
+            ],
+            "J_Bip_L_Foot": [
+                "Ankle_L",
+                false
+            ],
+            "J_Bip_L_ToeBase": [
+                "ToeTipIK_L",
+                false
+            ],
+            "J_Bip_R_UpperLeg": [
+                "Leg_R",
+                false
+            ],
+            "J_Bip_R_LowerLeg": [
+                "Knee_R",
+                false
+            ],
+            "J_Bip_R_Foot": [
+                "Ankle_R",
+                false
+            ],
+            "J_Bip_R_ToeBase": [
+                "ToeTipIK_R",
+                false
+            ]
+        }
+    ],
+    [
+        "XPS",
+        {
+            "root ground": [
+                "Root",
+                false
+            ],
+            "root hips": [
+                "Center",
+                false
+            ],
+            "pelvis": [
+                "LowerBody",
+                true
+            ],
+            "leg left thigh": [
+                "Leg_L",
+                false
+            ],
+            "leg left knee": [
+                "Knee_L",
+                false
+            ],
+            "leg left ankle": [
+                "Ankle_L",
+                false
+            ],
+            "leg left toes": [
+                "ToeTipIK_L",
+                false
+            ],
+            "leg right thigh": [
+                "Leg_R",
+                false
+            ],
+            "leg right knee": [
+                "Knee_R",
+                false
+            ],
+            "leg right ankle": [
+                "Ankle_R",
+                false
+            ],
+            "leg right toes": [
+                "ToeTipIK_R",
+                false
+            ],
+            "spine lower": [
+                "UpperBody",
+                false
+            ],
+            "spine upper": [
+                "UpperBody2",
+                false
+            ],
+            "head neck lower": [
+                "Neck",
+                false
+            ],
+            "head neck upper": [
+                "Head",
+                false
+            ],
+            "head eyeball left": [
+                "Eye_L",
+                false
+            ],
+            "head eyeball right": [
+                "Eye_R",
+                false
+            ],
+            "arm left shoulder 1": [
+                "Shoulder_L",
+                false
+            ],
+            "arm left shoulder 2": [
+                "Arm_L",
+                false
+            ],
+            "arm left elbow": [
+                "Elbow_L",
+                false
+            ],
+            "arm left wrist": [
+                "Wrist_L",
+                false
+            ],
+            "arm left finger 2a": [
+                "IndexFinger1_L",
+                false
+            ],
+            "arm left finger 2b": [
+                "IndexFinger2_L",
+                false
+            ],
+            "arm left finger 2c": [
+                "IndexFinger3_L",
+                false
+            ],
+            "arm left finger 5a": [
+                "LittleFinger1_L",
+                false
+            ],
+            "arm left finger 5b": [
+                "LittleFinger2_L",
+                false
+            ],
+            "arm left finger 5c": [
+                "LittleFinger3_L",
+                false
+            ],
+            "arm left finger 4a": [
+                "RingFinger1_L",
+                false
+            ],
+            "arm left finger 4b": [
+                "RingFinger2_L",
+                false
+            ],
+            "arm left finger 4c": [
+                "RingFinger3_L",
+                false
+            ],
+            "arm left finger 3a": [
+                "MiddleFinger1_L",
+                false
+            ],
+            "arm left finger 3b": [
+                "MiddleFinger2_L",
+                false
+            ],
+            "arm left finger 3c": [
+                "MiddleFinger3_L",
+                false
+            ],
+            "arm left finger 1a": [
+                "Thumb0_L",
+                false
+            ],
+            "arm left finger 1b": [
+                "Thumb1_L",
+                false
+            ],
+            "arm left finger 1c": [
+                "Thumb2_L",
+                false
+            ],
+            "arm right shoulder 1": [
+                "Shoulder_R",
+                false
+            ],
+            "arm right shoulder 2": [
+                "Arm_R",
+                false
+            ],
+            "arm right elbow": [
+                "Elbow_R",
+                false
+            ],
+            "arm right wrist": [
+                "Wrist_R",
+                false
+            ],
+            "arm right finger 2a": [
+                "IndexFinger1_R",
+                false
+            ],
+            "arm right finger 2b": [
+                "IndexFinger2_R",
+                false
+            ],
+            "arm right finger 2c": [
+                "IndexFinger3_R",
+                false
+            ],
+            "arm right finger 5a": [
+                "LittleFinger1_R",
+                false
+            ],
+            "arm right finger 5b": [
+                "LittleFinger2_R",
+                false
+            ],
+            "arm right finger 5c": [
+                "LittleFinger3_R",
+                false
+            ],
+            "arm right finger 4a": [
+                "RingFinger1_R",
+                false
+            ],
+            "arm right finger 4b": [
+                "RingFinger2_R",
+                false
+            ],
+            "arm right finger 4c": [
+                "RingFinger3_R",
+                false
+            ],
+            "arm right finger 3a": [
+                "MiddleFinger1_R",
+                false
+            ],
+            "arm right finger 3b": [
+                "MiddleFinger2_R",
+                false
+            ],
+            "arm right finger 3c": [
+                "MiddleFinger3_R",
+                false
+            ],
+            "arm right finger 1a": [
+                "Thumb0_R",
+                false
+            ],
+            "arm right finger 1b": [
+                "Thumb1_R",
+                false
+            ],
+            "arm right finger 1c": [
+                "Thumb2_R",
                 false
             ]
         }
