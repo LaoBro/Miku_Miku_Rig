@@ -60,6 +60,10 @@ msgctxt "Operator"
 msgid "Rigid Body Mass Multiply"
 msgstr "刚体质量倍增"
 
+msgctxt "Operator"
+msgid "Hide Skirt By Rigid Body"
+msgstr "按刚体隐藏网格"
+
 #PT_MikuMikuRig_3
 msgid "Auto animation import"
 msgstr "一键导入动画"
@@ -176,5 +180,12 @@ msgid "Overwrite Preset"
 msgstr "覆盖预设"
 
 msgctxt "Operator"
-msgid "Rig Preset"
+msgid "Generate Rig with Preset"
 msgstr "生成控制器"
+
+msgctxt "Operator"
+msgid "Generate Rig Without Preset"
+msgstr "生成控制器(不读取预设)"
+
+msgid "Extra Options"
+msgstr "高级选项"

@@ -1,7 +1,7 @@
 bl_info = {
     "name": "MikuMikuRig", #插件名字
     "author": "William", #作者名字
-    "version": (0, 4, 5), #插件版本
+    "version": (0, 4, 6), #插件版本
     "blender": (2, 80, 0), #需要的*最低* blender 版本
     "location": "3DView > Tools", #插件所在位置
     "description": "快速为各种人形模型生成rigify控制器,一键套mixamo动作", #描述
@@ -100,7 +100,7 @@ class MikuMikuRig_1(Mmr_Panel_Base):
 
 class MikuMikuRig_2(Mmr_Panel_Base):
     bl_idname="MMR_PT_panel_2"
-    bl_label = "Fixed MMD model" #菜单名字
+    bl_label = "Extra" #菜单名字
 
     def draw(self, context):
         prefs = context.preferences
@@ -112,6 +112,7 @@ class MikuMikuRig_2(Mmr_Panel_Base):
         layout.operator("mmr.set_min_ik_loop",text="Set min IK loop")
         layout.prop(mmr_property,'mass_multiply_rate',text="Multiply Rate")
         layout.operator("mmr.rigid_body_mass_multiply",text="Rigid Body Mass Multiply")
+        layout.operator("mmr.hide_skirt",text="Hide Skirt By Rigid Body")
 
 class MikuMikuRig_3(Mmr_Panel_Base):
     bl_idname="MMR_PT_panel_3"
