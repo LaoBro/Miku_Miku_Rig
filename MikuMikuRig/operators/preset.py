@@ -486,10 +486,10 @@ class MMR_Arm_Panel(bpy.types.Panel):
                 row.operator("mmr.read_preset")
                 row.operator("mmr.overwrite_preset")
             layout.label(text="建议：改成Apose再生成控制器")
-            layout.operator("mmr.rig_preset")
-            ot=layout.operator("mmr.rig_preset",text='生成控制器(不读取预设)')
+            layout.operator("mmr.rig_preset",text='Generate Rig with Preset')
+            ot=layout.operator("mmr.rig_preset",text='Generate Rig Without Preset')
             ot.read=False
-            layout.prop(mmr_property, "mmr_advanced_generation", toggle=True,text='高级选项')
+            layout.prop(mmr_property, "mmr_advanced_generation", toggle=True,text='Extra Options')
             if mmr_property.mmr_advanced_generation:
                 layout.prop(mmr_property,'wrist_rotation_follow',text="Wrist rotation follow arm")
                 layout.prop(mmr_property,'auto_shoulder',text="Shoulder IK")
