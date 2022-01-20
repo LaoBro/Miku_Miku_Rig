@@ -185,10 +185,10 @@ def load_vmd(OT,context):
     IKFK_leg=mmr_property.IKFK_leg
 
     if rigify_arm.type!='ARMATURE':
-        alert_error('所选对象不是骨骼')
+        alert_error("警告",'所选对象不是骨骼')
         return(False)
     if vmd_path==None:
-        alert_error('找不到VMD文件')
+        alert_error("警告",'找不到VMD文件')
         return(False)
 
 
@@ -310,10 +310,10 @@ def export_vmd(OT,context):
     ]
 
     if rigify_arm.type!='ARMATURE':
-        alert_error('所选对象不是骨骼')
+        alert_error("警告",'所选对象不是骨骼')
         return(False)
     if vmd_path==None:
-        alert_error('导出路径错误')
+        alert_error("警告",'导出路径错误')
         return(False)
 
     bpy.ops.object.mode_set(mode = 'OBJECT')
@@ -329,7 +329,7 @@ def export_vmd(OT,context):
     if mmd_name in bpy.data.objects.keys():
         mmd_arm=bpy.data.objects[mmd_name]
     else:
-        alert_error('找不到骨骼')
+        alert_error("警告",'找不到骨骼')
         return(False)
 
     mmd_arm2=mmd_arm.copy()
