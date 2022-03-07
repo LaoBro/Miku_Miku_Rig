@@ -1,0 +1,1432 @@
+{
+    "rig": {
+        "MMD_JP": {
+            "\u5168\u3066\u306e\u89aa": [
+                "Root",
+                false
+            ],
+            "\u30bb\u30f3\u30bf\u30fc": [
+                "Center",
+                false
+            ],
+            "\u4e0b\u534a\u8eab": [
+                "spine",
+                true
+            ],
+            "\u8db3.L": [
+                "thigh.L",
+                false
+            ],
+            "\u3072\u3056.L": [
+                "shin.L",
+                false
+            ],
+            "\u8db3\u9996.L": [
+                "foot.L",
+                false
+            ],
+            "\u8db3.R": [
+                "thigh.R",
+                false
+            ],
+            "\u3072\u3056.R": [
+                "shin.R",
+                false
+            ],
+            "\u8db3\u9996.R": [
+                "foot.R",
+                false
+            ],
+            "\u8db3\u5148EX.R": [
+                "toe.R",
+                false
+            ],
+            "\u8db3\u5148EX.L": [
+                "toe.L",
+                false
+            ],
+            "\u4e0a\u534a\u8eab": [
+                "spine.001",
+                false
+            ],
+            "\u4e0a\u534a\u8eab3": [
+                "spine.002",
+                false
+            ],
+            "\u4e0a\u534a\u8eab2": [
+                "spine.003",
+                false
+            ],
+            "\u9996": [
+                "spine.004",
+                false
+            ],
+            "\u982d": [
+                "spine.006",
+                false
+            ],
+            "\u76ee.R": [
+                "eye.R",
+                false
+            ],
+            "\u76ee.L": [
+                "eye.L",
+                false
+            ],
+            "\u80a9.L": [
+                "shoulder.L",
+                false
+            ],
+            "\u8155.L": [
+                "upper_arm.L",
+                false
+            ],
+            "\u8155\u6369.L": [
+                "ArmTwist_L",
+                false
+            ],
+            "\u3072\u3058.L": [
+                "forearm.L",
+                false
+            ],
+            "\u624b\u6369.L": [
+                "HandTwist_L",
+                false
+            ],
+            "\u624b\u9996.L": [
+                "hand.L",
+                false
+            ],
+            "\u89aa\u6307\uff10.L": [
+                "thumb.01.L",
+                false
+            ],
+            "\u89aa\u6307\uff11.L": [
+                "thumb.02.L",
+                false
+            ],
+            "\u89aa\u6307\uff12.L": [
+                "thumb.03.L",
+                false
+            ],
+            "\u4eba\u6307\uff11.L": [
+                "f_index.01.L",
+                false
+            ],
+            "\u4eba\u6307\uff12.L": [
+                "f_index.02.L",
+                false
+            ],
+            "\u4eba\u6307\uff13.L": [
+                "f_index.03.L",
+                false
+            ],
+            "\u4e2d\u6307\uff11.L": [
+                "f_middle.01.L",
+                false
+            ],
+            "\u4e2d\u6307\uff12.L": [
+                "f_middle.02.L",
+                false
+            ],
+            "\u4e2d\u6307\uff13.L": [
+                "f_middle.03.L",
+                false
+            ],
+            "\u85ac\u6307\uff11.L": [
+                "f_ring.01.L",
+                false
+            ],
+            "\u85ac\u6307\uff12.L": [
+                "f_ring.02.L",
+                false
+            ],
+            "\u85ac\u6307\uff13.L": [
+                "f_ring.03.L",
+                false
+            ],
+            "\u5c0f\u6307\uff11.L": [
+                "f_pinky.01.L",
+                false
+            ],
+            "\u5c0f\u6307\uff12.L": [
+                "f_pinky.02.L",
+                false
+            ],
+            "\u5c0f\u6307\uff13.L": [
+                "f_pinky.03.L",
+                false
+            ],
+            "\u80a9.R": [
+                "shoulder.R",
+                false
+            ],
+            "\u8155.R": [
+                "upper_arm.R",
+                false
+            ],
+            "\u8155\u6369.R": [
+                "ArmTwist_R",
+                false
+            ],
+            "\u3072\u3058.R": [
+                "forearm.R",
+                false
+            ],
+            "\u624b\u6369.R": [
+                "HandTwist_R",
+                false
+            ],
+            "\u624b\u9996.R": [
+                "hand.R",
+                false
+            ],
+            "\u89aa\u6307\uff10.R": [
+                "thumb.01.R",
+                false
+            ],
+            "\u89aa\u6307\uff11.R": [
+                "thumb.02.R",
+                false
+            ],
+            "\u89aa\u6307\uff12.R": [
+                "thumb.03.R",
+                false
+            ],
+            "\u4eba\u6307\uff11.R": [
+                "f_index.01.R",
+                false
+            ],
+            "\u4eba\u6307\uff12.R": [
+                "f_index.02.R",
+                false
+            ],
+            "\u4eba\u6307\uff13.R": [
+                "f_index.03.R",
+                false
+            ],
+            "\u4e2d\u6307\uff11.R": [
+                "f_middle.01.R",
+                false
+            ],
+            "\u4e2d\u6307\uff12.R": [
+                "f_middle.02.R",
+                false
+            ],
+            "\u4e2d\u6307\uff13.R": [
+                "f_middle.03.R",
+                false
+            ],
+            "\u85ac\u6307\uff11.R": [
+                "f_ring.01.R",
+                false
+            ],
+            "\u85ac\u6307\uff12.R": [
+                "f_ring.02.R",
+                false
+            ],
+            "\u85ac\u6307\uff13.R": [
+                "f_ring.03.R",
+                false
+            ],
+            "\u5c0f\u6307\uff11.R": [
+                "f_pinky.01.R",
+                false
+            ],
+            "\u5c0f\u6307\uff12.R": [
+                "f_pinky.02.R",
+                false
+            ],
+            "\u5c0f\u6307\uff13.R": [
+                "f_pinky.03.R",
+                false
+            ],
+            "\u8db3\uff29\uff2b.L": [
+                "LegIK_L",
+                false
+            ],
+            "\u3064\u307e\u5148\uff29\uff2b.L": [
+                "ToeTipIK_L",
+                false
+            ],
+            "\u8db3\uff29\uff2b.R": [
+                "LegIK_R",
+                false
+            ],
+            "\u3064\u307e\u5148\uff29\uff2b.R": [
+                "ToeTipIK_R",
+                false
+            ]
+        },
+        "VRoid": {
+            "Root": [
+                "Root",
+                false
+            ],
+            "J_Bip_C_Hips": [
+                "spine",
+                true
+            ],
+            "J_Bip_C_Spine": [
+                "spine.001",
+                false
+            ],
+            "J_Bip_C_Chest": [
+                "spine.002",
+                false
+            ],
+            "J_Bip_C_UpperChest": [
+                "spine.003",
+                false
+            ],
+            "J_Bip_C_Neck": [
+                "spine.004",
+                false
+            ],
+            "J_Bip_C_Head": [
+                "spine.006",
+                false
+            ],
+            "J_Adj_L_FaceEye": [
+                "eye.L",
+                false
+            ],
+            "J_Adj_R_FaceEye": [
+                "eye.R",
+                false
+            ],
+            "J_Bip_L_Shoulder": [
+                "shoulder.L",
+                false
+            ],
+            "J_Bip_L_UpperArm": [
+                "upper_arm.L",
+                false
+            ],
+            "J_Bip_L_LowerArm": [
+                "forearm.L",
+                false
+            ],
+            "J_Bip_L_Hand": [
+                "hand.L",
+                false
+            ],
+            "J_Bip_L_Index1": [
+                "f_index.01.L",
+                false
+            ],
+            "J_Bip_L_Index2": [
+                "f_index.02.L",
+                false
+            ],
+            "J_Bip_L_Index3": [
+                "f_index.03.L",
+                false
+            ],
+            "J_Bip_L_Little1": [
+                "f_pinky.01.L",
+                false
+            ],
+            "J_Bip_L_Little2": [
+                "f_pinky.02.L",
+                false
+            ],
+            "J_Bip_L_Little3": [
+                "f_pinky.03.L",
+                false
+            ],
+            "J_Bip_L_Middle1": [
+                "f_middle.01.L",
+                false
+            ],
+            "J_Bip_L_Middle2": [
+                "f_middle.02.L",
+                false
+            ],
+            "J_Bip_L_Middle3": [
+                "f_middle.03.L",
+                false
+            ],
+            "J_Bip_L_Ring1": [
+                "f_ring.01.L",
+                false
+            ],
+            "J_Bip_L_Ring2": [
+                "f_ring.02.L",
+                false
+            ],
+            "J_Bip_L_Ring3": [
+                "f_ring.03.L",
+                false
+            ],
+            "J_Bip_L_Thumb1": [
+                "thumb.01.L",
+                false
+            ],
+            "J_Bip_L_Thumb2": [
+                "thumb.02.L",
+                false
+            ],
+            "J_Bip_L_Thumb3": [
+                "thumb.03.L",
+                false
+            ],
+            "J_Bip_R_Shoulder": [
+                "shoulder.R",
+                false
+            ],
+            "J_Bip_R_UpperArm": [
+                "upper_arm.R",
+                false
+            ],
+            "J_Bip_R_LowerArm": [
+                "forearm.R",
+                false
+            ],
+            "J_Bip_R_Hand": [
+                "hand.R",
+                false
+            ],
+            "J_Bip_R_Index1": [
+                "f_index.01.R",
+                false
+            ],
+            "J_Bip_R_Index2": [
+                "f_index.02.R",
+                false
+            ],
+            "J_Bip_R_Index3": [
+                "f_index.03.R",
+                false
+            ],
+            "J_Bip_R_Little1": [
+                "f_pinky.01.R",
+                false
+            ],
+            "J_Bip_R_Little2": [
+                "f_pinky.02.R",
+                false
+            ],
+            "J_Bip_R_Little3": [
+                "f_pinky.03.R",
+                false
+            ],
+            "J_Bip_R_Middle1": [
+                "f_middle.01.R",
+                false
+            ],
+            "J_Bip_R_Middle2": [
+                "f_middle.02.R",
+                false
+            ],
+            "J_Bip_R_Middle3": [
+                "f_middle.03.R",
+                false
+            ],
+            "J_Bip_R_Ring1": [
+                "f_ring.01.R",
+                false
+            ],
+            "J_Bip_R_Ring2": [
+                "f_ring.02.R",
+                false
+            ],
+            "J_Bip_R_Ring3": [
+                "f_ring.03.R",
+                false
+            ],
+            "J_Bip_R_Thumb1": [
+                "thumb.01.R",
+                false
+            ],
+            "J_Bip_R_Thumb2": [
+                "thumb.02.R",
+                false
+            ],
+            "J_Bip_R_Thumb3": [
+                "thumb.03.R",
+                false
+            ],
+            "J_Bip_L_UpperLeg": [
+                "thigh.L",
+                false
+            ],
+            "J_Bip_L_LowerLeg": [
+                "shin.L",
+                false
+            ],
+            "J_Bip_L_Foot": [
+                "foot.L",
+                false
+            ],
+            "J_Bip_L_ToeBase": [
+                "toe.L",
+                false
+            ],
+            "J_Bip_R_UpperLeg": [
+                "thigh.R",
+                false
+            ],
+            "J_Bip_R_LowerLeg": [
+                "shin.R",
+                false
+            ],
+            "J_Bip_R_Foot": [
+                "foot.R",
+                false
+            ],
+            "J_Bip_R_ToeBase": [
+                "toe.R",
+                false
+            ]
+        }
+    },
+    "retarget": {
+        "mixamo": {
+            "mixamorig:Hips": [
+                "torso",
+                false
+            ],
+            "mixamorig:Spine": [
+                "spine.001",
+                false
+            ],
+            "mixamorig:Spine1": [
+                "spine.002",
+                false
+            ],
+            "mixamorig:Spine2": [
+                "spine.003",
+                false
+            ],
+            "mixamorig:Neck": [
+                "spine.004",
+                false
+            ],
+            "mixamorig:Head": [
+                "spine.006",
+                false
+            ],
+            "mixamorig:LeftShoulder": [
+                "shoulder.L",
+                false
+            ],
+            "mixamorig:LeftArm": [
+                "upper_arm.L",
+                false
+            ],
+            "mixamorig:LeftForeArm": [
+                "forearm.L",
+                false
+            ],
+            "mixamorig:LeftHand": [
+                "hand.L",
+                false
+            ],
+            "mixamorig:LeftHandThumb1": [
+                "thumb.01.L",
+                false
+            ],
+            "mixamorig:LeftHandThumb2": [
+                "thumb.02.L",
+                false
+            ],
+            "mixamorig:LeftHandThumb3": [
+                "thumb.03.L",
+                false
+            ],
+            "mixamorig:LeftHandIndex1": [
+                "f_index.01.L",
+                false
+            ],
+            "mixamorig:LeftHandIndex2": [
+                "f_index.02.L",
+                false
+            ],
+            "mixamorig:LeftHandIndex3": [
+                "f_index.03.L",
+                false
+            ],
+            "mixamorig:LeftHandMiddle1": [
+                "f_middle.01.L",
+                false
+            ],
+            "mixamorig:LeftHandMiddle2": [
+                "f_middle.02.L",
+                false
+            ],
+            "mixamorig:LeftHandMiddle3": [
+                "f_middle.03.L",
+                false
+            ],
+            "mixamorig:LeftHandRing1": [
+                "f_ring.01.L",
+                false
+            ],
+            "mixamorig:LeftHandRing2": [
+                "f_ring.02.L",
+                false
+            ],
+            "mixamorig:LeftHandRing3": [
+                "f_ring.03.L",
+                false
+            ],
+            "mixamorig:LeftHandPinky1": [
+                "f_pinky.01.L",
+                false
+            ],
+            "mixamorig:LeftHandPinky2": [
+                "f_pinky.02.L",
+                false
+            ],
+            "mixamorig:LeftHandPinky3": [
+                "f_pinky.03.L",
+                false
+            ],
+            "mixamorig:RightShoulder": [
+                "shoulder.R",
+                false
+            ],
+            "mixamorig:RightArm": [
+                "upper_arm.R",
+                false
+            ],
+            "mixamorig:RightForeArm": [
+                "forearm.R",
+                false
+            ],
+            "mixamorig:RightHand": [
+                "hand.R",
+                false
+            ],
+            "mixamorig:RightHandThumb1": [
+                "thumb.01.R",
+                false
+            ],
+            "mixamorig:RightHandThumb2": [
+                "thumb.02.R",
+                false
+            ],
+            "mixamorig:RightHandThumb3": [
+                "thumb.03.R",
+                false
+            ],
+            "mixamorig:RightHandIndex1": [
+                "f_index.01.R",
+                false
+            ],
+            "mixamorig:RightHandIndex2": [
+                "f_index.02.R",
+                false
+            ],
+            "mixamorig:RightHandIndex3": [
+                "f_index.03.R",
+                false
+            ],
+            "mixamorig:RightHandMiddle1": [
+                "f_middle.01.R",
+                false
+            ],
+            "mixamorig:RightHandMiddle2": [
+                "f_middle.02.R",
+                false
+            ],
+            "mixamorig:RightHandMiddle3": [
+                "f_middle.03.R",
+                false
+            ],
+            "mixamorig:RightHandRing1": [
+                "f_ring.01.R",
+                false
+            ],
+            "mixamorig:RightHandRing2": [
+                "f_ring.02.R",
+                false
+            ],
+            "mixamorig:RightHandRing3": [
+                "f_ring.03.R",
+                false
+            ],
+            "mixamorig:RightHandPinky1": [
+                "f_pinky.01.R",
+                false
+            ],
+            "mixamorig:RightHandPinky2": [
+                "f_pinky.02.R",
+                false
+            ],
+            "mixamorig:RightHandPinky3": [
+                "f_pinky.03.R",
+                false
+            ],
+            "mixamorig:LeftUpLeg": [
+                "thigh.L",
+                false
+            ],
+            "mixamorig:LeftLeg": [
+                "shin.L",
+                false
+            ],
+            "mixamorig:LeftFoot": [
+                "foot.L",
+                false
+            ],
+            "mixamorig:LeftToeBase": [
+                "toe.L",
+                false
+            ],
+            "mixamorig:RightUpLeg": [
+                "thigh.R",
+                false
+            ],
+            "mixamorig:RightLeg": [
+                "shin.R",
+                false
+            ],
+            "mixamorig:RightFoot": [
+                "foot.R",
+                false
+            ],
+            "mixamorig:RightToeBase": [
+                "toe.R",
+                false
+            ]
+        },
+        "Rigify": {
+            "root": [
+                "Root",
+                false
+            ],
+            "foot_ik.L": [
+                "LegIK_L",
+                false
+            ],
+            "foot_ik.R": [
+                "LegIK_R",
+                false
+            ],
+            "Center": [
+                "Center",
+                false
+            ],
+            "Groove": [
+                "Groove",
+                false
+            ],
+            "torso": [
+                "torso",
+                false
+            ],
+            "spine_fk": [
+                "spine",
+                false
+            ],
+            "toe.L": [
+                "toe.L",
+                false
+            ],
+            "toe.R": [
+                "toe.R",
+                false
+            ],
+            "thigh_fk.L": [
+                "thigh.L",
+                false
+            ],
+            "shin_fk.L": [
+                "shin.L",
+                false
+            ],
+            "foot_fk.L": [
+                "foot.L",
+                false
+            ],
+            "thigh_fk.R": [
+                "thigh.R",
+                false
+            ],
+            "shin_fk.R": [
+                "shin.R",
+                false
+            ],
+            "foot_fk.R": [
+                "foot.R",
+                false
+            ],
+            "spine_fk.001": [
+                "spine.001",
+                false
+            ],
+            "spine_fk.002": [
+                "spine.002",
+                false
+            ],
+            "spine_fk.003": [
+                "spine.003",
+                false
+            ],
+            "neck": [
+                "spine.004",
+                false
+            ],
+            "head": [
+                "spine.006",
+                false
+            ],
+            "f_index.01.L": [
+                "f_index.01.L",
+                false
+            ],
+            "f_index.02.L": [
+                "f_index.02.L",
+                false
+            ],
+            "f_index.03.L": [
+                "f_index.03.L",
+                false
+            ],
+            "f_middle.01.L": [
+                "f_middle.01.L",
+                false
+            ],
+            "f_middle.02.L": [
+                "f_middle.02.L",
+                false
+            ],
+            "f_middle.03.L": [
+                "f_middle.03.L",
+                false
+            ],
+            "f_pinky.01.L": [
+                "f_pinky.01.L",
+                false
+            ],
+            "f_pinky.02.L": [
+                "f_pinky.02.L",
+                false
+            ],
+            "f_pinky.03.L": [
+                "f_pinky.03.L",
+                false
+            ],
+            "f_ring.01.L": [
+                "f_ring.01.L",
+                false
+            ],
+            "f_ring.02.L": [
+                "f_ring.02.L",
+                false
+            ],
+            "f_ring.03.L": [
+                "f_ring.03.L",
+                false
+            ],
+            "thumb.01.L": [
+                "thumb.01.L",
+                false
+            ],
+            "thumb.02.L": [
+                "thumb.02.L",
+                false
+            ],
+            "thumb.03.L": [
+                "thumb.03.L",
+                false
+            ],
+            "upper_arm_fk.L": [
+                "upper_arm.L",
+                false
+            ],
+            "forearm_fk.L": [
+                "forearm.L",
+                false
+            ],
+            "hand_fk.L": [
+                "hand.L",
+                false
+            ],
+            "f_index.01.R": [
+                "f_index.01.R",
+                false
+            ],
+            "f_index.02.R": [
+                "f_index.02.R",
+                false
+            ],
+            "f_index.03.R": [
+                "f_index.03.R",
+                false
+            ],
+            "f_middle.01.R": [
+                "f_middle.01.R",
+                false
+            ],
+            "f_middle.02.R": [
+                "f_middle.02.R",
+                false
+            ],
+            "f_middle.03.R": [
+                "f_middle.03.R",
+                false
+            ],
+            "f_pinky.01.R": [
+                "f_pinky.01.R",
+                false
+            ],
+            "f_pinky.02.R": [
+                "f_pinky.02.R",
+                false
+            ],
+            "f_pinky.03.R": [
+                "f_pinky.03.R",
+                false
+            ],
+            "f_ring.01.R": [
+                "f_ring.01.R",
+                false
+            ],
+            "f_ring.02.R": [
+                "f_ring.02.R",
+                false
+            ],
+            "f_ring.03.R": [
+                "f_ring.03.R",
+                false
+            ],
+            "thumb.01.R": [
+                "thumb.01.R",
+                false
+            ],
+            "thumb.02.R": [
+                "thumb.02.R",
+                false
+            ],
+            "thumb.03.R": [
+                "thumb.03.R",
+                false
+            ],
+            "upper_arm_fk.R": [
+                "upper_arm.R",
+                false
+            ],
+            "forearm_fk.R": [
+                "forearm.R",
+                false
+            ],
+            "hand_fk.R": [
+                "hand.R",
+                false
+            ],
+            "shoulder.L": [
+                "shoulder.L",
+                false
+            ],
+            "shoulder.R": [
+                "shoulder.R",
+                false
+            ]
+        },
+        "FBX\u52a8\u6355": {
+            "Spine": [
+                "spine.001",
+                false
+            ],
+            "Spine1": [
+                "spine.002",
+                false
+            ],
+            "Spine2": [
+                "spine.003",
+                false
+            ],
+            "Neck": [
+                "spine.004",
+                false
+            ],
+            "Head": [
+                "spine.006",
+                false
+            ],
+            "Left_Clavicle": [
+                "shoulder.L",
+                false
+            ],
+            "Left_UpperArm": [
+                "upper_arm.L",
+                false
+            ],
+            "Left_Forearm": [
+                "forearm.L",
+                false
+            ],
+            "Left_Hand": [
+                "hand.L",
+                false
+            ],
+            "Right_Clavicle": [
+                "shoulder.R",
+                false
+            ],
+            "Right_UpperArm": [
+                "upper_arm.R",
+                false
+            ],
+            "Right_Forearm": [
+                "forearm.R",
+                false
+            ],
+            "Right_Hand": [
+                "hand.R",
+                false
+            ],
+            "Left_Thigh": [
+                "thigh.L",
+                false
+            ],
+            "Left_Calf": [
+                "shin.L",
+                false
+            ],
+            "Left_Foot": [
+                "foot.L",
+                false
+            ],
+            "Left_Toe0": [
+                "toe.L",
+                false
+            ],
+            "Right_Thigh": [
+                "thigh.R",
+                false
+            ],
+            "Right_Calf": [
+                "shin.R",
+                false
+            ],
+            "Right_Foot": [
+                "foot.R",
+                false
+            ],
+            "Right_Toe0": [
+                "toe.R",
+                false
+            ]
+        },
+        "BVH\u52a8\u6355": {
+            "Hips": [
+                "torso",
+                false
+            ],
+            "Spine": [
+                "spine.001",
+                false
+            ],
+            "Spine1": [
+                "spine.002",
+                false
+            ],
+            "Spine2": [
+                "spine.003",
+                false
+            ],
+            "Neck": [
+                "spine.004",
+                false
+            ],
+            "Head": [
+                "spine.006",
+                false
+            ],
+            "LeftShoulder": [
+                "shoulder.L",
+                false
+            ],
+            "LeftArm": [
+                "upper_arm.L",
+                false
+            ],
+            "LeftForeArm": [
+                "forearm.L",
+                false
+            ],
+            "LeftHand": [
+                "hand.L",
+                false
+            ],
+            "LeftHandThumb1": [
+                "thumb.01.L",
+                false
+            ],
+            "LeftHandThumb2": [
+                "thumb.02.L",
+                false
+            ],
+            "LeftHandThumb3": [
+                "thumb.03.L",
+                false
+            ],
+            "LeftHandIndex1": [
+                "f_index.01.L",
+                false
+            ],
+            "LeftHandIndex2": [
+                "f_index.02.L",
+                false
+            ],
+            "LeftHandIndex3": [
+                "f_index.03.L",
+                false
+            ],
+            "LeftHandMiddle1": [
+                "f_middle.01.L",
+                false
+            ],
+            "LeftHandMiddle2": [
+                "f_middle.02.L",
+                false
+            ],
+            "LeftHandMiddle3": [
+                "f_middle.03.L",
+                false
+            ],
+            "LeftHandRing1": [
+                "f_ring.01.L",
+                false
+            ],
+            "LeftHandRing2": [
+                "f_ring.02.L",
+                false
+            ],
+            "LeftHandRing3": [
+                "f_ring.03.L",
+                false
+            ],
+            "LeftHandPinky1": [
+                "f_pinky.01.L",
+                false
+            ],
+            "LeftHandPinky2": [
+                "f_pinky.02.L",
+                false
+            ],
+            "LeftHandPinky3": [
+                "f_pinky.03.L",
+                false
+            ],
+            "RightShoulder": [
+                "shoulder.R",
+                false
+            ],
+            "RightArm": [
+                "upper_arm.R",
+                false
+            ],
+            "RightForeArm": [
+                "forearm.R",
+                false
+            ],
+            "RightHand": [
+                "hand.R",
+                false
+            ],
+            "RightHandPinky1": [
+                "f_pinky.01.R",
+                false
+            ],
+            "RightHandPinky2": [
+                "f_pinky.02.R",
+                false
+            ],
+            "RightHandPinky3": [
+                "f_pinky.03.R",
+                false
+            ],
+            "RightHandRing1": [
+                "f_ring.01.R",
+                false
+            ],
+            "RightHandRing2": [
+                "f_ring.02.R",
+                false
+            ],
+            "RightHandRing3": [
+                "f_ring.03.R",
+                false
+            ],
+            "RightHandMiddle1": [
+                "f_middle.01.R",
+                false
+            ],
+            "RightHandMiddle2": [
+                "f_middle.02.R",
+                false
+            ],
+            "RightHandMiddle3": [
+                "f_middle.03.R",
+                false
+            ],
+            "RightHandIndex1": [
+                "f_index.01.R",
+                false
+            ],
+            "RightHandIndex2": [
+                "f_index.02.R",
+                false
+            ],
+            "RightHandIndex3": [
+                "f_index.03.R",
+                false
+            ],
+            "RightHandThumb1": [
+                "thumb.01.R",
+                false
+            ],
+            "RightHandThumb2": [
+                "thumb.02.R",
+                false
+            ],
+            "RightHandThumb3": [
+                "thumb.03.R",
+                false
+            ],
+            "LeftUpLeg": [
+                "thigh.L",
+                false
+            ],
+            "LeftLeg": [
+                "shin.L",
+                false
+            ],
+            "LeftFoot": [
+                "foot.L",
+                false
+            ],
+            "LeftToeBase": [
+                "toe.L",
+                false
+            ],
+            "RightUpLeg": [
+                "thigh.R",
+                false
+            ],
+            "RightLeg": [
+                "shin.R",
+                false
+            ],
+            "RightFoot": [
+                "foot.R",
+                false
+            ],
+            "RightToeBase": [
+                "toe.R",
+                false
+            ]
+        },
+        "Bip": {
+            "Bip01 Spine": [
+                "spine.001",
+                false
+            ],
+            "Bip01 Spine1": [
+                "spine.002",
+                false
+            ],
+            "Bip01 Spine2": [
+                "spine.003",
+                false
+            ],
+            "Bip01 Neck": [
+                "spine.004",
+                false
+            ],
+            "Bip01 Head": [
+                "spine.006",
+                false
+            ],
+            "Bip01 L Clavicle": [
+                "shoulder.L",
+                false
+            ],
+            "Bip01 L UpperArm": [
+                "upper_arm.L",
+                false
+            ],
+            "Bip01 L Forearm": [
+                "forearm.L",
+                false
+            ],
+            "Bip01 L Hand": [
+                "hand.L",
+                false
+            ],
+            "Bip01 L Finger0": [
+                "thumb.01.L",
+                false
+            ],
+            "Bip01 L Finger01": [
+                "thumb.02.L",
+                false
+            ],
+            "Bip01 L Finger02": [
+                "thumb.03.L",
+                false
+            ],
+            "Bip01 L Finger1": [
+                "f_index.01.L",
+                false
+            ],
+            "Bip01 L Finger11": [
+                "f_index.02.L",
+                false
+            ],
+            "Bip01 L Finger12": [
+                "f_index.03.L",
+                false
+            ],
+            "Bip01 L Finger2": [
+                "f_middle.01.L",
+                false
+            ],
+            "Bip01 L Finger21": [
+                "f_middle.02.L",
+                false
+            ],
+            "Bip01 L Finger22": [
+                "f_middle.03.L",
+                false
+            ],
+            "Bip01 L Finger3": [
+                "f_ring.01.L",
+                false
+            ],
+            "Bip01 L Finger31": [
+                "f_ring.02.L",
+                false
+            ],
+            "Bip01 L Finger32": [
+                "f_ring.03.L",
+                false
+            ],
+            "Bip01 L Finger4": [
+                "f_pinky.01.L",
+                false
+            ],
+            "Bip01 L Finger41": [
+                "f_pinky.02.L",
+                false
+            ],
+            "Bip01 L Finger42": [
+                "f_pinky.03.L",
+                false
+            ],
+            "Bip01 R Clavicle": [
+                "shoulder.R",
+                false
+            ],
+            "Bip01 R UpperArm": [
+                "upper_arm.R",
+                false
+            ],
+            "Bip01 R Forearm": [
+                "forearm.R",
+                false
+            ],
+            "Bip01 R Hand": [
+                "hand.R",
+                false
+            ],
+            "Bip01 R Finger0": [
+                "thumb.01.R",
+                false
+            ],
+            "Bip01 R Finger01": [
+                "thumb.02.R",
+                false
+            ],
+            "Bip01 R Finger02": [
+                "thumb.03.R",
+                false
+            ],
+            "Bip01 R Finger1": [
+                "f_index.01.R",
+                false
+            ],
+            "Bip01 R Finger11": [
+                "f_index.02.R",
+                false
+            ],
+            "Bip01 R Finger12": [
+                "f_index.03.R",
+                false
+            ],
+            "Bip01 R Finger2": [
+                "f_middle.01.R",
+                false
+            ],
+            "Bip01 R Finger21": [
+                "f_middle.02.R",
+                false
+            ],
+            "Bip01 R Finger22": [
+                "f_middle.03.R",
+                false
+            ],
+            "Bip01 R Finger3": [
+                "f_ring.01.R",
+                false
+            ],
+            "Bip01 R Finger31": [
+                "f_ring.02.R",
+                false
+            ],
+            "Bip01 R Finger32": [
+                "f_ring.03.R",
+                false
+            ],
+            "Bip01 R Finger4": [
+                "f_pinky.01.R",
+                false
+            ],
+            "Bip01 R Finger41": [
+                "f_pinky.02.R",
+                false
+            ],
+            "Bip01 R Finger42": [
+                "f_pinky.03.R",
+                false
+            ],
+            "Bip01 L Thigh": [
+                "thigh.L",
+                false
+            ],
+            "Bip01 L Calf": [
+                "shin.L",
+                false
+            ],
+            "Bip01 L Foot": [
+                "foot.L",
+                false
+            ],
+            "Bip01 L Toe0": [
+                "toe.L",
+                false
+            ],
+            "Bip01 R Thigh": [
+                "thigh.R",
+                false
+            ],
+            "Bip01 R Calf": [
+                "shin.R",
+                false
+            ],
+            "Bip01 R Foot": [
+                "foot.R",
+                false
+            ],
+            "Bip01 R Toe0": [
+                "toe.R",
+                false
+            ]
+        }
+    }
+}
