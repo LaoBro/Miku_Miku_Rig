@@ -1,19 +1,19 @@
 bl_info = {
     "name": "MikuMikuRig", #插件名字
     "author": "William", #作者名字
-    "version": (0, 4, 6), #插件版本
-    "blender": (2, 80, 0), #需要的*最低* blender 版本
+    "version": (0, 5, 3), #插件版本
+    "blender": (2, 90, 0), #需要的*最低* blender 版本
     "location": "3DView > Tools", #插件所在位置
     "description": "快速为各种人形模型生成rigify控制器,一键套mixamo动作", #描述
     "support": 'COMMUNITY', #支持等级（社区支持）
     "category": "Rigging", #分类
-    "warning": "暂不支持Blender3.0及以上版本",
+    #"warning": "暂不支持Blender3.0及以上版本",
 }
 import bpy
 import bpy_extras
 from bpy.types import Operator
 from . import translation
-from . import operators
+from . import mmr_operators
 from bpy.props import BoolProperty
 from bpy.props import IntProperty
 from bpy.props import FloatProperty
@@ -21,13 +21,14 @@ from bpy.props import EnumProperty
 
 def get_preset_item(self,context):
     preset_items=[]
-    for name in operators.preset.preset_name_list:
+    for name in mmr_operators.preset.preset_name_list:
         preset_items.append((name,name,''))
     return(preset_items)
 
 class MMR_property(bpy.types.PropertyGroup):
     upper_body_controller:BoolProperty(default=True,description="上半身控制器")
     wrist_rotation_follow:BoolProperty(default=False,description="手腕旋转跟随手臂")
+    bent_IK_bone:BoolProperty(default=False,description="弯曲IK骨骼")
     auto_shoulder:BoolProperty(default=False,description="肩膀联动")
     solid_rig:BoolProperty(default=False,description="实心控制器")
     pole_target:BoolProperty(default=False,description="极向目标")
@@ -41,8 +42,12 @@ class MMR_property(bpy.types.PropertyGroup):
     auto_select_rigid_body:BoolProperty(default=True,description="自动选择刚体")
     extend_ribbon:BoolProperty(default=True,description="延展飘带区域")
     debug:BoolProperty(default=False,description="debug")
-    preset_name:EnumProperty(
-        items=get_preset_item,
+    rig_preset_name:EnumProperty(
+        items=mmr_operators.preset.get_rig_preset_item,
+        description=('Choose the preset you want to use'),
+    )
+    retarget_preset_name:EnumProperty(
+        items=mmr_operators.preset.get_retarget_preset_item,
         description=('Choose the preset you want to use'),
     )
     IKFK_list=[
@@ -71,8 +76,14 @@ class MMR_property(bpy.types.PropertyGroup):
     )
     quick_assign_index:IntProperty(default=1,description="快速指定序号",min=1)
     quick_assign_mod:BoolProperty(default=False,description="快速指定模式")
-    mmr_advanced_generation:bpy.props.BoolProperty(default=False,description="高级选项")
+    extra_options1:bpy.props.BoolProperty(default=False,description="高级选项")
+    extra_options2:bpy.props.BoolProperty(default=False,description="高级选项")
     mass_multiply_rate:FloatProperty(default=12.5,description="刚体质量倍率",min=0)
+    import_as_NLA_strip: bpy.props.BoolProperty(
+        name='Import as NLA strip',
+        description="Import as NLA strip",
+        default=True
+    )
 
 class Mmr_Panel_Base(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'
@@ -93,6 +104,7 @@ class MikuMikuRig_1(Mmr_Panel_Base):
         layout = self.layout
         layout.label(text="Select MMD armature then press the button")
         layout.operator("mmr.generate_rig",text="Generate MMD rig")
+        layout.prop(mmr_property,'bent_IK_bone',text="Bent IK bone")
         layout.prop(mmr_property,'wrist_rotation_follow',text="Wrist rotation follow arm")
         layout.prop(mmr_property,'auto_shoulder',text="Shoulder IK")
         layout.prop(mmr_property,'solid_rig',text="Replace the controller")
@@ -176,8 +188,8 @@ def alert_error(title,message):
         self.layout.label(text=str(message))
     bpy.context.window_manager.popup_menu(draw,title=title,icon='ERROR')
 
-class_list=[MikuMikuRig_2,MikuMikuRig_3,MikuMikuRig_4,MikuMikuRig_5]
-Model_list=[operators]
+class_list=[MikuMikuRig_2,MikuMikuRig_4,MikuMikuRig_5]
+Model_list=[mmr_operators]
 def register(): #启用插件时候执行
     bpy.utils.register_class(MMR_property)
     bpy.types.Scene.mmr_property = bpy.props.PointerProperty(type=MMR_property)
