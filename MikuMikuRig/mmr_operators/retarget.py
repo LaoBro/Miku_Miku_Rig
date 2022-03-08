@@ -212,30 +212,12 @@ def retarget_mixmao(OT,context):
     #暂时忽略缩放
     def retarget_fcurves(mat_L,mat_R,obj_from,obj_to,translation=False):
 
-        path=obj_from.path_from_id('location')
-        path2=obj_to.path_from_id('location')
-        curve_lx=fcurves_b.find(path,index=0)
-        curve_ly=fcurves_b.find(path,index=1)
-        curve_lz=fcurves_b.find(path,index=2)
-
-        if curve_lx and curve_ly and curve_lz :
-            pass
-        else:
-            return
-
-        curve_lx.data_path=path2
-        curve_ly.data_path=path2
-        curve_lz.data_path=path2
-
+        #删除缩放曲线
         path=obj_from.path_from_id('scale')
         path2=obj_to.path_from_id('scale')
         curve_sx=fcurves_b.find(path,index=0)
         curve_sy=fcurves_b.find(path,index=1)
         curve_sz=fcurves_b.find(path,index=2)
-
-        '''curve_sx.data_path=path2
-        curve_sy.data_path=path2
-        curve_sz.data_path=path2'''
 
         if curve_sx:
             fcurves_b.remove(curve_sx)
@@ -244,128 +226,245 @@ def retarget_mixmao(OT,context):
         if curve_sz:
             fcurves_b.remove(curve_sz)
 
-        keyframes_lx=curve_lx.keyframe_points
-        keyframes_ly=curve_ly.keyframe_points
-        keyframes_lz=curve_lz.keyframe_points
-
-        '''keyframes_sx=curve_sx.keyframe_points
-        keyframes_sy=curve_sy.keyframe_points
-        keyframes_sz=curve_sz.keyframe_points'''
-
+        #修改旋转模式为四元数
         obj_to.rotation_mode='QUATERNION'
 
-        if obj_from.rotation_mode == 'QUATERNION':
-            path=obj_from.path_from_id('rotation_quaternion')
-            path2=obj_to.path_from_id('rotation_quaternion')
-            curve_w=fcurves_b.find(path,index=0)
-            curve_x=fcurves_b.find(path,index=1)
-            curve_y=fcurves_b.find(path,index=2)
-            curve_z=fcurves_b.find(path,index=3)
+        path=obj_from.path_from_id('location')
+        path2=obj_to.path_from_id('location')
+        curve_lx=fcurves_b.find(path,index=0)
+        curve_ly=fcurves_b.find(path,index=1)
+        curve_lz=fcurves_b.find(path,index=2)
 
-            curve_w.data_path=path2
-            curve_x.data_path=path2
-            curve_y.data_path=path2
-            curve_z.data_path=path2
+        if curve_lx and curve_ly and curve_lz and translation:
+            #考虑平移的情况
+            curve_lx.data_path=path2
+            curve_ly.data_path=path2
+            curve_lz.data_path=path2
+            keyframes_lx=curve_lx.keyframe_points
+            keyframes_ly=curve_ly.keyframe_points
+            keyframes_lz=curve_lz.keyframe_points
 
-            keyframes_w=curve_w.keyframe_points
-            keyframes_x=curve_x.keyframe_points
-            keyframes_y=curve_y.keyframe_points
-            keyframes_z=curve_z.keyframe_points
+            if obj_from.rotation_mode == 'QUATERNION':
 
-            for i,keyframe_x in enumerate(keyframes_x):
-                
-                keyframe_w=keyframes_w[i]
-                keyframe_y=keyframes_y[i]
-                keyframe_z=keyframes_z[i]
-                keyframe_lx=keyframes_lx[i]
-                keyframe_ly=keyframes_ly[i]
-                keyframe_lz=keyframes_lz[i]
-                '''keyframe_sx=keyframes_sx[i]
-                keyframe_sy=keyframes_sy[i]
-                keyframe_sz=keyframes_sz[i]'''
+                path=obj_from.path_from_id('rotation_quaternion')
+                path2=obj_to.path_from_id('rotation_quaternion')
+                curve_w=fcurves_b.find(path,index=0)
+                curve_x=fcurves_b.find(path,index=1)
+                curve_y=fcurves_b.find(path,index=2)
+                curve_z=fcurves_b.find(path,index=3)
 
-                q_r=Quaternion((keyframe_w.co[1],keyframe_x.co[1],keyframe_y.co[1],keyframe_z.co[1]))
-                mat_r=q_r.to_matrix()
-                #mat_s=Matrix([(keyframe_sx.co[1],0,0),(0,keyframe_sy.co[1],0),(0,0,keyframe_sz.co[1])])
-
-                mat_srt=mat_r
-                mat_srt=mat_srt.to_4x4() 
-                #直接写入平移分量
-                mat_srt[0][3]=keyframe_lx.co[1]*action_scale_finel
-                mat_srt[1][3]=keyframe_ly.co[1]*action_scale_finel
-                mat_srt[2][3]=keyframe_lz.co[1]*action_scale_finel
-
-                mat_d=mat_L @ mat_srt @ mat_R
-                T,Q,S=mat_d.decompose()
-                
-                keyframe_w.co[1] , keyframe_x.co[1] , keyframe_y.co[1] , keyframe_z.co[1] = Q
-                #keyframe_sx.co[1] , keyframe_sy.co[1] , keyframe_sz.co[1] = S
-                if translation:
-                    keyframe_lx.co[1] , keyframe_ly.co[1] , keyframe_lz.co[1] = T
+                if curve_w and curve_x and curve_y and curve_z :
+                    pass
                 else:
-                    keyframe_lx.co[1] , keyframe_ly.co[1] , keyframe_lz.co[1] = 0,0,0
+                    return
+
+                curve_w.data_path=path2
+                curve_x.data_path=path2
+                curve_y.data_path=path2
+                curve_z.data_path=path2
+
+                keyframes_w=curve_w.keyframe_points
+                keyframes_x=curve_x.keyframe_points
+                keyframes_y=curve_y.keyframe_points
+                keyframes_z=curve_z.keyframe_points
+
+                for i,keyframe_x in enumerate(keyframes_x):
+                    
+                    keyframe_w=keyframes_w[i]
+                    keyframe_y=keyframes_y[i]
+                    keyframe_z=keyframes_z[i]
+                    keyframe_lx=keyframes_lx[i]
+                    keyframe_ly=keyframes_ly[i]
+                    keyframe_lz=keyframes_lz[i]
+                    '''keyframe_sx=keyframes_sx[i]
+                    keyframe_sy=keyframes_sy[i]
+                    keyframe_sz=keyframes_sz[i]'''
+
+                    q_r=Quaternion((keyframe_w.co[1],keyframe_x.co[1],keyframe_y.co[1],keyframe_z.co[1]))
+                    mat_r=q_r.to_matrix()
+                    #mat_s=Matrix([(keyframe_sx.co[1],0,0),(0,keyframe_sy.co[1],0),(0,0,keyframe_sz.co[1])])
+
+                    mat_srt=mat_r
+                    mat_srt=mat_srt.to_4x4() 
+                    #直接写入平移分量
+                    mat_srt[0][3]=keyframe_lx.co[1]*action_scale_finel
+                    mat_srt[1][3]=keyframe_ly.co[1]*action_scale_finel
+                    mat_srt[2][3]=keyframe_lz.co[1]*action_scale_finel
+
+                    mat_d=mat_L @ mat_srt @ mat_R
+                    T,Q,S=mat_d.decompose()
+                    
+                    keyframe_w.co[1] , keyframe_x.co[1] , keyframe_y.co[1] , keyframe_z.co[1] = Q
+                    #keyframe_sx.co[1] , keyframe_sy.co[1] , keyframe_sz.co[1] = S
+                    keyframe_lx.co[1] , keyframe_ly.co[1] , keyframe_lz.co[1] = T
+
+            else:
+                path=obj_from.path_from_id('rotation_euler')
+                path2=obj_to.path_from_id('rotation_quaternion')
+                curve_x=fcurves_b.find(path,index=0)
+                curve_y=fcurves_b.find(path,index=1)
+                curve_z=fcurves_b.find(path,index=2)
+
+                if curve_x and curve_y and curve_z :
+                    pass
+                else:
+                    return
+
+                curve_w=fcurves_b.new(path2,index=0)
+
+                curve_x.array_index=1
+                curve_y.array_index=2
+                curve_z.array_index=3
+
+                curve_x.data_path=path2
+                curve_y.data_path=path2
+                curve_z.data_path=path2
+
+                keyframes_w=curve_w.keyframe_points
+                keyframes_x=curve_x.keyframe_points
+                keyframes_y=curve_y.keyframe_points
+                keyframes_z=curve_z.keyframe_points
+
+                keyframes_len=len(keyframes_x)
+                keyframes_w.add(keyframes_len)
+                curve_w.group=curve_x.group
+
+                for i,keyframe_x in enumerate(keyframes_x):
+                    
+                    keyframe_w=keyframes_w[i]
+                    keyframe_y=keyframes_y[i]
+                    keyframe_z=keyframes_z[i]
+                    keyframe_lx=keyframes_lx[i]
+                    keyframe_ly=keyframes_ly[i]
+                    keyframe_lz=keyframes_lz[i]
+                    '''keyframe_sx=keyframes_sx[i]
+                    keyframe_sy=keyframes_sy[i]
+                    keyframe_sz=keyframes_sz[i]'''
+
+                    q_r=Euler((keyframe_x.co[1],keyframe_y.co[1],keyframe_z.co[1]))
+                    mat_r=q_r.to_matrix()
+                    #mat_s=Matrix([(keyframe_sx.co[1],0,0),(0,keyframe_sy.co[1],0),(0,0,keyframe_sz.co[1])])
+
+                    mat_srt=mat_r
+                    mat_srt=mat_srt.to_4x4() 
+                    #直接写入平移分量
+                    mat_srt[0][3]=keyframe_lx.co[1]*action_scale_finel
+                    mat_srt[1][3]=keyframe_ly.co[1]*action_scale_finel
+                    mat_srt[2][3]=keyframe_lz.co[1]*action_scale_finel
+
+                    mat_d=mat_L @ mat_srt @ mat_R
+
+                    T,Q,S=mat_d.decompose()
+
+                    keyframe_w.co[0]=keyframe_x.co[0]
+                    keyframe_w.interpolation='LINEAR'
+                    
+                    keyframe_w.co[1] , keyframe_x.co[1] , keyframe_y.co[1] , keyframe_z.co[1] = Q
+                    #keyframe_sx.co[1] , keyframe_sy.co[1] , keyframe_sz.co[1] = S
+                    keyframe_lx.co[1] , keyframe_ly.co[1] , keyframe_lz.co[1] = T
 
         else:
-            path=obj_from.path_from_id('rotation_euler')
-            path2=obj_to.path_from_id('rotation_quaternion')
-            curve_w=fcurves_b.new(path2,index=0)
-            curve_x=fcurves_b.find(path,index=0)
-            curve_y=fcurves_b.find(path,index=1)
-            curve_z=fcurves_b.find(path,index=2)
+            #不考虑平移的情况，删除平移曲线
+            if curve_lx:
+                fcurves_b.remove(curve_lx)
+            if curve_ly:
+                fcurves_b.remove(curve_ly)
+            if curve_lz:
+                fcurves_b.remove(curve_lz)
 
-            curve_x.array_index=1
-            curve_y.array_index=2
-            curve_z.array_index=3
+            if obj_from.rotation_mode == 'QUATERNION':
 
-            curve_x.data_path=path2
-            curve_y.data_path=path2
-            curve_z.data_path=path2
+                path=obj_from.path_from_id('rotation_quaternion')
+                path2=obj_to.path_from_id('rotation_quaternion')
+                curve_w=fcurves_b.find(path,index=0)
+                curve_x=fcurves_b.find(path,index=1)
+                curve_y=fcurves_b.find(path,index=2)
+                curve_z=fcurves_b.find(path,index=3)
 
-            keyframes_w=curve_w.keyframe_points
-            keyframes_x=curve_x.keyframe_points
-            keyframes_y=curve_y.keyframe_points
-            keyframes_z=curve_z.keyframe_points
-
-            keyframes_len=len(keyframes_x)
-            keyframes_w.add(keyframes_len)
-            curve_w.group=curve_x.group
-
-            for i,keyframe_x in enumerate(keyframes_x):
-                
-                keyframe_w=keyframes_w[i]
-                keyframe_y=keyframes_y[i]
-                keyframe_z=keyframes_z[i]
-                keyframe_lx=keyframes_lx[i]
-                keyframe_ly=keyframes_ly[i]
-                keyframe_lz=keyframes_lz[i]
-                '''keyframe_sx=keyframes_sx[i]
-                keyframe_sy=keyframes_sy[i]
-                keyframe_sz=keyframes_sz[i]'''
-
-                q_r=Euler((keyframe_x.co[1],keyframe_y.co[1],keyframe_z.co[1]))
-                mat_r=q_r.to_matrix()
-                #mat_s=Matrix([(keyframe_sx.co[1],0,0),(0,keyframe_sy.co[1],0),(0,0,keyframe_sz.co[1])])
-
-                mat_srt=mat_r
-                mat_srt=mat_srt.to_4x4() 
-                #直接写入平移分量
-                mat_srt[0][3]=keyframe_lx.co[1]*action_scale_finel
-                mat_srt[1][3]=keyframe_ly.co[1]*action_scale_finel
-                mat_srt[2][3]=keyframe_lz.co[1]*action_scale_finel
-
-                mat_d=mat_L @ mat_srt @ mat_R
-
-                T,Q,S=mat_d.decompose()
-
-                keyframe_w.co[0]=keyframe_x.co[0]
-                keyframe_w.interpolation='LINEAR'
-                
-                keyframe_w.co[1] , keyframe_x.co[1] , keyframe_y.co[1] , keyframe_z.co[1] = Q
-                #keyframe_sx.co[1] , keyframe_sy.co[1] , keyframe_sz.co[1] = S
-                if translation:
-                    keyframe_lx.co[1] , keyframe_ly.co[1] , keyframe_lz.co[1] = T
+                if curve_w and curve_x and curve_y and curve_z :
+                    pass
                 else:
-                    keyframe_lx.co[1] , keyframe_ly.co[1] , keyframe_lz.co[1] = 0,0,0
+                    return
+
+                curve_w.data_path=path2
+                curve_x.data_path=path2
+                curve_y.data_path=path2
+                curve_z.data_path=path2
+
+                keyframes_w=curve_w.keyframe_points
+                keyframes_x=curve_x.keyframe_points
+                keyframes_y=curve_y.keyframe_points
+                keyframes_z=curve_z.keyframe_points
+
+                for i,keyframe_x in enumerate(keyframes_x):
+                    
+                    keyframe_w=keyframes_w[i]
+                    keyframe_y=keyframes_y[i]
+                    keyframe_z=keyframes_z[i]
+
+                    q_r=Quaternion((keyframe_w.co[1],keyframe_x.co[1],keyframe_y.co[1],keyframe_z.co[1]))
+                    mat_r=q_r.to_matrix()
+
+                    mat_srt=mat_r
+                    mat_srt=mat_srt.to_4x4() 
+
+                    mat_d=mat_L @ mat_srt @ mat_R
+                    T,Q,S=mat_d.decompose()
+                    
+                    keyframe_w.co[1] , keyframe_x.co[1] , keyframe_y.co[1] , keyframe_z.co[1] = Q
+
+            else:
+                path=obj_from.path_from_id('rotation_euler')
+                path2=obj_to.path_from_id('rotation_quaternion')
+                curve_x=fcurves_b.find(path,index=0)
+                curve_y=fcurves_b.find(path,index=1)
+                curve_z=fcurves_b.find(path,index=2)
+
+                if curve_x and curve_y and curve_z :
+                    pass
+                else:
+                    return
+
+                curve_w=fcurves_b.new(path2,index=0)
+
+                curve_x.array_index=1
+                curve_y.array_index=2
+                curve_z.array_index=3
+
+                curve_x.data_path=path2
+                curve_y.data_path=path2
+                curve_z.data_path=path2
+
+                keyframes_w=curve_w.keyframe_points
+                keyframes_x=curve_x.keyframe_points
+                keyframes_y=curve_y.keyframe_points
+                keyframes_z=curve_z.keyframe_points
+
+                keyframes_len=len(keyframes_x)
+                keyframes_w.add(keyframes_len)
+                curve_w.group=curve_x.group
+
+                for i,keyframe_x in enumerate(keyframes_x):
+                    
+                    keyframe_w=keyframes_w[i]
+                    keyframe_y=keyframes_y[i]
+                    keyframe_z=keyframes_z[i]
+
+                    q_r=Euler((keyframe_x.co[1],keyframe_y.co[1],keyframe_z.co[1]))
+                    mat_r=q_r.to_matrix()
+
+                    mat_srt=mat_r
+                    mat_srt=mat_srt.to_4x4() 
+
+                    mat_d=mat_L @ mat_srt @ mat_R
+
+                    T,Q,S=mat_d.decompose()
+
+                    keyframe_w.co[0]=keyframe_x.co[0]
+                    keyframe_w.interpolation='LINEAR'
+                    
+                    keyframe_w.co[1] , keyframe_x.co[1] , keyframe_y.co[1] , keyframe_z.co[1] = Q
+
 
     #开始遍历列表
     for bone_type , from_name , to_name in type_from_to_list:
