@@ -8,7 +8,7 @@ from . import rig
 
 mmd_bone_type_list=[
 'None',
-'Root','Center','Groove','torso',
+'Root','Center','torso',
 'LowerBody','UpperBody0','UpperBody','UpperBody2','Neck','Head',
 'Eye_L','Eye_R',
 'Shoulder_L','Arm_L','ArmTwist_L','Elbow_L','HandTwist_L','Wrist_L',
@@ -33,7 +33,7 @@ mmd_bone_type_list=[
 
 mmd_c_bone_type_list=[
 '无',
-'根骨骼（重定向用骨骼）','中心（重定向用骨骼）','节奏骨骼（重定向用骨骼）','躯干控制器（重定向用骨骼）',
+'根骨骼（重定向用骨骼）','中心（重定向用骨骼）','躯干控制器（重定向用骨骼）',
 '下半身','上半身0（非必要骨骼）','上半身1','上半身2','脖子','头',
 '左眼（非必要骨骼）','右眼（非必要骨骼）',
 '左肩膀','左大臂','左大臂扭转骨骼（非必要骨骼）','左小臂','左小臂扭转骨骼（非必要骨骼）','左手腕',
@@ -313,7 +313,9 @@ class OT_Rig_Preset(bpy.types.Operator):
 
 def set_keymap():
     wm = bpy.context.window_manager
-    km = wm.keyconfigs['Blender user'].keymaps['3D View']
+    #kc= wm.keyconfigs['Blender user']
+    kc= wm.keyconfigs.user
+    km = kc.keymaps['3D View']
     for kmi in km.keymap_items:
         if kmi.type=='S' and kmi.shift==False and kmi.ctrl==False and kmi.alt==False:
             kmi.active=False
@@ -327,7 +329,9 @@ def set_keymap():
 
 def reset_keymap():
     wm = bpy.context.window_manager
-    km = wm.keyconfigs['Blender user'].keymaps['Pose']
+    #kc= wm.keyconfigs['Blender user']
+    kc= wm.keyconfigs.user
+    km = kc.keymaps['Pose']
     for kmi in km.keymap_items:
         if kmi.type=='A' and kmi.shift==False and kmi.ctrl==False:
             kmi.active=True
