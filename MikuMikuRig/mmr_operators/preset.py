@@ -319,7 +319,7 @@ def set_keymap():
     for kmi in km.keymap_items:
         if kmi.type=='S' and kmi.shift==False and kmi.ctrl==False and kmi.alt==False:
             kmi.active=False
-    km = wm.keyconfigs['Blender user'].keymaps['Pose']
+    km = kc.keymaps['Pose']
     for kmi in km.keymap_items:
         if kmi.type=='A' and kmi.shift==False and kmi.ctrl==False:
             kmi.active=False
@@ -337,7 +337,7 @@ def reset_keymap():
             kmi.active=True
         if kmi.idname=='mmr.qa_assign' or kmi.idname== 'mmr.qa_assign_invert' or kmi.idname=='mmr.qa_skip':
             km.keymap_items.remove(kmi)
-    km = wm.keyconfigs['Blender user'].keymaps['3D View']
+    km = kc.keymaps['3D View']
     for kmi in km.keymap_items:
         if kmi.type=='S' and kmi.shift==False and kmi.ctrl==False and kmi.alt==False:
             kmi.active=True
