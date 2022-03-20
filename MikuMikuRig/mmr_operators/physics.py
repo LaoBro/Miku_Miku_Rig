@@ -478,7 +478,10 @@ class OT_Convert_Rigid_Body_To_Cloth(Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self,context):
-        convert_rigid_body_to_cloth(context)
+        if bpy.app.version[1]>=93:
+            convert_rigid_body_to_cloth(context)
+        else:
+            alert_error('警告','该功能需要blender2.93及更新版本')
         return{"FINISHED"}
 
 class OT_Rigid_Body_mass_Multiply(Operator):
