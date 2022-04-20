@@ -479,6 +479,220 @@
                 "toe.R",
                 false
             ]
+        },
+        "VRM": {
+            "Hips": [
+                "spine",
+                false
+            ],
+            "Spine": [
+                "spine.002",
+                false
+            ],
+            "Chest": [
+                "spine.003",
+                false
+            ],
+            "Neck": [
+                "spine.004",
+                false
+            ],
+            "Head": [
+                "spine.006",
+                false
+            ],
+            "LeftEye": [
+                "eye.L",
+                false
+            ],
+            "RightEye": [
+                "eye.R",
+                false
+            ],
+            "Shoulder.L": [
+                "shoulder.L",
+                false
+            ],
+            "Upper Arm.L": [
+                "upper_arm.L",
+                false
+            ],
+            "Lower Arm.L": [
+                "forearm.L",
+                false
+            ],
+            "Hand.L": [
+                "hand.L",
+                false
+            ],
+            "Index Proximal.L": [
+                "f_index.01.L",
+                false
+            ],
+            "Index Intermediate.L": [
+                "f_index.02.L",
+                false
+            ],
+            "Index Distal.L": [
+                "f_index.03.L",
+                false
+            ],
+            "Little Proximal.L": [
+                "f_pinky.01.L",
+                false
+            ],
+            "Little Intermediate.L": [
+                "f_pinky.02.L",
+                false
+            ],
+            "Little Distal.L": [
+                "f_pinky.03.L",
+                false
+            ],
+            "Middle Proximal.L": [
+                "f_middle.01.L",
+                false
+            ],
+            "Middle Intermediate.L": [
+                "f_middle.02.L",
+                false
+            ],
+            "Middle Distal.L": [
+                "f_middle.03.L",
+                false
+            ],
+            "Ring Proximal.L": [
+                "f_ring.01.L",
+                false
+            ],
+            "Ring Intermediate.L": [
+                "f_ring.02.L",
+                false
+            ],
+            "Ring Distal.L": [
+                "f_ring.03.L",
+                false
+            ],
+            "Thumb Proximal.L": [
+                "thumb.01.L",
+                false
+            ],
+            "Thumb Intermediate.L": [
+                "thumb.02.L",
+                false
+            ],
+            "Thumb Distal.L": [
+                "thumb.03.L",
+                false
+            ],
+            "Shoulder.R": [
+                "shoulder.R",
+                false
+            ],
+            "Upper Arm.R": [
+                "ArmTwist_R",
+                false
+            ],
+            "Lower Arm.R": [
+                "forearm.R",
+                false
+            ],
+            "Hand.R": [
+                "hand.R",
+                false
+            ],
+            "Index Proximal.R": [
+                "f_index.01.R",
+                false
+            ],
+            "Index Intermediate.R": [
+                "f_index.02.R",
+                false
+            ],
+            "Index Distal.R": [
+                "f_index.03.R",
+                false
+            ],
+            "Little Proximal.R": [
+                "f_pinky.01.R",
+                false
+            ],
+            "Little Intermediate.R": [
+                "f_pinky.02.R",
+                false
+            ],
+            "Little Distal.R": [
+                "f_pinky.03.R",
+                false
+            ],
+            "Middle Proximal.R": [
+                "f_middle.01.R",
+                false
+            ],
+            "Middle Intermediate.R": [
+                "f_middle.02.R",
+                false
+            ],
+            "Middle Distal.R": [
+                "f_middle.03.R",
+                false
+            ],
+            "Ring Proximal.R": [
+                "f_ring.01.R",
+                false
+            ],
+            "Ring Intermediate.R": [
+                "f_ring.02.R",
+                false
+            ],
+            "Ring Distal.R": [
+                "f_ring.03.R",
+                false
+            ],
+            "Thumb Proximal.R": [
+                "thumb.01.R",
+                false
+            ],
+            "Thumb Intermediate.R": [
+                "thumb.02.R",
+                false
+            ],
+            "Thumb Distal.R": [
+                "thumb.03.R",
+                false
+            ],
+            "Upper Leg.L": [
+                "thigh.L",
+                false
+            ],
+            "Lower Leg.L": [
+                "shin.L",
+                false
+            ],
+            "Foot.L.001": [
+                "foot.L",
+                false
+            ],
+            "Foot.L.002": [
+                "toe.L",
+                false
+            ],
+            "Upper Leg.R": [
+                "thigh.R",
+                false
+            ],
+            "Lower Leg.R": [
+                "shin.R",
+                false
+            ],
+            "Foot.R.001": [
+                "foot.R",
+                false
+            ],
+            "Foot.R.002": [
+                "toe.R",
+                false
+            ]
         }
     },
     "retarget": {

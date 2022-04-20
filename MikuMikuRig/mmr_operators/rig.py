@@ -348,18 +348,22 @@ def RIG2(context):
     #修正骨骼轴向
     positive_z_bone=[
         'shoulder.L','shoulder.R',
-    ]
-    positive_x_bone=[
+
         'f_index.01.L','f_index.02.L','f_index.03.L',
         'f_middle.01.L','f_middle.02.L','f_middle.03.L',
         'f_ring.01.L','f_ring.02.L','f_ring.03.L',
         'f_pinky.01.L','f_pinky.02.L','f_pinky.03.L',
-    ]
-    negative_x_bone=[
+
         'f_index.01.R','f_index.02.R','f_index.03.R',
         'f_middle.01.R','f_middle.02.R','f_middle.03.R',
         'f_ring.01.R','f_ring.02.R','f_ring.03.R',
         'f_pinky.01.R','f_pinky.02.R','f_pinky.03.R',
+    ]
+    positive_x_bone=[
+
+    ]
+    negative_x_bone=[
+
     ]
     negative_y_bone=[
         'hand.L','upper_arm.L','forearm.L','hand.R','upper_arm.R','forearm.R',
@@ -793,5 +797,251 @@ def RIG2(context):
     logging.info("完成"+'匹配骨骼数:'+str(match_bone_nunber))
     alert_error("提示","完成"+'匹配骨骼数:'+str(match_bone_nunber))
     return(True)
+
+def decorate_mmd_arm(context):
+
+    if check_arm() is False:
+        return
+
+    mmd_arm=context.view_layer.objects.active
+
+    pose_bones=mmd_arm.pose.bones
+    edit_bones=mmd_arm.data.edit_bones
+    bones=mmd_arm.data.bones
+    mmd_dict={}
+
+    #生成字典
+    for pose_bone in pose_bones:
+        mmd_bone=pose_bone.mmd_bone
+        name_j=mmd_bone.name_j
+        mmd_dict[name_j]=pose_bone.name
+
+    primary_bone_list=[
+        '全ての親','センター','グルーブ','下半身','上半身','上半身2','首','頭',
+        '腰','グルーブ2','グルーブ','センター2',
+        '左足','左足ＩＫ','左ひざ',
+        '右足','右足ＩＫ','右ひざ',
+        '左足IK親','右足IK親',
+        '左肩','左腕','左ひじ','左手首',
+        '右肩','右腕','右ひじ','右手首',
+        '左肩P','左腕捩','左手捩',
+        '右肩P','右腕捩','右手捩',
+
+    ]
+    secondary_bone_list=[
+        '左目','右目','両目',
+        '左足首','左足先EX',
+        '右足首','右足先EX',
+        '左つま先ＩＫ','右つま先ＩＫ',
+        '左親指０','左親指１','左親指２',
+        '左人指１','左人指２','左人指３',
+        '左中指１','左中指２','左中指３',
+        '左薬指１','左薬指２','左薬指３',
+        '左小指１','左小指２','左小指３',
+        '右親指０','右親指１','右親指２',
+        '右人指１','右人指２','右人指３',
+        '右中指１','右中指２','右中指３',
+        '右薬指１','右薬指２','右薬指３',
+        '右小指１','右小指２','右小指３',
+    ]
+
+    def set_bone_layer(bone,number):
+
+        bone.layers[number]=True
+        for i in range(32):
+            if i != number:
+                bone.layers[i]=False
+
+    def connect_bone_chain(bone_chain):
+        if bone_chain[0] in mmd_dict:
+            length=len(bone_chain)
+            for i in range(length-1):
+                if bone_chain[i+1] in mmd_dict:
+                    name=mmd_dict[bone_chain[i]]
+                    parent_name=mmd_dict[bone_chain[i+1]]
+                    bone=edit_bones[name]
+                    parent_bone=edit_bones[parent_name]
+                    bone.parent=parent_bone
+                    parent_bone.tail=bone.head
+                    bone.use_connect=True
+                else:
+                    return
+        else:
+            return
+
+    bone_chain_list=[
+        ['左手首','左手捩','左ひじ','左腕捩','左腕'],
+        ['右手首','右手捩','右ひじ','右腕捩','右腕'],
+        ['頭','首','上半身2','上半身']
+    ]
+    arm_bone_dict={
+        '頭':(None,(None,None),(None,None),(None,None)),
+        '首':(None,(None,None),(None,None),(None,None)),
+        '上半身２':(None,(None,None),(None,None),(None,None)),
+        '上半身':(None,(None,None),(None,None),(None,None)),
+        '左肩':(None,(None,None),(None,None),(None,None)),
+        '右肩':(None,(None,None),(None,None),(None,None)),
+        '左手捩':(None,None,(None,None),None),
+        '左腕捩':(None,None,(None,None),None),
+        '右手捩':(None,None,(None,None),None),
+        '右腕捩':(None,None,(None,None),None),
+        '左腕':(-2.463,(None,None),None,(None,None)),
+        '右腕':(-0.679,(None,None),None,(None,None)),
+        '左ひじ':(-2.48,None,None,(-0.001,None)),
+        '右ひじ':(-0.66,None,None,(-0.001,None)),
+        '左手首':(None,(None,None),None,(None,None)),
+        '右手首':(None,(None,None),None,(None,None)),
+    }
+    def extend_bone(bone):
+
+        parent_bone=bone.parent
+        bone_vector=bone.head-parent_bone.head
+        bone.tail=bone.head+bone_vector
+        bone.roll=parent_bone.roll
+
+    extend_bone_list=[
+        '左親指２',
+        '左人指３',
+        '左中指３',
+        '左薬指３',
+        '左小指３',
+        '右親指２',
+        '右人指３',
+        '右中指３',
+        '右薬指３',
+        '右小指３',
+    ]
+
+    bpy.ops.object.mode_set(mode = 'EDIT')
+
+    for name_j,name in mmd_dict.items():
+        pose_bone=pose_bones[name]
+        edit_bone=edit_bones[name]
+
+        #延长骨骼
+        if name_j in extend_bone_list:
+            extend_bone(edit_bone)
+
+        #断开先骨骼
+        if '先' in name_j:
+            edit_bone.use_connect=False
+
+        #对称轴向
+        if '左' in name_j:
+            name_j_R=name_j.replace('左','右')
+            if name_j_R in mmd_dict:
+                edit_bone_R=edit_bones[mmd_dict[name_j_R]]
+                edit_bone_R.roll=-edit_bone.roll
+
+        #设置特定轴向
+        if name_j in arm_bone_dict:
+            bone_setting=arm_bone_dict[name_j]
+            edit_bone.roll=bone_setting[0] or edit_bone.roll
+
+    #链接骨骼
+    for bone_chain in bone_chain_list:
+        connect_bone_chain(bone_chain)
+
+    #修改手掌骨骼
+    def adjust_hand_bone(hand_name,finger1_name,finger2_name):
+        if hand_name and finger1_name and finger2_name in mmd_dict:
+            hand_bone=edit_bones[mmd_dict[hand_name]]
+            finger1_bone=edit_bones[mmd_dict[finger1_name]]
+            finger2_bone=edit_bones[mmd_dict[finger2_name]]
+            hand_bone.tail=(finger1_bone.head+finger2_bone.head)/2
+
+    adjust_hand_bone('左手首','左中指１','左薬指１')
+    adjust_hand_bone('右手首','右中指１','右薬指１')
+
+    bpy.ops.object.mode_set(mode = 'OBJECT')
+
+    #设置层可见性
+    #mmd_arm.data.layers[0]=True
+    #设置骨骼族颜色
+    bone_color_dict={
+        'Root':'THEME09',
+        'センター':'THEME09',
+        'ＩＫ':'THEME02',
+        'IK':'THEME02',
+        '体(上)':'THEME04',
+        '体上':'THEME04',
+        '上半身':'THEME04',
+        '腕':'THEME03',
+        '指':'THEME04',
+        '足':'THEME03',
+        '体(下)':'THEME04',
+        '下半身':'THEME04',
+    }
+
+    #设置骨骼组颜色
+    for bone_group in mmd_arm.pose.bone_groups:
+        name=bone_group.name
+        if name in bone_color_dict:
+            bone_group.color_set=bone_color_dict[name]
+
+    #设置骨骼层
+    for pose_bone in pose_bones:
+        bone=pose_bone.bone
+        name_j=pose_bone.mmd_bone.name_j
+
+        if pose_bone.bone_group and pose_bone.bone_group.name in bone_color_dict:
+            set_bone_layer(bone,0)
+        else:
+            set_bone_layer(bone,1)
+        
+        #设置IK限制
+        if name_j in arm_bone_dict:
+            pose_bone.lock_location=[False,False,False]
+            pose_bone.ik_stiffness_x=0.1
+            pose_bone.ik_stiffness_y=0.1
+            pose_bone.ik_stiffness_z=0.1
+            bone_setting=arm_bone_dict[name_j]
+
+            if bone_setting[1]:
+                pose_bone.lock_ik_x=False
+                pose_bone.ik_min_x=bone_setting[1][0] or pose_bone.ik_min_x
+                pose_bone.ik_max_x=bone_setting[1][1] or pose_bone.ik_max_x
+            else:
+                pose_bone.lock_ik_x=True
+            if bone_setting[2]:
+                pose_bone.lock_ik_y=False
+                pose_bone.ik_min_y=bone_setting[2][0] or pose_bone.ik_min_y
+                pose_bone.ik_max_y=bone_setting[2][1] or pose_bone.ik_max_y
+            else:
+                pose_bone.lock_ik_y=True
+            if bone_setting[3]:
+                pose_bone.lock_ik_z=False
+                pose_bone.ik_min_z=bone_setting[3][0] or pose_bone.ik_min_z
+                pose_bone.ik_max_z=bone_setting[3][1] or pose_bone.ik_max_z
+            else:
+                pose_bone.lock_ik_z=True
+
+    #设置骨骼弯曲
+    def world_rotate(posebone_a,posebone_b,vector=(0,1,0),size=-0.2618):
+
+        v1=posebone_b.head-posebone_a.head
+        v2=v1.cross(vector)
+        mat1=mathutils.Matrix.Rotation(size,4,v2)
+        mat2=posebone_a.matrix.inverted() @ mat1 @ posebone_a.matrix
+        q=mat2.to_quaternion()
+        posebone_a.rotation_mode = 'QUATERNION'
+        posebone_a.rotation_quaternion = q
+
+    rotate_list=[
+        ['左ひじ','左腕',(0,1,0),0.2618],
+        ['右ひじ','右腕',(0,1,0),0.2618],
+    ]
+    for order in rotate_list:
+        if order[0] not in mmd_dict or order[1] not in mmd_dict:
+            continue
+        posebone_a=pose_bones[mmd_dict[order[0]]]
+        posebone_b=pose_bones[mmd_dict[order[1]]]
+        world_rotate(posebone_a,posebone_b,order[2],order[3])
+
+    #开启自动IK
+    bpy.context.object.pose.use_auto_ik = True
+    #设置各自中心
+    bpy.context.scene.tool_settings.transform_pivot_point = 'INDIVIDUAL_ORIGINS'
+
 
 Class_list=[]

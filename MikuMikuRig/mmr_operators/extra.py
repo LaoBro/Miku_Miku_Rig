@@ -124,4 +124,14 @@ class OT_Hide_Skirt(Operator):
         hide_skirt()
         return{"FINISHED"}
 
-Class_list=[OT_Set_Min_IK_Loop,OT_Hide_Skirt]
+class OT_Decorate_MMD_Arm(Operator):
+    bl_idname = "mmr.decorate_mmd_arm" # python 提示
+    bl_label = "Interface"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self,context):
+        rig.decorate_mmd_arm(context)
+        return{"FINISHED"}
+    
+
+Class_list=[OT_Set_Min_IK_Loop,OT_Hide_Skirt,OT_Decorate_MMD_Arm]

@@ -142,24 +142,20 @@ def convert_rigid_body_to_cloth(context):
     bm=bmesh.new()
     bm.from_mesh(mesh)
     #bmesh.ops.edgenet_fill(bm, edges=bm.edges, mat_nr=0, use_smooth=True, sides=4)
-    bmesh.ops.holes_fill(bm, edges=bm.edges, sides=4)
+    if mmr_property.cloth_convert_mod!='Bone Constrain':
+        bmesh.ops.holes_fill(bm, edges=bm.edges, sides=4)
 
-    #删除大于四边的面
-    #remove ngon
-    '''for f in bm.faces:
-        if len(f.verts)>4:
-            bm.faces.remove(f)'''
-    #删除多余边
-    #remove extra edge
-    for e in bm.edges:
-        true_edge=False
-        for i in edge_index:
-            if e.verts[0].index in i and e.verts[1].index in i:
-                true_edge=True
-                break
-        if true_edge==False:
-            bm.edges.remove(e)
-    bm.faces.ensure_lookup_table()
+        #删除多余边
+        #remove extra edge
+        for e in bm.edges:
+            true_edge=False
+            for i in edge_index:
+                if e.verts[0].index in i and e.verts[1].index in i:
+                    true_edge=True
+                    break
+            if true_edge==False:
+                bm.edges.remove(e)
+        bm.faces.ensure_lookup_table()
 
     #尝试标记出头发,飘带
     #try mark hair or ribbon vertex
@@ -313,7 +309,7 @@ def convert_rigid_body_to_cloth(context):
     #extend side vertex
     bm.verts.index_update( ) 
     bm.faces.ensure_lookup_table()
-    new_side_verts=[None for i in range(len(bm.verts))]
+    new_side_verts={}
     for v in side_verts:
         for e in v.link_edges:
             if e not in side_edges:
@@ -321,16 +317,18 @@ def convert_rigid_body_to_cloth(context):
                     new_location=v.co*2-e.verts[1].co
                 else:
                     new_location=v.co*2-e.verts[0].co
+                #这里改了
+                new_vert=bm.verts.new(new_location,v)
+                new_side_verts[v.index]=new_vert
                 break
-        new_vert=bm.verts.new(new_location,v)
-        new_side_verts[v.index]=new_vert
+
 
     for e in side_edges:
         vert1=e.verts[0]
         vert2=e.verts[1]
-        vert3=new_side_verts[vert2.index]
-        vert4=new_side_verts[vert1.index]
-        if vert3 != None and vert4 != None:
+        if vert2.index in new_side_verts and vert1.index in new_side_verts:
+            vert3=new_side_verts[vert2.index]
+            vert4=new_side_verts[vert1.index]
             bm.faces.new([vert1,vert2,vert3,vert4])
 
     bm.verts.ensure_lookup_table()
@@ -478,7 +476,7 @@ class OT_Convert_Rigid_Body_To_Cloth(Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self,context):
-        if bpy.app.version[1]>=93:
+        if bpy.app.version>=(2, 93, 0):
             convert_rigid_body_to_cloth(context)
         else:
             alert_error('警告','该功能需要blender2.93及更新版本')

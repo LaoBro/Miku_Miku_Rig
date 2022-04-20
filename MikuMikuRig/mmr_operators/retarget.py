@@ -61,7 +61,7 @@ def retarget_mixmao(OT,context):
     rigify_action.name=action_name
 
     old_frame=context.scene.frame_current
-    context.scene.frame_current=frame_range[0]
+    context.scene.frame_current=int(frame_range[0])
     
     #写入MMR预设
     fbx_preset=preset.preset_dict_dict['retarget'][mmr_property.retarget_preset_name]
