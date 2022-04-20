@@ -67,6 +67,10 @@ msgctxt "Operator"
 msgid "Hide Skirt By Rigid Body"
 msgstr "按刚体隐藏网格"
 
+msgctxt "Operator"
+msgid "Decorate MMD Arm"
+msgstr "美化MMD骨架"
+
 #PT_MikuMikuRig_3
 msgid "Retarget"
 msgstr "动画重定向"
