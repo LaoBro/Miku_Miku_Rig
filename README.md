@@ -5,17 +5,21 @@ MikuMikuRig是一款集生成控制器，自动导入动画，自动布料为一
 MikumiKurig is a Blender plugin that can generates rig, automatically imports animations as nla track, and automatically generates cloth.
 
 ## 功能 Functions
-自动为mmd骨骼生成rigify控制器，包含了各种特殊情况的修复。
+一键为任何骨骼生成Rigify控制器
 
-自动为生成的控制器导入mixamo动画和vmd动画。导入的动画将作为NLA片段存在。导入mixamo动画时还能重定向成ik动画。
+一键为生成的控制器导入任何FBX动画，BVH动画和VMD动画。导入的动画将作为NLA片段存在。
 
-自动把mmd刚体物理转换为布料系统，包括表面形变和骨骼约束两种传递模式。
+一键把MMD刚体物理转换为布料系统
 
-Automatically generates Rigify controllers for MMD armature, including fixes for various special cases.
+一键美化MMD骨骼
 
-Automatically import Mixamo animations and VMD animations as NLA .Also support IK retargeting.
+Generates Rigify controllers for any armature with one click.
 
-Automatically converts rigid bodies to cloth system,including bone constrain and surface deform.
+Import any FBX,BVH and VMD animations as NLA strip with one click.
+
+Converts MMD rigid bodies to cloth system with one click.
+
+Decorate MMD armature with one click
 
 ![picture1](https://github.com/958261649/Miku_Miku_Rig/blob/main/preview/QQ%E6%88%AA%E5%9B%BE20210616125213.png)
 
