@@ -86,7 +86,7 @@ def retarget_mixmao(OT,context):
 
     #检测关键骨骼是否存在
     from_necessary_bone_type_list=['thigh.L','thigh.R','upper_arm.L','upper_arm.R','forearm.L','forearm.R']
-    to_necessary_bone_type_list=['torso','thigh.L','thigh.R','upper_arm.L','upper_arm.R','forearm.L','forearm.R']
+    to_necessary_bone_type_list=['spine','thigh.L','thigh.R','upper_arm.L','upper_arm.R','forearm.L','forearm.R']
     for bone_type in from_necessary_bone_type_list:
         if bone_type not in from_dict:
             alert_error('警告','导入骨骼缺失关键骨骼类型'+str(bone_type))
@@ -188,7 +188,7 @@ def retarget_mixmao(OT,context):
         'f_ring.01.R','f_ring.02.R','f_ring.03.R',
         'f_pinky.01.R','f_pinky.02.R','f_pinky.03.R',
     }
-    translation_set={'torso'}
+    translation_set={'spine'}
 
     fcurves_b=rigify_action.fcurves
 
@@ -408,8 +408,8 @@ def retarget_mixmao(OT,context):
 
         retarget_fcurves(q_l,q_r,posebone_a,posebone_b,translation)
 
-    if 'torso' not in from_dict and 'torso' in to_dict:
-        print('Action have no torso')
+    if 'spine' not in from_dict and 'spine' in to_dict:
+        print('Action have no spine')
 
         x_finel,y_finel,z_finel=mat_wa4.to_translation()*action_scale_finel
 
@@ -420,7 +420,7 @@ def retarget_mixmao(OT,context):
             (0,0,0,1)
         ])
 
-        spine_name=to_dict['torso']
+        spine_name=to_dict['spine']
         spine_posebone=pose_bones_b[spine_name]
         spine_bone=spine_posebone.bone
         spine_mat=spine_bone.matrix_local.to_3x3()
@@ -550,7 +550,7 @@ def load_vmd(OT,context):
     #指定mmd骨骼名称
     #生成字典
     mmd_dict={
-    'root':'全ての親','Center':'センター','Groove':'グルーブ','spine':'下半身','spine.002':'上半身','spine.003':'上半身2','spine.004':'首','spine.006':'頭',
+    'root':'全ての親','Center':'センター','Groove':'グルーブ','LowerBody':'下半身','spine.001':'上半身','spine.003':'上半身2','spine.004':'首','spine.006':'頭',
     'thigh.L':'左足','shin.L':'左ひざ','foot.L':'左足首','toe.L':'左足先EX','LegIK_L':'左足ＩＫ',
     'thigh.R':'右足','shin.R':'右ひざ','foot.R':'右足首','toe.R':'右足先EX','LegIK_R':'右足ＩＫ',
     'shoulder.L':'左肩','upper_arm.L':'左腕','forearm.L':'左ひじ','hand.L':'左手首',
@@ -705,7 +705,7 @@ def load_vmd(OT,context):
     match_bone('forearm.R',['forearm.R','ひじ.R'])
     match_bone('hand.L',['hand.L','手首.L'])
     match_bone('hand.R',['hand.R','手首.R'])
-    match_bone('torso',['腰','torso'])
+    match_bone('spine',['腰','spine'])
 
     mmd_arm.data.edit_bones["全ての親"].matrix=rigify_arm.data.bones[rigify_dict['Root']].matrix_local
 
@@ -713,7 +713,7 @@ def load_vmd(OT,context):
     bpy.ops.mmd_tools.import_vmd(filepath=vmd_path,scale=1, margin=0)
     bpy.context.scene.frame_end=old_frame_end
     bpy.ops.pose.select_all(action='DESELECT')
-    bake_name_list=['foot.L','foot.R','shoulder.L','shoulder.R','upper_arm.L','upper_arm.R','forearm.L','forearm.R','hand.L','hand.R','torso']
+    bake_name_list=['foot.L','foot.R','shoulder.L','shoulder.R','upper_arm.L','upper_arm.R','forearm.L','forearm.R','hand.L','hand.R','spine']
     for name in bake_name_list:
         mmd_arm.data.bones[name].select=True
 
@@ -758,6 +758,7 @@ def load_vmd(OT,context):
         insert_keyframe('pose.bones["thigh_parent.L"]["IK_FK"]',frame_range[0],1)
         insert_keyframe('pose.bones["thigh_parent.R"]["IK_FK"]',frame_range[0],1)
 
+    #插入脖子跟随关键帧
     insert_keyframe('pose.bones["torso"]["neck_follow"]',frame_range[0],1)
     insert_keyframe('pose.bones["torso"]["head_follow"]',frame_range[0],1)
 
@@ -927,7 +928,7 @@ def load_vmd(OT,context):
     copy_fcurve('shoulder.R',['肩.R','肩P.R'],'shoulder.R')
     copy_fcurve('upper_arm.L',['腕.L','肩P.L'],'upper_arm.L')
     copy_fcurve('upper_arm.R',['腕.L','肩P.R'],'upper_arm.R')
-    copy_fcurve('torso',['グルーブ','腰'],'torso',True)
+    copy_fcurve('spine',['グルーブ','腰'],'spine',True)
 
     if 'ArmTwist_L' not in rigify_dict and 'forearm.L' in rigify_dict:
         copy_fcurve('forearm.L',['腕捩.L','ひじ.L'],'forearm.L')
@@ -976,7 +977,7 @@ def export_vmd(OT,context):
     end_frame=OT.end_frame
 
     mmd_rigify_dict={
-    '全ての親':['root'],'センター':['torso','Center','Groove'],'下半身':['spine_fk','hips'],'上半身':['spine_fk.001','spine_fk.002','chest'],'上半身2':['spine_fk.003','chest'],
+    '全ての親':['root'],'センター':['spine','Center'],'下半身':['spine_fk','hips'],'上半身':['spine_fk.001','spine_fk.002','chest'],'上半身2':['spine_fk.003','chest'],
     '首':['neck'],'頭':['head'],'両目':[],'左目':[],'右目':[],
     '左足':['thigh_fk.L','thigh_ik.L'],'左足ＩＫ':['thigh_fk.L','shin_fk.L','foot_ik.L'],'左つま先ＩＫ':['foot_fk.L','foot_ik.L'],'左足首':['foot_fk.L','foot_ik.L'],
     '右足':['thigh_fk.R','thigh_ik.R'],'右足ＩＫ':['thigh_fk.R','shin_fk.R','foot_ik.R'],'右つま先ＩＫ':['foot_fk.L','foot_ik.R'],'右足首':['foot_fk.L','foot_ik.R'],

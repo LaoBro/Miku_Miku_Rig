@@ -31,34 +31,9 @@ mmd_bone_type_list=[
 'LegTipEX_R',
 ]
 
-mmd_c_bone_type_list=[
-'无',
-'根骨骼（重定向用骨骼）','中心（重定向用骨骼）','躯干控制器（重定向用骨骼）',
-'下半身','上半身0（非必要骨骼）','上半身1','上半身2','脖子','头',
-'左眼（非必要骨骼）','右眼（非必要骨骼）',
-'左肩膀','左大臂','左大臂扭转骨骼（非必要骨骼）','左小臂','左小臂扭转骨骼（非必要骨骼）','左手腕',
-'左手大拇指0','左手大拇指1','左手大拇指2',
-'左手食指1','左手食指2','左手食指3',
-'左手中指1','左手中指2','左手中指3',
-'左手无名指1','左手无名指2','左手无名指3',
-'左手小拇指1','左手小拇指2','左手小拇指3',
-'右肩膀','右大臂','右大臂扭转骨骼（非必要骨骼）','右小臂','右小臂扭转骨骼（非必要骨骼）','右手腕',
-'右手大拇指0','右手大拇指1','右手大拇指2',
-'右手食指1','右手食指2','右手食指3',
-'右手中指1','右手中指2','右手中指3',
-'右手无名指1','右手无名指2','右手无名指3',
-'右手小拇指1','右手小拇指2','右手小拇指3',
-'左大腿','左小腿','左脚掌','左脚尖（非必要骨骼）',
-'左腿IK骨骼（重定向用骨骼）',
-'左脚掌IK骨骼（非必要骨骼）',
-'右大腿','右小腿','右脚掌','右脚尖（非必要骨骼）',
-'右腿IK骨骼（非必要骨骼）',
-'右脚掌IK骨骼（重定向用骨骼）',
-]
-
 rigify_bone_type_list=[
 'None',
-'Root','Center','torso',
+'Root',
 'spine','spine.001','spine.002','spine.003','spine.004','spine.006',
 'eye.L','eye.R',
 'shoulder.L','upper_arm.L','ArmTwist_L','forearm.L','HandTwist_L','hand.L',
@@ -74,29 +49,47 @@ rigify_bone_type_list=[
 'f_ring.01.R','f_ring.02.R','f_ring.03.R',
 'f_pinky.01.R','f_pinky.02.R','f_pinky.03.R',
 'thigh.L','shin.L','foot.L','toe.L',
-'LegIK_L',
-'ToeTipIK_L',
 'thigh.R','shin.R','foot.R','toe.R',
-'LegIK_R',
-'ToeTipIK_R',
 ]
+
+bone_translate_dict_C={
+    'None': '无', 
+    'Root': '根骨骼', 'Center': '中心（重定向用骨骼）', 'torso': '躯干控制器（重定向用骨骼）', 
+    'spine': '下半身', 'spine.001': '上半身0（非必要骨骼）', 'spine.002': '上半身1', 'spine.003': '上半身2', 'spine.004': '脖子', 'spine.006': '头', 'LowerBody':'下半身',
+    'eye.L': '左眼（非必要骨骼）', 'eye.R': '右眼（非必要骨骼）', 
+    'shoulder.L': '左肩膀', 'upper_arm.L': '左大臂', 'ArmTwist_L': '左大臂扭转骨骼（非必要骨骼）', 'forearm.L': '左小臂', 'HandTwist_L': '左小臂扭转骨骼（ 非必要骨骼）', 'hand.L': '左手腕', 
+    'thumb.01.L': '左手大拇指0', 'thumb.02.L': '左手大拇指1', 'thumb.03.L': '左手大拇指2', 
+    'f_index.01.L': '左手食指1', 'f_index.02.L': '左手食指2', 'f_index.03.L': '左手食指3', 
+    'f_middle.01.L': '左手中指1', 'f_middle.02.L': ' 左手中指2', 'f_middle.03.L': '左手中指3', 
+    'f_ring.01.L': '左手无名指1', 'f_ring.02.L': '左手无名指2', 'f_ring.03.L': '左手无名指3', 
+    'f_pinky.01.L': '左手小拇指1', 'f_pinky.02.L': '左手小拇指2', 'f_pinky.03.L': '左手小拇指3', 
+    'shoulder.R': '右肩膀', 'upper_arm.R': '右大臂', 'ArmTwist_R': '右大臂扭转骨骼（非必要骨骼）', 'forearm.R': '右小臂', 'HandTwist_R': '右小臂扭转骨骼（非必要骨骼）', 'hand.R': '右手腕', 
+    'thumb.01.R': '右手大拇指0', 'thumb.02.R': '右手大拇指1', 'thumb.03.R': '右手大拇指2', 
+    'f_index.01.R': '右手食指1', 'f_index.02.R': '右手食指2', 'f_index.03.R': '右手食指3', 
+    'f_middle.01.R': '右手中指1', 'f_middle.02.R': '右手中指2', 'f_middle.03.R': '右手中指3', 
+    'f_ring.01.R': '右手无名指1', 'f_ring.02.R': '右手无名指2', 'f_ring.03.R': '右手无名指3', 
+    'f_pinky.01.R': '右手小拇指1', 'f_pinky.02.R': '右手小拇指2', 'f_pinky.03.R': '右手小拇指3', 
+    'thigh.L': '左大腿', 'shin.L': '左小腿', 'foot.L': '左脚掌', 'toe.L': '左脚尖（非必要骨骼）', 'LegIK_L': '左腿IK骨骼（重定向用骨骼）', 'ToeTipIK_L': '左脚掌IK骨骼（非必要骨骼）', 
+    'thigh.R': '右大腿', 'shin.R': '右小 腿', 'foot.R': '右脚掌', 'toe.R': '右脚尖（非必要骨骼）', 'LegIK_R': '右腿IK骨骼（非必要骨骼）', 'ToeTipIK_R': '右脚掌IK骨骼（重定向用骨骼）'
+    }
 
 built_in_rig_dict_list=['None','MMD_JP','MMD_EN','VRoid']
 built_in_retarget_dict_list=['None','mixamo','Rigify','FBX动捕','BVH动捕']
-
-bone_type_list=rigify_bone_type_list
 
 bpy.types.PoseBone.mmr_bone_invert=bpy.props.BoolProperty(
     default=False
 )
 
-bpy.types.PoseBone.mmr_bone_type=bpy.props.EnumProperty(
+'''bpy.types.PoseBone.mmr_bone_type=bpy.props.EnumProperty(
         items=[
             (name, name, '') for name in bone_type_list
         ],
         description=('Choose the bone type2 you want to use'),
+    )'''
+#预设属性改为字符串
+bpy.types.PoseBone.mmr_bone_type=bpy.props.StringProperty(
+        description=('Choose the bone type2 you want to use'),
     )
-
 
 #骨架枚举属性部分
 
@@ -116,7 +109,7 @@ preset_dict_dict={
 def get_preset(pose):
     preset={}
     for bone in pose.bones:
-        if bone.mmr_bone_type!='None':
+        if bone.mmr_bone_type!='':
             preset[bone.name]=(bone.mmr_bone_type,bone.mmr_bone_invert)
     return(preset)
 
@@ -126,10 +119,9 @@ def set_bone_type(pose,preset):
         if bone.name in preset:
             bone_type,invert=preset[bone.name]
             bone.mmr_bone_invert=invert
-            if bone_type in bone_type_list:
-                bone.mmr_bone_type=bone_type
+            bone.mmr_bone_type=bone_type
         else:
-            bone.mmr_bone_type='None'
+            bone.mmr_bone_type=''
             bone.mmr_bone_invert=False
     
 def read_json(preset_type):
@@ -398,19 +390,19 @@ class OT_QA_Assign(bpy.types.Operator):
             return{"FINISHED"}
 
         bone=pose_bone.bone
-        bone.select=False
         if len(bone.children)!=0:
             child_bone=bone.children[0]
+            bone.select=False
             child_bone.select=True
             context.view_layer.objects.active.data.bones.active=child_bone
 
-        bone_type=bone_type_list[mmr_property.quick_assign_index]
+        bone_type=rigify_bone_type_list[mmr_property.quick_assign_index]
 
         pose_bone.mmr_bone_type=bone_type
         pose_bone.mmr_bone_invert=False
 
         mmr_property.quick_assign_index+=1
-        if mmr_property.quick_assign_index > len(bone_type_list)-1:
+        if mmr_property.quick_assign_index >= len(rigify_bone_type_list):
             QA_End(context)
         
         return{"FINISHED"}
@@ -432,19 +424,19 @@ class OT_QA_Assign_Invert(bpy.types.Operator):
             return{"FINISHED"}
 
         bone=pose_bone.bone
-        bone.select=False
         if len(bone.children)!=0:
             child_bone=bone.children[0]
+            bone.select=False
             child_bone.select=True
             context.view_layer.objects.active.data.bones.active=child_bone
 
-        bone_type=bone_type_list[mmr_property.quick_assign_index]
+        bone_type=rigify_bone_type_list[mmr_property.quick_assign_index]
 
         pose_bone.mmr_bone_type=bone_type
         pose_bone.mmr_bone_invert=True
 
         mmr_property.quick_assign_index+=1
-        if mmr_property.quick_assign_index > len(bone_type_list)-1:
+        if mmr_property.quick_assign_index >= len(rigify_bone_type_list):
             QA_End(context)
         
         return{"FINISHED"}
@@ -468,7 +460,7 @@ class OT_QA_Skip(bpy.types.Operator):
         if mmr_property.quick_assign_mod==False:
             return{"FINISHED"}
         mmr_property.quick_assign_index+=1
-        if mmr_property.quick_assign_index > len(bone_type_list)-1:
+        if mmr_property.quick_assign_index >= len(rigify_bone_type_list):
             QA_End(context)
 
         return{"FINISHED"}
@@ -494,11 +486,15 @@ class MMR_Arm_Panel(Mmr_Panel_Base):
         row = layout.row()
         # Rig type field
         if mmr_property.quick_assign_mod:
+            bone_type=rigify_bone_type_list[mmr_property.quick_assign_index]
+            bone_type_C=''
+            if bone_type in bone_translate_dict_C:
+                bone_type_C=bone_translate_dict_C[bone_type]
             row = layout.row()
             row.label(text="正在指定骨骼：")
-            row.label(text=bone_type_list[mmr_property.quick_assign_index],translate =False)
+            row.label(text=bone_type,translate =False)
             row = layout.row()
-            row.label(text=mmd_c_bone_type_list[mmr_property.quick_assign_index],translate =False)
+            row.label(text=bone_type_C,translate =False)
             layout.operator("mmr.qa_assign",text='Assign (Hot Key:A)')
             layout.operator("mmr.qa_assign_invert",text='Assign Invert (Hot Key:Alt+A)')
             layout.operator("mmr.qa_skip",text='Skip (Hot Key:S)')
