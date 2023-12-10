@@ -87,19 +87,19 @@ class MMR_bone(bpy.types.PropertyGroup):
 #注册mmr骨骼属性
 bpy.utils.register_class(MMR_bone)
 bpy.types.PoseBone.mmr_bone = bpy.props.PointerProperty(type=MMR_bone)
-'''
+
 #定义骨骼头尾是否反转
 bpy.types.PoseBone.mmr_bone_invert=BoolProperty(
     default=False
 )
-
+'''
 bpy.types.PoseBone.mmr_bone_type=bpy.props.EnumProperty(
         items=[
             (name, name, '') for name in bone_type_list
         ],
         description=('Choose the bone type2 you want to use'),
     )
-
+'''
 #定义骨骼类型
 #预设属性改为字符串
 bpy.types.PoseBone.mmr_bone_type=StringProperty(
@@ -112,7 +112,6 @@ bpy.types.PoseBone.mmr_bone_mass=FloatProperty(
     description="bone mass"
     ,min=0
     )
-'''
 mmr_bone_property_list=[name for name in MMR_bone.__annotations__.keys()]
 mmr_bone_property_set=set(mmr_bone_property_list)
 #骨架枚举属性部分
