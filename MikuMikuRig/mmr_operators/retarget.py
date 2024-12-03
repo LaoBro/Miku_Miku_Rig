@@ -4,6 +4,7 @@ import os
 from bpy.types import Operator
 from . import preset
 from mathutils import Matrix,Vector,Quaternion,Euler
+from mmd_tools import auto_scene_setup
 
 def alert_error(title,message):
     def draw(self,context):
@@ -17,10 +18,9 @@ def retarget_mixmao(OT,context):
     rigify_arm=context.view_layer.objects.active
     #把路径转成小写
     mixamo_path=OT.filepath.lower ()
-    lock_location=mmr_property.lock_location
-    fade_in_out=mmr_property.fade_in_out
-    action_scale=mmr_property.action_scale
-    auto_action_scale=mmr_property.auto_action_scale
+    lock_location=OT.lock_location
+    fade_in_out=OT.fade_in_out
+    auto_action_scale=OT.auto_action_scale
     IKFK_arm=mmr_property.IKFK_arm
     IKFK_leg=mmr_property.IKFK_leg
     debug=mmr_property.debug
@@ -110,23 +110,21 @@ def retarget_mixmao(OT,context):
     q_wbi=q_wb.inverted()
 
     #自动动作缩放
-    #auto action scale
-    action_scale_finel=1
     if auto_action_scale:
         head_a=mixamo_arm.pose.bones[from_dict['thigh.L']].bone.head_local
         head_a= q_wa @ head_a
         head_a+=mixamo_arm.location
         head_b=rigify_arm.pose.bones[to_dict['thigh.L']].bone.head_local
         head_b= q_wb @ head_b
-        action_scale_finel=abs(head_b[2]/head_a[2])
+        action_scale=abs(head_b[2]/head_a[2])
     else:
-        action_scale_finel=action_scale
+        action_scale=OT.action_scale
         
 
     #调整世界矩阵缩放
-    #mat_s=Matrix([(action_scale_finel,0,0),(0,action_scale_finel,0),(0,0,action_scale_finel)])
+    #mat_s=Matrix([(action_scale,0,0),(0,action_scale,0),(0,0,action_scale)])
     #mat_wa=mat_s @ mat_wa
-    print('scale='+str(action_scale_finel))
+    print('scale='+str(action_scale))
 
     q_wab=q_wai @ q_wb
     q_wba=q_wbi @ q_wa
@@ -287,7 +285,7 @@ def retarget_mixmao(OT,context):
                     if translation_offset is not None:
                         old_location+=translation_offset
                     new_location=q_l @ old_location 
-                    new_location*=action_scale_finel
+                    new_location*=action_scale
 
                     #修改列表
                     l_co_lists[0][i]=new_location[0]
@@ -411,7 +409,7 @@ def retarget_mixmao(OT,context):
     if 'spine' not in from_dict and 'spine' in to_dict:
         print('Action have no spine')
 
-        x_finel,y_finel,z_finel=mat_wa4.to_translation()*action_scale_finel
+        x_finel,y_finel,z_finel=mat_wa4.to_translation()*action_scale
 
         mat_wat=Matrix([
             (1,0,0,-x_finel),
@@ -482,7 +480,7 @@ def retarget_mixmao(OT,context):
     bpy.ops.object.select_all(action='DESELECT')
     bpy.context.view_layer.objects.active=rigify_arm
 
-    if mmr_property.import_as_NLA_strip:
+    if OT.import_as_NLA_strip:
         target_track=rigify_arm.animation_data.nla_tracks.new()
         target_track.name='mixamo_track'
         target_strip=target_track.strips.new(action_name,bpy.context.scene.frame_current,rigify_action)
@@ -515,8 +513,7 @@ def load_vmd(OT,context):
     mmr_property=scene.mmr_property
     rigify_arm=context.view_layer.objects.active
     vmd_path=OT.filepath
-    fade_in_out=mmr_property.fade_in_out
-    action_scale=mmr_property.action_scale
+    fade_in_out=OT.fade_in_out
     debug=mmr_property.debug
 
     if rigify_arm.type!='ARMATURE':
@@ -528,8 +525,6 @@ def load_vmd(OT,context):
 
 
     fename=str(os.path.split(vmd_path))
-    print('path=')
-    print(fename)
     action_name=str(os.path.splitext(fename)[0])
     bpy.ops.object.mode_set(mode = 'OBJECT')
     bpy.ops.object.select_all(action='DESELECT')
@@ -543,7 +538,6 @@ def load_vmd(OT,context):
         rigify_arm2.animation_data.nla_tracks.remove(track)
     bpy.context.view_layer.objects.active=rigify_arm2
     rigify_arm2.select_set(True)
-    print(vmd_path)
     old_frame_end=bpy.context.scene.frame_end
     old_frame=context.scene.frame_current
 
@@ -577,13 +571,12 @@ def load_vmd(OT,context):
                 bone1.rotation_mode = 'QUATERNION'
 
     #自动缩放
-    action_scale_finel=1
-    if mmr_property.auto_action_scale:
+    if OT.auto_action_scale:
         head_b=rigify_arm2.pose.bones[rigify_dict['thigh.L']].bone.head_local
-        action_scale_finel=head_b[2]/10.2857
+        action_scale=head_b[2]/10.2857
     else:
-        action_scale_finel=action_scale
-    print('Action scale='+str(action_scale_finel))
+        action_scale=OT.action_scale
+    print('Action scale='+str(action_scale))
 
     #矫正手臂角度
     bone_a=rigify_arm2.pose.bones[rigify_dict['upper_arm.L']]
@@ -606,7 +599,8 @@ def load_vmd(OT,context):
     bone_a.rotation_mode='QUATERNION'
     bone_a.rotation_quaternion=mat_3.to_quaternion()
     
-    bpy.ops.mmd_tools.import_vmd(filepath=vmd_path,scale=action_scale_finel,use_pose_mode=True, margin=0)
+    bpy.ops.mmd_tools.import_vmd(filepath=vmd_path, files = [{"name": os.path.basename(vmd_path)}],
+                                 directory = os.path.dirname(vmd_path), scale=action_scale,use_pose_mode=True, margin=OT.margin)
     bpy.context.scene.frame_end=old_frame_end
     
 
@@ -682,6 +676,9 @@ def load_vmd(OT,context):
     bpy.context.view_layer.objects.active=mmd_arm
     mmd_arm.select_set(True)
 
+    mmd_arm.scale=(action_scale, action_scale, action_scale)
+    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+
     #匹配骨骼轴向
     bpy.ops.object.mode_set(mode = 'EDIT')
 
@@ -710,7 +707,8 @@ def load_vmd(OT,context):
     mmd_arm.data.edit_bones["全ての親"].matrix=rigify_arm.data.bones[rigify_dict['Root']].matrix_local
 
     bpy.ops.object.mode_set(mode = 'POSE')
-    bpy.ops.mmd_tools.import_vmd(filepath=vmd_path,scale=1, margin=0)
+    bpy.ops.mmd_tools.import_vmd(filepath=vmd_path, files = [{"name": os.path.basename(vmd_path)}],
+                                 directory = os.path.dirname(vmd_path),scale=action_scale, margin=OT.margin)
     bpy.context.scene.frame_end=old_frame_end
     bpy.ops.pose.select_all(action='DESELECT')
     bake_name_list=['foot.L','foot.R','shoulder.L','shoulder.R','upper_arm.L','upper_arm.R','forearm.L','forearm.R','hand.L','hand.R','spine']
@@ -721,7 +719,7 @@ def load_vmd(OT,context):
     fcurves2=vmd_action2.fcurves
     frame_range=vmd_action2.frame_range
 
-    bpy.ops.nla.bake(frame_start=frame_range[0], frame_end=frame_range[1], visual_keying=True, clear_constraints=True, use_current_action=True, bake_types={'POSE'})
+    bpy.ops.nla.bake(frame_start=int(frame_range[0]), frame_end=int(frame_range[1]), visual_keying=True, clear_constraints=True, use_current_action=True, bake_types={'POSE'})
     context.window.scene=old_scene
     
     #检测IKFK动作
@@ -896,7 +894,7 @@ def load_vmd(OT,context):
                             keyframe1=bake_kps[co0-1]
                             keyframe2=rigify_kps[i]
                             keyframe2.co[0]=keyframe1.co[0]
-                            keyframe2.co[1]=keyframe1.co[1]*action_scale
+                            keyframe2.co[1]=keyframe1.co[1]
                         
                         rigify_fcurve.update()
 
@@ -939,7 +937,7 @@ def load_vmd(OT,context):
     if 'HandTwist_R' not in rigify_dict and 'hand.R' in rigify_dict:
         copy_fcurve('hand.R',['手捩.R','手首.R'],'hand.R')
     
-    if mmr_property.import_as_NLA_strip:
+    if OT.import_as_NLA_strip:
         target_track=rigify_arm.animation_data.nla_tracks.new()
         target_track.name='vmd_track'
         target_strip=target_track.strips.new(action_name,bpy.context.scene.frame_current,vmd_action)
@@ -977,7 +975,7 @@ def export_vmd(OT,context):
     end_frame=OT.end_frame
 
     mmd_rigify_dict={
-    '全ての親':['root'],'センター':['spine','Center'],'下半身':['spine_fk','hips'],'上半身':['spine_fk.001','spine_fk.002','chest'],'上半身2':['spine_fk.003','chest'],
+    '全ての親':['root'],'センター':['DEF-spine','Center'],'下半身':['spine_fk','hips'],'上半身':['spine_fk.001','spine_fk.002','chest'],'上半身2':['spine_fk.003','chest'],
     '首':['neck'],'頭':['head'],'両目':[],'左目':[],'右目':[],
     '左足':['thigh_fk.L','thigh_ik.L'],'左足ＩＫ':['thigh_fk.L','shin_fk.L','foot_ik.L'],'左つま先ＩＫ':['foot_fk.L','foot_ik.L'],'左足首':['foot_fk.L','foot_ik.L'],
     '右足':['thigh_fk.R','thigh_ik.R'],'右足ＩＫ':['thigh_fk.R','shin_fk.R','foot_ik.R'],'右つま先ＩＫ':['foot_fk.L','foot_ik.R'],'右足首':['foot_fk.L','foot_ik.R'],
@@ -1025,13 +1023,12 @@ def export_vmd(OT,context):
     bpy.ops.object.select_all(action='DESELECT')
     bpy.context.view_layer.objects.active=mmd_arm2
     mmd_arm2.select=True
-    print(vmd_path)
 
+    rigify_action = rigify_arm.animation_data.action
     if set_action_range:
         start_frame1=start_frame
         end_frame1=end_frame
     else:
-        rigify_action=rigify_arm.animation_data.action
         if rigify_action ==None:
             return(False)
         start_frame1=rigify_action.frame_range[0]
@@ -1050,7 +1047,7 @@ def export_vmd(OT,context):
         else:
             bone.bone.select=False
 
-    bpy.ops.nla.bake(frame_start=start_frame1, frame_end=end_frame1, only_selected=True, visual_keying=True,clear_constraints=True, bake_types={'POSE'})
+    bpy.ops.nla.bake(frame_start=int(start_frame1), frame_end=int(end_frame1), only_selected=True, visual_keying=True,clear_constraints=True, bake_types={'POSE'})
     bpy.ops.object.mode_set(mode = 'OBJECT')
 
     mmd_action=mmd_arm2.animation_data.action
@@ -1189,7 +1186,6 @@ def export_vmd(OT,context):
 
     if OT.only_contain_keyframe:
         for name_j,blender_name in mmd_blender_dict.items():
-            print(name_j)
             keyframe_bone_list=mmd_rigify_dict[name_j]
             clean_fcurve(blender_name,keyframe_bone_list)
 
@@ -1206,6 +1202,32 @@ class OT_Import_Mixamo(Operator, bpy_extras.io_utils.ImportHelper):
     options={'HIDDEN'} 
     )
 
+    auto_action_scale: bpy.props.BoolProperty(
+        name="Auto Scale",
+        description="Auto Action Scale",
+        default=False
+    )
+    action_scale: bpy.props.FloatProperty(
+        name="Scale",
+        description="Action scale",
+        default=0.08,
+        min=0
+    )
+    fade_in_out: bpy.props.IntProperty(
+        name="Fade In/Out",
+        description="Fade In/Out",
+        default=0
+    )
+    import_as_NLA_strip: bpy.props.BoolProperty(
+        name="Use NLA",
+        description="Import as NLA strip",
+        default=False
+    )
+    lock_location: bpy.props.BoolProperty(
+        name="Lock Location",
+        description="Lock Location",
+        default=False
+    )
     first_frame_as_rest_pose: bpy.props.BoolProperty(
         name="First Frame As Rest Pose",
         description="First Frame As Rest Pose",
@@ -1224,8 +1246,44 @@ class OT_Import_Vmd(Operator, bpy_extras.io_utils.ImportHelper):
     options={'HIDDEN'} 
     )
     
+    auto_action_scale: bpy.props.BoolProperty(
+        name="Auto Scale",
+        description="Auto Action Scale",
+        default=False
+    )
+    action_scale: bpy.props.FloatProperty(
+        name="Scale",
+        description="Action scale",
+        default=0.08,
+        min=0
+    )
+    margin: bpy.props.IntProperty(
+        name="Margin",
+        description="Margin",
+        default=0
+    )
+    fade_in_out: bpy.props.IntProperty(
+        name="Fade In/Out",
+        description="Fade In/Out",
+        default=0
+    )
+    import_as_NLA_strip: bpy.props.BoolProperty(
+        name="Use NLA",
+        description="Import as NLA strip",
+        default=False
+    )
+    update_scene_settings: bpy.props.BoolProperty(
+        name='Update scene settings',
+        description='Update frame range and frame rate (30 fps)',
+        default=True,
+        )
+
     def execute(self,context):
         load_vmd(self,context)
+        if self.update_scene_settings:
+            auto_scene_setup.setupFrameRanges()
+            auto_scene_setup.setupFps()
+        context.scene.frame_set(context.scene.frame_current)
         return{"FINISHED"}
 
 class OT_Export_Vmd(Operator, bpy_extras.io_utils.ExportHelper):
@@ -1243,7 +1301,7 @@ class OT_Export_Vmd(Operator, bpy_extras.io_utils.ExportHelper):
     scale: bpy.props.FloatProperty(
         name="Action scale",
         description="Action scale",
-        default=1,
+        default=12.5,
         min=0
     )
 
@@ -1273,6 +1331,18 @@ class OT_Export_Vmd(Operator, bpy_extras.io_utils.ExportHelper):
         description="Only Contain Keyframe",
         default=False
     )
+
+    def invoke(self, context, event):
+        self.start_frame = context.scene.frame_start
+        self.end_frame = context.scene.frame_end
+
+        blend_file_path = bpy.path.basename(bpy.context.blend_data.filepath)
+        blend_file_name, _ = os.path.splitext(blend_file_path)
+        default_filename = f"{blend_file_name or 'action'}.vmd"
+        self.filepath = bpy.path.abspath(default_filename)
+
+        wm = context.window_manager.fileselect_add(self)
+        return {'RUNNING_MODAL'}
 
     def execute(self,context):
         export_vmd(self,context)

@@ -3,8 +3,6 @@ import bpy
 import os
 import json
 from . import rig
-from bpy.props import BoolProperty,IntProperty,FloatProperty,EnumProperty,StringProperty
-
 
 #骨骼枚举属性部分
 
@@ -78,43 +76,21 @@ bone_translate_dict_C={
 built_in_rig_dict_list=['None','MMD_JP','MMD_EN','VRoid']
 built_in_retarget_dict_list=['None','mixamo','Rigify','FBX动捕','BVH动捕']
 
-#mmr骨骼属性类
-class MMR_bone(bpy.types.PropertyGroup):
-    bone_type:StringProperty(description=('Choose the bone type you want to use'))
-    invert:BoolProperty(default=False)
-    mass:FloatProperty(default=0,description="bone mass",min=0)
-
-#注册mmr骨骼属性
-bpy.utils.register_class(MMR_bone)
-bpy.types.PoseBone.mmr_bone = bpy.props.PointerProperty(type=MMR_bone)
-'''
-#定义骨骼头尾是否反转
-bpy.types.PoseBone.mmr_bone_invert=BoolProperty(
+bpy.types.PoseBone.mmr_bone_invert=bpy.props.BoolProperty(
     default=False
 )
 
-bpy.types.PoseBone.mmr_bone_type=bpy.props.EnumProperty(
+'''bpy.types.PoseBone.mmr_bone_type=bpy.props.EnumProperty(
         items=[
             (name, name, '') for name in bone_type_list
         ],
         description=('Choose the bone type2 you want to use'),
-    )
-
-#定义骨骼类型
+    )'''
 #预设属性改为字符串
-bpy.types.PoseBone.mmr_bone_type=StringProperty(
+bpy.types.PoseBone.mmr_bone_type=bpy.props.StringProperty(
         description=('Choose the bone type2 you want to use'),
     )
 
-#定义骨骼质量
-bpy.types.PoseBone.mmr_bone_mass=FloatProperty(
-    default=1,
-    description="bone mass"
-    ,min=0
-    )
-'''
-mmr_bone_property_list=[name for name in MMR_bone.__annotations__.keys()]
-mmr_bone_property_set=set(mmr_bone_property_list)
 #骨架枚举属性部分
 
 my_dir = os.path.dirname(os.path.realpath(__file__))
@@ -131,14 +107,10 @@ preset_dict_dict={
 
 
 def get_preset(pose):
-    preset={
-        'interpretation':mmr_bone_property_list,
-    }
-    data={}
+    preset={}
     for bone in pose.bones:
-        value_list=[value for prop_name,value in bone.mmr_bone.items()]
-        if value_list[0]:
-            data[bone.name]=value_list
+        if bone.mmr_bone_type!='':
+            preset[bone.name]=(bone.mmr_bone_type,bone.mmr_bone_invert)
     return(preset)
 
 def set_bone_type(pose,preset):
@@ -609,14 +581,6 @@ class MMR_Retarget_Panel(Mmr_Panel_Base):
         layout.operator("mmr.import_mixamo",text="Import FBX/BVH")
         layout.operator("mmr.import_vmd",text="Import VMD")
         layout.operator("mmr.export_vmd",text="Bake and export VMD animation")
-        layout.prop(mmr_property, "extra_options2", toggle=True,text='Extra Options')
-        if mmr_property.extra_options2:
-            layout.prop(mmr_property,'fade_in_out',text="Fade in out")
-            layout.prop(mmr_property,'auto_action_scale',text="Auto animation scale")
-            if mmr_property.auto_action_scale==False:
-                layout.prop(mmr_property,'action_scale',text="Animation scale")
-            layout.prop(mmr_property,'lock_location',text="Lock animation location")
-            layout.prop(mmr_property,'import_as_NLA_strip',text="Import as NLA strip")
 Class_list=[
     MMR_Bone_Panel,MMR_Arm_Panel,OT_Add_Preset,OT_Delete_Preset,OT_Read_Preset,OT_Overwrite_Preset,OT_Rig_Preset,
     OT_QA_Start,OT_QA_End,OT_QA_Assign,OT_QA_Assign_Invert,OT_QA_Skip,MMR_Retarget_Panel,

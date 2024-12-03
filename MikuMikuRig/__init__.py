@@ -1,13 +1,13 @@
 bl_info = {
     "name": "MikuMikuRig", #插件名字
     "author": "William", #作者名字
-    "version": (0, 5, 6, 0), #插件版本
+    "version": (0, 6, 0, 0), #插件版本
     "blender": (2, 90, 0), #需要的*最低* blender 版本
     "location": "3DView > Tools", #插件所在位置
     "description": "快速为各种人形模型生成rigify控制器,一键套mixamo动作", #描述
     "support": 'COMMUNITY', #支持等级（社区支持）
     "category": "Rigging", #分类
-    #"warning": "暂不支持Blender3.0及以上版本",
+    #"warning": "暂不支持Blender4.0及以上版本,3.0以上版本需要替换Rigify修复补丁",
 }
 import bpy
 import bpy_extras
@@ -33,10 +33,6 @@ class MMR_property(bpy.types.PropertyGroup):
     solid_rig:BoolProperty(default=False,description="实心控制器")
     pole_target:BoolProperty(default=False,description="极向目标")
     min_ik_loop:IntProperty(default=10,description="最小IK迭代次数",min=1)
-    lock_location:BoolProperty(default=False,description="锁定动画位置")
-    fade_in_out:IntProperty(default=0,description="淡入淡出长度",min=0)
-    action_scale:FloatProperty(default=1,description="动作缩放",min=0)
-    auto_action_scale:BoolProperty(default=True,description="自动动作缩放")
     subdivide:IntProperty(default=0,description="细分级别",min=0,max=5)
     auto_select_mesh:BoolProperty(default=True,description="自动选择模型")
     auto_select_rigid_body:BoolProperty(default=True,description="自动选择刚体")
@@ -77,13 +73,7 @@ class MMR_property(bpy.types.PropertyGroup):
     quick_assign_index:IntProperty(default=1,description="快速指定序号",min=1)
     quick_assign_mod:BoolProperty(default=False,description="快速指定模式")
     extra_options1:bpy.props.BoolProperty(default=False,description="高级选项")
-    extra_options2:bpy.props.BoolProperty(default=False,description="高级选项")
     mass_multiply_rate:FloatProperty(default=12.5,description="刚体质量倍率",min=0)
-    import_as_NLA_strip: bpy.props.BoolProperty(
-        name='Import as NLA strip',
-        description="Import as NLA strip",
-        default=True
-    )
 
 class Mmr_Panel_Base(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'
