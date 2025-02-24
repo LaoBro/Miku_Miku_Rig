@@ -6,6 +6,10 @@ from bpy.types import Operator
 from . import preset
 from . import extra
 
+def copy_bone_collections(source_bone: bpy.types.Bone, target_bone: bpy.types.Bone):
+    for collection in source_bone.collections:
+        collection.assign(target_bone)
+
 def alert_error(title,message):
     def draw(self,context):
         self.layout.label(text=str(message))
@@ -75,7 +79,7 @@ def add_constraint3(constraint_List,preset_dict):
         parent_bone.matrix=mmd_arm.pose.bones[From].matrix
         parent_bone.tail=mmd_arm.pose.bones[From].tail
         parent_bone.parent=rig.data.edit_bones[To]
-        parent_bone.layers=rig.data.edit_bones[To].layers
+        copy_bone_collections(rig.data.bones[To], parent_bone)
 
     bpy.ops.object.mode_set(mode = 'POSE')
 
@@ -149,9 +153,9 @@ def RIG2(context):
     bpy.ops.object.mode_set(mode = 'EDIT')
     for bone in mmd_arm.pose.bones:
         name=bone.name
-        if bone.mmr_bone_type !='None':
-            preset_dict[bone.mmr_bone_type]=bone.name
-        if bone.mmr_bone_type in unconnect_bone:
+        if bone.mmr_bone.bone_type !='None':
+            preset_dict[bone.mmr_bone.bone_type]=bone.name
+        if bone.mmr_bone.bone_type in unconnect_bone:
             mmd_arm.data.edit_bones[name].use_connect = False
 
     bpy.ops.object.mode_set(mode = 'OBJECT')
@@ -257,20 +261,20 @@ def RIG2(context):
     #新骨骼匹配方法
 
     for bone in mmd_arm.pose.bones:
-        bone_type=bone.mmr_bone_type
+        bone_type=bone.mmr_bone.bone_type
         if bone_type!="None" and bone_type in rigify_bones_list:
             rigify_bone=rigify_arm.data.edit_bones[bone_type]
-            if bone.mmr_bone_invert:
+            if bone.mmr_bone.invert:
                 rigify_bone.tail=bone.head
             else:
                 rigify_bone.tail=bone.tail
 
     for bone in mmd_arm.pose.bones:
-        bone_type=bone.mmr_bone_type
+        bone_type=bone.mmr_bone.bone_type
         if bone_type!="None" and bone_type in rigify_bones_list:
             rigify_bone=rigify_arm.data.edit_bones[bone_type]
             remain_bone.discard(bone_type)
-            if bone.mmr_bone_invert:
+            if bone.mmr_bone.invert: # 此处会导致骨骼消失
                 rigify_bone.head=bone.tail
             else:
                 rigify_bone.head=bone.head
@@ -423,6 +427,9 @@ def RIG2(context):
     context.view_layer.objects.active=rigify_arm
     rigify_arm.select_set(True)
 
+    bpy.ops.armature.rigify_upgrade_layers()
+    # bpy.ops.pose.rigify_upgrade_face()
+
     bpy.ops.pose.rigify_generate()
     rig=context.view_layer.objects.active
 
@@ -465,7 +472,7 @@ def RIG2(context):
         auto_shoulder_L_c.min_x = -0.35
         auto_shoulder_L_c.max_x = 1.57
         auto_shoulder_L_c.owner_space = 'LOCAL_WITH_PARENT'
-        auto_shulder_L.bone.layers=rig.data.bones["ORG-shoulder.L"].layers
+        copy_bone_collections(rig.data.bones["ORG-shoulder.L"], auto_shulder_L.bone)
 
         shoulder_R=rig.pose.bones["shoulder.R"]
         auto_shulder_R=rig.pose.bones["auto_shulder_R"]
@@ -480,7 +487,7 @@ def RIG2(context):
         auto_shoulder_R_c.min_x = -0.35
         auto_shoulder_R_c.max_x = 1.57
         auto_shoulder_R_c.owner_space = 'LOCAL_WITH_PARENT'
-        auto_shulder_R.bone.layers=rig.data.bones["ORG-shoulder.R"].layers
+        copy_bone_collections(rig.data.bones["ORG-shoulder.R"], auto_shulder_R.bone)
 
     #上半身控制器
 
@@ -521,8 +528,8 @@ def RIG2(context):
         Center=rig.pose.bones["Center"]
         #Center.mmd_bone.name_j='センター'
         Center.custom_shape = rig.pose.bones["root"].custom_shape
-        Center.bone.layers=rig.data.bones["torso"].layers
-        Center.bone_group = rig.pose.bone_groups['Special'] 
+        copy_bone_collections(rig.data.bones["torso"], Center.bone)
+        # Center.bone_group = rig.pose.bone_groups['Special'] 
     else:
         #rig.pose.bones['MCH-torso.parent'].mmd_bone.name_j='グルーブ'
         pass
@@ -704,7 +711,7 @@ def RIG2(context):
     #隐藏原骨架，把新骨架设为永远在前
     #hide old armature
     rig.show_in_front = True
-    mmd_arm.hide = True
+    mmd_arm.hide_set(True)
     rig.name=mmd_arm.name+'_Rig'
 
     #缩小root控制器
@@ -717,20 +724,12 @@ def RIG2(context):
 
     #隐藏部分控制器
     #hide some controller
-    rig.data.layers[1] = False
-    rig.data.layers[2] = False
-    rig.data.layers[4] = False
-    rig.data.layers[6] = False
-    rig.data.layers[8] = False
-    rig.data.layers[9] = False
-    rig.data.layers[11] = False
-    rig.data.layers[12] = False
-    rig.data.layers[14] = False
-    rig.data.layers[15] = False
-    rig.data.layers[17] = False
-    rig.data.layers[18] = False
+    hide_conllections = ["Face (Primary)", "Face (Secondary)", "Torso (Tweak)", "Fingers (Detail)", "Arm.L (FK)", "Arm.L (Tweak)", "Arm.R (FK)", "Arm.R (Tweak)", "Leg.L (FK)", "Leg.L (Tweak)", "Leg.R (FK)", "Leg.R (Tweak)"]
+
+    for collection_name in hide_conllections:
+        rig.data.collections_all[collection_name].is_visible = False
     if 'eye.L' not in preset_dict or 'eye.R' not in preset_dict:
-        rig.data.layers[0] = False
+        rig.data.collections_all["Face"].is_visible = False
 
     #锁定移动的骨骼列表
     #lock the location of these bone
@@ -974,20 +973,16 @@ def decorate_mmd_arm(context):
     }
 
     #设置骨骼组颜色
-    for bone_group in mmd_arm.pose.bone_groups:
-        name=bone_group.name
-        if name in bone_color_dict:
-            bone_group.color_set=bone_color_dict[name]
+    for collection_name, theme in bone_color_dict.items():
+        collection = mmd_arm.data.collections_all.get(collection_name)
+        if collection != None:
+            for bone in collection.bones:
+                bone.color.palette = theme
 
     #设置骨骼层
     for pose_bone in pose_bones:
         bone=pose_bone.bone
         name_j=pose_bone.mmd_bone.name_j
-
-        if pose_bone.bone_group and pose_bone.bone_group.name in bone_color_dict:
-            set_bone_layer(bone,0)
-        else:
-            set_bone_layer(bone,1)
         
         #设置IK限制
         if name_j in arm_bone_dict:

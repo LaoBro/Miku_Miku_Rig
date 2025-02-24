@@ -89,11 +89,11 @@ bpy.utils.register_class(MMR_bone)
 bpy.types.PoseBone.mmr_bone = bpy.props.PointerProperty(type=MMR_bone)
 '''
 #定义骨骼头尾是否反转
-bpy.types.PoseBone.mmr_bone_invert=BoolProperty(
+bpy.types.PoseBone.mmr_bone.invert=BoolProperty(
     default=False
 )
 
-bpy.types.PoseBone.mmr_bone_type=bpy.props.EnumProperty(
+bpy.types.PoseBone.mmr_bone.bone_type=bpy.props.EnumProperty(
         items=[
             (name, name, '') for name in bone_type_list
         ],
@@ -102,12 +102,12 @@ bpy.types.PoseBone.mmr_bone_type=bpy.props.EnumProperty(
 
 #定义骨骼类型
 #预设属性改为字符串
-bpy.types.PoseBone.mmr_bone_type=StringProperty(
+bpy.types.PoseBone.mmr_bone.bone_type=StringProperty(
         description=('Choose the bone type2 you want to use'),
     )
 
 #定义骨骼质量
-bpy.types.PoseBone.mmr_bone_mass=FloatProperty(
+bpy.types.PoseBone.mmr_bone.mass=FloatProperty(
     default=1,
     description="bone mass"
     ,min=0
@@ -146,11 +146,11 @@ def set_bone_type(pose,preset):
     for bone in posebones:
         if bone.name in preset:
             bone_type,invert=preset[bone.name]
-            bone.mmr_bone_invert=invert
-            bone.mmr_bone_type=bone_type
+            bone.mmr_bone.invert=invert
+            bone.mmr_bone.bone_type=bone_type
         else:
-            bone.mmr_bone_type=''
-            bone.mmr_bone_invert=False
+            bone.mmr_bone.bone_type=''
+            bone.mmr_bone.invert=False
     
 def read_json(preset_type):
     global preset_dict_dict
@@ -426,8 +426,8 @@ class OT_QA_Assign(bpy.types.Operator):
 
         bone_type=rigify_bone_type_list[mmr_property.quick_assign_index]
 
-        pose_bone.mmr_bone_type=bone_type
-        pose_bone.mmr_bone_invert=False
+        pose_bone.mmr_bone.bone_type=bone_type
+        pose_bone.mmr_bone.invert=False
 
         mmr_property.quick_assign_index+=1
         if mmr_property.quick_assign_index >= len(rigify_bone_type_list):
@@ -460,8 +460,8 @@ class OT_QA_Assign_Invert(bpy.types.Operator):
 
         bone_type=rigify_bone_type_list[mmr_property.quick_assign_index]
 
-        pose_bone.mmr_bone_type=bone_type
-        pose_bone.mmr_bone_invert=True
+        pose_bone.mmr_bone.bone_type=bone_type
+        pose_bone.mmr_bone.invert=True
 
         mmr_property.quick_assign_index+=1
         if mmr_property.quick_assign_index >= len(rigify_bone_type_list):
@@ -574,8 +574,8 @@ class MMR_Bone_Panel(Mmr_Panel_Base):
         c = layout.column()
 
         row = c.row(align=True)
-        layout.prop(pose_bone, 'mmr_bone_type', text='Bone Type',translate =False)
-        layout.prop(pose_bone, 'mmr_bone_invert', text='Invert')
+        layout.prop(pose_bone, 'mmr_bone.bone_type', text='Bone Type',translate =False)
+        layout.prop(pose_bone, 'mmr_bone.invert', text='Invert')
 
 class MMR_Retarget_Panel(Mmr_Panel_Base):
     bl_idname="MMR_PT_panel_13"

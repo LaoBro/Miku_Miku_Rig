@@ -265,7 +265,7 @@
             ],
             "J_Bip_C_Hips": [
                 "spine",
-                true
+                false
             ],
             "J_Bip_C_Spine": [
                 "spine.001",
