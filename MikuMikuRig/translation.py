@@ -67,7 +67,6 @@ def load_l10n_dict(popath):
 #自定义
 addon_name = 'MikuMikuRig'
 def register_module():
-    os.path.dirname(__file__)
     my_dir = os.path.dirname(os.path.realpath(__file__))
     po_file_path = os.path.join(my_dir, "MMR_translate_CN.po")
     l10n_dict = load_l10n_dict(po_file_path)

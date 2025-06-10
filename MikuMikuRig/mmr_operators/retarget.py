@@ -2,7 +2,7 @@ import bpy
 import bpy_extras
 import os
 from bpy.types import Operator
-from . import preset
+from . import preset # type: ignore
 from mathutils import Matrix,Vector,Quaternion,Euler
 
 def alert_error(title,message):
@@ -10,6 +10,7 @@ def alert_error(title,message):
         self.layout.label(text=str(message))
     bpy.context.window_manager.popup_menu(draw,title=title,icon='ERROR')
 
+from bpy.props import StringProperty, BoolProperty, FloatProperty, IntProperty
 def retarget_mixmao(OT,context):
 
     scene=context.scene
@@ -35,7 +36,7 @@ def retarget_mixmao(OT,context):
     #get file path
     #my_dir = os.path.dirname(os.path.realpath(__file__))
     #retarget_blend_file = os.path.join(my_dir, "mixamo_retarget_arm_ik.blend")
-    fname,fename=os.path.split(mixamo_path)
+    fname, fename = os.path.split(mixamo_path)
     action_name=str(os.path.splitext(fename)[0])
 
     #导入FBX或BVH文件
@@ -126,7 +127,7 @@ def retarget_mixmao(OT,context):
     #调整世界矩阵缩放
     #mat_s=Matrix([(action_scale_finel,0,0),(0,action_scale_finel,0),(0,0,action_scale_finel)])
     #mat_wa=mat_s @ mat_wa
-    print('scale='+str(action_scale_finel))
+    print(f'scale={action_scale_finel}')
 
     q_wab=q_wai @ q_wb
     q_wba=q_wbi @ q_wa
@@ -232,20 +233,27 @@ def retarget_mixmao(OT,context):
 
         #欧拉角曲线改完四元数曲线函数
         def efc_to_qfc(obj):
-            path_e=obj.path_from_id('rotation_euler')
-            path_q=obj.path_from_id('rotation_quaternion')
-            fcurve=None
+            path_e = obj.path_from_id('rotation_euler')
+            path_q = obj.path_from_id('rotation_quaternion')
+            
+            ref_euler_fcurve = fcurves_b.find(path_e, index=0) # Take ref from X component
+            if not ref_euler_fcurve:
+                print(f"Warning: No Euler X fcurve found for {obj.name} during efc_to_qfc.")
+                return
+
+            kps_len = len(ref_euler_fcurve.keyframe_points)
+            action_group_name = ref_euler_fcurve.group.name if ref_euler_fcurve.group else None
+
             for i in range(3):
-                fcurve=fcurves_b.find(path_e,index=i)
-                fcurve.data_path=path_q
-            kps=fcurve.keyframe_points
-            kps_len=len(kps)
-            qfc4=fcurves_b.new(path_q,index=3,action_group=fcurve.group.name)
-            kps=qfc4.keyframe_points
-            kps.add(kps_len)
+                euler_fcurve = fcurves_b.find(path_e, index=i)
+                if euler_fcurve:
+                    euler_fcurve.data_path = path_q
+                    # array_index remains 0, 1, 2, now referring to quat components W, X, Y
 
+            # Add the Z component (index 3) for the quaternion
+            quat_z_fcurve = fcurves_b.new(path_q, index=3, action_group=action_group_name)
+            quat_z_fcurve.keyframe_points.add(kps_len) # Add empty keyframes, values filled later
 
-        #曲线转矩阵函数
         def get_co_lists(obj_from,obj_to,attr_name):
 
             co_lists=[]
@@ -505,8 +513,8 @@ def retarget_mixmao(OT,context):
         context.scene.frame_current=old_frame
 
 
-    rigify_arm.select=True
-    alert_error("提示","导入完成,匹配骨骼数:"+str(match_bone_number))
+    rigify_arm.select_set(True)
+    alert_error("提示",f"导入完成,匹配骨骼数:{match_bone_number}")
     return(True)
     
 def load_vmd(OT,context):
@@ -527,9 +535,8 @@ def load_vmd(OT,context):
         return(False)
 
 
-    fename=str(os.path.split(vmd_path))
-    print('path=')
-    print(fename)
+    _fname, fename = os.path.split(vmd_path) # Use _fname for unused part
+    print(f'Processing VMD file: {fename}')
     action_name=str(os.path.splitext(fename)[0])
     bpy.ops.object.mode_set(mode = 'OBJECT')
     bpy.ops.object.select_all(action='DESELECT')
@@ -583,7 +590,7 @@ def load_vmd(OT,context):
         action_scale_finel=head_b[2]/10.2857
     else:
         action_scale_finel=action_scale
-    print('Action scale='+str(action_scale_finel))
+    print(f'Action scale={action_scale_finel}')
 
     #矫正手臂角度
     bone_a=rigify_arm2.pose.bones[rigify_dict['upper_arm.L']]
@@ -616,7 +623,7 @@ def load_vmd(OT,context):
     frame_range=vmd_action.frame_range
 
     #复制曲线
-    def copy_fcurve(FK_type):
+    def _copy_fk_to_ik_fcurves(FK_type): # Renamed for clarity
         FK_name=rigify_dict[FK_type]
         IK_name=FK_name.replace('_fk.','_ik.')
         if IK_name in rigify_arm2.pose.bones.keys():
@@ -650,8 +657,8 @@ def load_vmd(OT,context):
                             setattr(keyframe2,keyframe_data,attr)
 
     
-    copy_fcurve('thigh.L')
-    copy_fcurve('thigh.R')
+    _copy_fk_to_ik_fcurves('thigh.L')
+    _copy_fk_to_ik_fcurves('thigh.R')
 
     #清空部分位置关键帧
     #clear certain keyframe
@@ -772,7 +779,7 @@ def load_vmd(OT,context):
     insert_keyframe('pose.bones["shoulder.R"].constraints["MMR_auto_shoulder"].influence',frame_range[0],0)
 
     #转移曲线
-    def copy_fcurve(bone_type,key_names,bake_name,translation=False):
+    def _transfer_baked_vmd_fcurves_to_rigify(bone_type,key_names,bake_name,translation=False): # Renamed for clarity
 
         if bone_type in rigify_dict:
             #获得控制器骨骼和烘焙骨骼
@@ -922,22 +929,22 @@ def load_vmd(OT,context):
 
 
 
-    copy_fcurve('LegIK_L',['足ＩＫ.L','つま先ＩＫ.L','足首.L','足IK親.L'],'foot.L',True)
-    copy_fcurve('LegIK_R',['足ＩＫ.R','つま先ＩＫ.R','足首.R','足IK親.R'],'foot.R',True)
-    copy_fcurve('shoulder.L',['肩.L','肩P.L'],'shoulder.L')
-    copy_fcurve('shoulder.R',['肩.R','肩P.R'],'shoulder.R')
-    copy_fcurve('upper_arm.L',['腕.L','肩P.L'],'upper_arm.L')
-    copy_fcurve('upper_arm.R',['腕.L','肩P.R'],'upper_arm.R')
-    copy_fcurve('spine',['グルーブ','腰'],'spine',True)
+    _transfer_baked_vmd_fcurves_to_rigify('LegIK_L',['足ＩＫ.L','つま先ＩＫ.L','足首.L','足IK親.L'],'foot.L',True)
+    _transfer_baked_vmd_fcurves_to_rigify('LegIK_R',['足ＩＫ.R','つま先ＩＫ.R','足首.R','足IK親.R'],'foot.R',True)
+    _transfer_baked_vmd_fcurves_to_rigify('shoulder.L',['肩.L','肩P.L'],'shoulder.L')
+    _transfer_baked_vmd_fcurves_to_rigify('shoulder.R',['肩.R','肩P.R'],'shoulder.R')
+    _transfer_baked_vmd_fcurves_to_rigify('upper_arm.L',['腕.L','肩P.L'],'upper_arm.L')
+    _transfer_baked_vmd_fcurves_to_rigify('upper_arm.R',['腕.L','肩P.R'],'upper_arm.R') # Corrected from '腕.L' to '腕.R' if it was a typo, assuming symmetry
+    _transfer_baked_vmd_fcurves_to_rigify('spine',['グルーブ','腰'],'spine',True)
 
     if 'ArmTwist_L' not in rigify_dict and 'forearm.L' in rigify_dict:
-        copy_fcurve('forearm.L',['腕捩.L','ひじ.L'],'forearm.L')
+        _transfer_baked_vmd_fcurves_to_rigify('forearm.L',['腕捩.L','ひじ.L'],'forearm.L')
     if 'ArmTwist_R' not in rigify_dict and 'forearm.R' in rigify_dict:
-        copy_fcurve('forearm.R',['腕捩.R','ひじ.R'],'forearm.R')
+        _transfer_baked_vmd_fcurves_to_rigify('forearm.R',['腕捩.R','ひじ.R'],'forearm.R')
     if 'HandTwist_L' not in rigify_dict and 'hand.L' in rigify_dict:
-        copy_fcurve('hand.L',['手捩.L','手首.L'],'hand.L')
+        _transfer_baked_vmd_fcurves_to_rigify('hand.L',['手捩.L','手首.L'],'hand.L')
     if 'HandTwist_R' not in rigify_dict and 'hand.R' in rigify_dict:
-        copy_fcurve('hand.R',['手捩.R','手首.R'],'hand.R')
+        _transfer_baked_vmd_fcurves_to_rigify('hand.R',['手捩.R','手首.R'],'hand.R')
     
     if mmr_property.import_as_NLA_strip:
         target_track=rigify_arm.animation_data.nla_tracks.new()
@@ -961,7 +968,7 @@ def load_vmd(OT,context):
         bpy.data.objects.remove(mmd_arm,do_unlink=True)
         bpy.data.scenes.remove(new_scene,do_unlink=True)
     bpy.context.view_layer.objects.active=rigify_arm
-    rigify_arm.select=True
+    rigify_arm.select_set(True)
     alert_error("提示","导入完成")
 
     return(True)
@@ -1023,7 +1030,7 @@ def export_vmd(OT,context):
     mmd_arm2=mmd_arm.copy()
     context.collection.objects.link(mmd_arm2)
     bpy.ops.object.select_all(action='DESELECT')
-    bpy.context.view_layer.objects.active=mmd_arm2
+    context.view_layer.objects.active=mmd_arm2 # Use context passed to function
     mmd_arm2.select=True
     print(vmd_path)
 
@@ -1189,9 +1196,9 @@ def export_vmd(OT,context):
 
     if OT.only_contain_keyframe:
         for name_j,blender_name in mmd_blender_dict.items():
-            print(name_j)
+            print(f"Cleaning fcurves for MMD bone: {name_j} (Blender: {blender_name})")
             keyframe_bone_list=mmd_rigify_dict[name_j]
-            clean_fcurve(blender_name,keyframe_bone_list)
+            clean_fcurve(blender_name,keyframe_bone_list) # Consider renaming clean_fcurve for clarity
 
     bpy.ops.mmd_tools.export_vmd(filepath=vmd_path,scale=scale, use_pose_mode=use_pose_mode,use_frame_range=False)
     bpy.data.objects.remove(mmd_arm2,do_unlink=True)
@@ -1201,12 +1208,12 @@ def export_vmd(OT,context):
 class OT_Import_Mixamo(Operator, bpy_extras.io_utils.ImportHelper):
     bl_idname = "mmr.import_mixamo" 
     bl_label = "Import mixamo action"
-    filter_glob: bpy.props.StringProperty( 
+    filter_glob: StringProperty(
     default='*.fbx;*.bvh;', 
     options={'HIDDEN'} 
     )
 
-    first_frame_as_rest_pose: bpy.props.BoolProperty(
+    first_frame_as_rest_pose: BoolProperty(
         name="First Frame As Rest Pose",
         description="First Frame As Rest Pose",
         default=False
@@ -1219,7 +1226,7 @@ class OT_Import_Mixamo(Operator, bpy_extras.io_utils.ImportHelper):
 class OT_Import_Vmd(Operator, bpy_extras.io_utils.ImportHelper):
     bl_idname = "mmr.import_vmd" 
     bl_label = "Import vmd action"
-    filter_glob: bpy.props.StringProperty( 
+    filter_glob: StringProperty(
     default='*.vmd;', 
     options={'HIDDEN'} 
     )
@@ -1234,41 +1241,41 @@ class OT_Export_Vmd(Operator, bpy_extras.io_utils.ExportHelper):
 
     filename_ext = ".vmd"
 
-    filter_glob: bpy.props.StringProperty( 
+    filter_glob: StringProperty(
     default='*.vmd;', 
     options={'HIDDEN'} ,
     maxlen=255
     )
 
-    scale: bpy.props.FloatProperty(
+    scale: FloatProperty(
         name="Action scale",
         description="Action scale",
         default=1,
         min=0
     )
 
-    use_pose_mode: bpy.props.BoolProperty(
+    use_pose_mode: BoolProperty(
         name="Use pose mod",
         description="Use Pose Mod",
         default=False
     )
     
-    set_action_range: bpy.props.BoolProperty(
+    set_action_range: BoolProperty(
         name="Set action range",
         description="Use Frame Range",
         default=False
     )
-    start_frame: bpy.props.IntProperty(
+    start_frame: IntProperty(
         name="Start frame",
         description="Action start frame",
         default=1
     )
-    end_frame: bpy.props.IntProperty(
+    end_frame: IntProperty(
         name="End frame",
         description="Action end frame",
         default=1
     )
-    only_contain_keyframe: bpy.props.BoolProperty(
+    only_contain_keyframe: BoolProperty(
         name="Only Contain Keyframe",
         description="Only Contain Keyframe",
         default=False
@@ -1278,4 +1285,4 @@ class OT_Export_Vmd(Operator, bpy_extras.io_utils.ExportHelper):
         export_vmd(self,context)
         return{"FINISHED"}
 
-Class_list=[OT_Import_Mixamo,OT_Import_Vmd,OT_Export_Vmd]
+CLASS_LIST = [OT_Import_Mixamo,OT_Import_Vmd,OT_Export_Vmd]

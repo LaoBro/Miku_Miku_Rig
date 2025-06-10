@@ -1,10 +1,12 @@
-from types import prepare_class
+"""MMR 骨骼和重定向预设管理模块"""
+
 import bpy
 import os
 import json
 from . import rig
-from bpy.props import BoolProperty,IntProperty,FloatProperty,EnumProperty,StringProperty
-
+from bpy.props import (
+    BoolProperty, IntProperty, FloatProperty, EnumProperty, StringProperty
+)
 
 #骨骼枚举属性部分
 
@@ -80,9 +82,21 @@ built_in_retarget_dict_list=['None','mixamo','Rigify','FBX动捕','BVH动捕']
 
 #mmr骨骼属性类
 class MMR_bone(bpy.types.PropertyGroup):
-    bone_type:StringProperty(description=('Choose the bone type you want to use'))
-    invert:BoolProperty(default=False)
-    mass:FloatProperty(default=0,description="bone mass",min=0)
+    bone_type: StringProperty(
+        name="Bone Type",
+        description='Choose the bone type you want to use'
+    )
+    invert: BoolProperty(
+        name="Invert",
+        default=False,
+        description="Invert bone direction for preset matching"
+    )
+    mass: FloatProperty(
+        name="Mass",
+        default=0.0,
+        description="Bone mass for physics simulation",
+        min=0.0
+    )
 
 #注册mmr骨骼属性
 bpy.utils.register_class(MMR_bone)
@@ -119,38 +133,42 @@ mmr_bone_property_set=set(mmr_bone_property_list)
 
 my_dir = os.path.dirname(os.path.realpath(__file__))
 json_path = os.path.join(my_dir, "preset.json")
-#rig_json_path = os.path.join(my_dir, "rig_preset.json")
-#retarget_json_path = os.path.join(my_dir, "retarget_preset.json")
-rig_preset_dict={}
-retarget_preset_dict={}
 
-preset_dict_dict={
-    'rig':rig_preset_dict,
-    'retarget':retarget_preset_dict
+preset_dict_dict = {
+    'rig': {},
+    'retarget': {}
 }
 
-
-def get_preset(pose):
-    preset={
-        'interpretation':mmr_bone_property_list,
-    }
-    data={}
+def get_preset_data_from_pose(pose):
+    """从活动骨架的姿态骨骼中提取MMR骨骼属性数据"""
+    data = {}
     for bone in pose.bones:
-        value_list=[value for prop_name,value in bone.mmr_bone.items()]
-        if value_list[0]:
-            data[bone.name]=value_list
-    return(preset)
+        # 仅当骨骼类型被设置时才保存（不为None或空字符串）
+        if bone.mmr_bone.bone_type and bone.mmr_bone.bone_type != 'None':
+            data[bone.name] = [
+                bone.mmr_bone.bone_type,
+                bone.mmr_bone.invert,
+                bone.mmr_bone.mass
+            ]
+    return data
 
-def set_bone_type(pose,preset):
-    posebones=pose.bones
-    for bone in posebones:
-        if bone.name in preset:
-            bone_type,invert=preset[bone.name]
-            bone.mmr_bone_invert=invert
-            bone.mmr_bone_type=bone_type
+def apply_preset_data_to_pose(pose, preset_data):
+    """将预设数据应用到活动骨架的姿态骨骼上"""
+    for bone in pose.bones:
+        if bone.name in preset_data:
+            values = preset_data[bone.name]
+            bone.mmr_bone.bone_type = values[0]
+            bone.mmr_bone.invert = values[1]
+            if len(values) > 2:
+                bone.mmr_bone.mass = values[2]
+            else:
+                # 如果预设中没有质量信息（可能来自旧版预设），则设为默认值
+                bone.mmr_bone.mass = MMR_bone.bl_rna.properties['mass'].default
         else:
-            bone.mmr_bone_type=''
-            bone.mmr_bone_invert=False
+             # 如果骨骼不在预设中，则重置其MMR属性
+            bone.mmr_bone.bone_type = 'None'
+            bone.mmr_bone.invert = False
+            bone.mmr_bone.mass = MMR_bone.bl_rna.properties['mass'].default
     
 def read_json(preset_type):
     global preset_dict_dict
@@ -159,7 +177,7 @@ def read_json(preset_type):
             preset_dict_dict=json.load(f)
     else:
         with open(json_path, 'w') as f:
-            json.dump(preset_dict_dict, f, indent=4)
+            json.dump(preset_dict_dict, f, indent=4, ensure_ascii=False)
 
 def write_json(preset_type):
     with open(json_path, "w", encoding='utf-8') as f:
@@ -167,31 +185,31 @@ def write_json(preset_type):
 
 def add_preset(name,preset,preset_type='rig'):
     preset_dict=preset_dict_dict[preset_type]
-    if name not in preset_dict:
+    if name and name not in preset_dict: #确保名称不为空
         preset_dict[name]=preset
         write_json(preset_type)
 
 def delete_preset(name,preset_type='rig'):
     preset_dict=preset_dict_dict[preset_type]
-    if name in preset_dict:
+    if name and name in preset_dict:
         del preset_dict[name]
         write_json(preset_type)
 
 def overwrite_preset(name,preset,preset_type='rig'):
     preset_dict=preset_dict_dict[preset_type]
-    if name in preset_dict:
+    if name and name in preset_dict:
         preset_dict[name]=preset
         write_json(preset_type)
 
 def get_rig_preset_item(self,context):
     preset_items=[]
-    for name in preset_dict_dict['rig']:
+    for name in sorted(preset_dict_dict['rig'].keys()):
         preset_items.append((name,name,''))
     return(preset_items)
 
 def get_retarget_preset_item(self,context):
     preset_items=[]
-    for name in preset_dict_dict['retarget']:
+    for name in sorted(preset_dict_dict['retarget'].keys()):
         preset_items.append((name,name,''))
     return(preset_items)
 
@@ -200,15 +218,15 @@ read_json('rig')
 read_json('retarget')
 
 
-#操作器部分
+# 操作器部分
 
 class OT_Add_Preset(bpy.types.Operator):
     bl_idname = "mmr.add_preset" # python 提示
     bl_label = "Add Preset"
     bl_options = {'REGISTER', 'UNDO'}
 
-    name:bpy.props.StringProperty(default='',description="新预设名称")
-    preset_type:bpy.props.StringProperty(default='rig',description="预设类型")
+    name: StringProperty(default='',description="新预设名称")
+    preset_type: StringProperty(default='rig',description="预设类型")
 
     def invoke(self, context, event):
         return context.window_manager.invoke_props_dialog(self)
@@ -220,10 +238,13 @@ class OT_Add_Preset(bpy.types.Operator):
     def execute(self,context):
         if rig.check_arm()==False:
             return{"CANCELLED"}
-        obj = context.object
-        pose=obj.pose
-        preset=get_preset(pose)
-        add_preset(self.name,preset,self.preset_type)
+        if not self.name.strip():
+            self.report({'WARNING'}, "预设名称不能为空")
+            return {"CANCELLED"}
+        active_obj = context.active_object
+        pose = active_obj.pose
+        preset_data = get_preset_data_from_pose(pose)
+        add_preset(self.name, preset_data, self.preset_type)
         return{"FINISHED"}
 
 class OT_Delete_Preset(bpy.types.Operator):
@@ -231,7 +252,7 @@ class OT_Delete_Preset(bpy.types.Operator):
     bl_label = "Delete Preset"
     bl_options = {'REGISTER', 'UNDO'}
 
-    preset_type:bpy.props.StringProperty(default='rig',description="预设类型")
+    preset_type: StringProperty(default='rig',description="预设类型")
 
     def invoke(self, context, event):
         return context.window_manager.invoke_props_dialog(self)
@@ -244,10 +265,13 @@ class OT_Delete_Preset(bpy.types.Operator):
         scene=context.scene
         mmr_property=scene.mmr_property
         if self.preset_type == 'rig':
-            name=mmr_property.rig_preset_name
+            name = mmr_property.rig_preset_name
         elif self.preset_type == 'retarget':
-            name=mmr_property.retarget_preset_name
-        delete_preset(name,self.preset_type)
+            name = mmr_property.retarget_preset_name
+        if not name:
+            self.report({'WARNING'}, "没有选择要删除的预设")
+            return {"CANCELLED"}
+        delete_preset(name, self.preset_type)
         return{"FINISHED"}
 
 class OT_Read_Preset(bpy.types.Operator):
@@ -255,7 +279,7 @@ class OT_Read_Preset(bpy.types.Operator):
     bl_label = "Read Preset"
     bl_options = {'REGISTER', 'UNDO'}
 
-    preset_type:bpy.props.StringProperty(default='rig',description="预设类型")
+    preset_type: StringProperty(default='rig',description="预设类型")
 
     def invoke(self, context, event):
         return context.window_manager.invoke_props_dialog(self)
@@ -269,15 +293,18 @@ class OT_Read_Preset(bpy.types.Operator):
         mmr_property=scene.mmr_property
         if rig.check_arm()==False:
             return{"CANCELLED"}
-        obj = context.object
-        pose=obj.pose
-        preset_dict=preset_dict_dict[self.preset_type]
+        active_obj = context.active_object
+        pose = active_obj.pose
+        preset_dict = preset_dict_dict[self.preset_type]
         if self.preset_type == 'rig':
-            name=mmr_property.rig_preset_name
+            name = mmr_property.rig_preset_name
         elif self.preset_type == 'retarget':
-            name=mmr_property.retarget_preset_name
-        preset=preset_dict[name]
-        set_bone_type(pose,preset)
+            name = mmr_property.retarget_preset_name
+        if not name or name not in preset_dict:
+            self.report({'WARNING'}, f"预设 '{name}' 未找到")
+            return {"CANCELLED"}
+        preset_data = preset_dict[name]
+        apply_preset_data_to_pose(pose, preset_data)
         return{"FINISHED"}
 
 class OT_Overwrite_Preset(bpy.types.Operator):
@@ -285,7 +312,7 @@ class OT_Overwrite_Preset(bpy.types.Operator):
     bl_label = "Overwrite Preset"
     bl_options = {'REGISTER', 'UNDO'}
 
-    preset_type:bpy.props.StringProperty(default='rig',description="预设类型")
+    preset_type: StringProperty(default='rig',description="预设类型")
 
     def invoke(self, context, event):
         return context.window_manager.invoke_props_dialog(self)
@@ -299,14 +326,18 @@ class OT_Overwrite_Preset(bpy.types.Operator):
         mmr_property=scene.mmr_property
         if rig.check_arm()==False:
             return{"CANCELLED"}
+        active_obj = context.active_object
+        pose = active_obj.pose
+        preset_data = get_preset_data_from_pose(pose)
+        
         if self.preset_type == 'rig':
-            name=mmr_property.rig_preset_name
+            name = mmr_property.rig_preset_name
         elif self.preset_type == 'retarget':
-            name=mmr_property.retarget_preset_name
-        obj = context.object
-        pose=obj.pose
-        preset=get_preset(pose)
-        overwrite_preset(name,preset,self.preset_type)
+            name = mmr_property.retarget_preset_name
+        if not name:
+            self.report({'WARNING'}, "没有选择要覆盖的预设")
+            return {"CANCELLED"}
+        overwrite_preset(name, preset_data, self.preset_type)
         return{"FINISHED"}
 
 class OT_Rig_Preset(bpy.types.Operator):
@@ -314,20 +345,23 @@ class OT_Rig_Preset(bpy.types.Operator):
     bl_label = "Rig Preset"
     bl_options = {'REGISTER', 'UNDO'}
 
-    read:bpy.props.BoolProperty(default=True,description="读取预设")
+    read: BoolProperty(default=True,description="读取预设")
 
     def execute(self,context):
         scene=context.scene
         mmr_property=scene.mmr_property
         if rig.check_arm()==False:
             return{"CANCELLED"}
-        obj = context.object
-        pose=obj.pose
+        active_obj = context.active_object
+        pose = active_obj.pose
         if self.read:
-            preset_dict=preset_dict_dict['rig']
-            preset_name=mmr_property.rig_preset_name
-            preset=preset_dict[preset_name]
-            set_bone_type(pose,preset)
+            preset_dict = preset_dict_dict['rig']
+            preset_name = mmr_property.rig_preset_name
+            if preset_name and preset_name in preset_dict:
+                preset_data = preset_dict[preset_name]
+                apply_preset_data_to_pose(pose, preset_data)
+            else:
+                self.report({'WARNING'}, f"预设 '{preset_name}' 未找到，将不应用预设生成控制器。")
         rig.RIG2(context)
         return{"FINISHED"}
 
@@ -426,8 +460,8 @@ class OT_QA_Assign(bpy.types.Operator):
 
         bone_type=rigify_bone_type_list[mmr_property.quick_assign_index]
 
-        pose_bone.mmr_bone_type=bone_type
-        pose_bone.mmr_bone_invert=False
+        pose_bone.mmr_bone.bone_type = bone_type
+        pose_bone.mmr_bone.invert = False
 
         mmr_property.quick_assign_index+=1
         if mmr_property.quick_assign_index >= len(rigify_bone_type_list):
@@ -460,8 +494,8 @@ class OT_QA_Assign_Invert(bpy.types.Operator):
 
         bone_type=rigify_bone_type_list[mmr_property.quick_assign_index]
 
-        pose_bone.mmr_bone_type=bone_type
-        pose_bone.mmr_bone_invert=True
+        pose_bone.mmr_bone.bone_type = bone_type
+        pose_bone.mmr_bone.invert = True
 
         mmr_property.quick_assign_index+=1
         if mmr_property.quick_assign_index >= len(rigify_bone_type_list):
@@ -493,19 +527,18 @@ class OT_QA_Skip(bpy.types.Operator):
 
         return{"FINISHED"}
 
-#UI菜单部分
+# UI菜单部分
 
-class Mmr_Panel_Base(bpy.types.Panel):
+class MMR_Panel_Base(bpy.types.Panel): # Renamed from Mmr_Panel_Base for consistency
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = "MMR"
-    bl_context = "objectmode"
 
-class MMR_Arm_Panel(Mmr_Panel_Base):
+class MMR_Arm_Panel(MMR_Panel_Base):
     bl_idname="MMR_PT_panel_12"
     bl_label = "Controller Preset"
-    bl_context = ""
-    
+    bl_space_type = 'VIEW_3D' # Moved from base if it's specific to this panel group
+
 
     def draw(self, context):
         layout = self.layout
@@ -552,7 +585,7 @@ class MMR_Arm_Panel(Mmr_Panel_Base):
                 #layout.prop(mmr_property,'solid_rig',text="Replace the controller")
                 layout.prop(mmr_property,'pole_target',text="Use pole target")
 
-class MMR_Bone_Panel(Mmr_Panel_Base):
+class MMR_Bone_Panel(MMR_Panel_Base):
     bl_idname="MMR_PT_panel_11"
     bl_label = 'MMR Bone Type'
     bl_space_type = 'PROPERTIES'
@@ -574,13 +607,14 @@ class MMR_Bone_Panel(Mmr_Panel_Base):
         c = layout.column()
 
         row = c.row(align=True)
-        layout.prop(pose_bone, 'mmr_bone_type', text='Bone Type',translate =False)
-        layout.prop(pose_bone, 'mmr_bone_invert', text='Invert')
+        layout.prop(pose_bone.mmr_bone, 'bone_type', text='Bone Type',translate =False)
+        layout.prop(pose_bone.mmr_bone, 'invert', text='Invert')
+        layout.prop(pose_bone.mmr_bone, 'mass', text='Mass')
 
-class MMR_Retarget_Panel(Mmr_Panel_Base):
+class MMR_Retarget_Panel(MMR_Panel_Base):
     bl_idname="MMR_PT_panel_13"
     bl_label = "Retarget" #菜单名
-    bl_context = ""
+    bl_space_type = 'VIEW_3D' # Moved from base
 
     def draw(self, context):
         scene=context.scene
@@ -617,7 +651,7 @@ class MMR_Retarget_Panel(Mmr_Panel_Base):
                 layout.prop(mmr_property,'action_scale',text="Animation scale")
             layout.prop(mmr_property,'lock_location',text="Lock animation location")
             layout.prop(mmr_property,'import_as_NLA_strip',text="Import as NLA strip")
-Class_list=[
+CLASS_LIST = [
     MMR_Bone_Panel,MMR_Arm_Panel,OT_Add_Preset,OT_Delete_Preset,OT_Read_Preset,OT_Overwrite_Preset,OT_Rig_Preset,
     OT_QA_Start,OT_QA_End,OT_QA_Assign,OT_QA_Assign_Invert,OT_QA_Skip,MMR_Retarget_Panel,
 ]
