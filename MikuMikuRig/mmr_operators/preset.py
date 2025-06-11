@@ -1,3 +1,4 @@
+# pyright: reportInvalidTypeForm=false
 """MMR 骨骼和重定向预设管理模块"""
 
 import bpy

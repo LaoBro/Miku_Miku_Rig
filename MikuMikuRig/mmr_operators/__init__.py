@@ -4,9 +4,8 @@ from . import preset
 from . import rig
 from . import retarget
 from . import physics
-from . import extra
 
-modules_to_register = [preset, rig, retarget, physics, extra]
+modules_to_register = [preset, rig, retarget, physics]
 
 def register():
     for module in modules_to_register:

@@ -2,17 +2,7 @@ import bpy
 import bmesh
 from bpy.types import Operator
 from . import rig
-
-def alert_error(title,message):
-    """
-    弹出一个错误提示窗口。
-
-    :param title: 窗口标题。
-    :param message: 窗口显示的错误信息。
-    """
-    def draw(self, context):
-        self.layout.label(text=str(message))
-    bpy.context.window_manager.popup_menu(draw,title=title,icon='ERROR')
+from ..base import alert_error
 
 def hide_skirt():
     """
@@ -135,7 +125,7 @@ def hide_skirt():
             print(f"警告: 对象 '{mmd_mesh_object.name}' 上已存在名为 '{modifier_name}' 的修改器，但类型不是 MASK。")
     return True
 
-def set_min_ik_loop(arm, min_ik_loop=10):
+def set_min_ik_loop(arm:bpy.types.Object, min_ik_loop=10):
     """
     设置骨架中所有IK约束的最小迭代次数。
 
@@ -188,6 +178,5 @@ class OT_Decorate_MMD_Arm(Operator):
     def execute(self, context):
         rig.decorate_mmd_arm(context)
         return {"FINISHED"}
-
 
 CLASS_LIST = [OT_Set_Min_IK_Loop, OT_Hide_Skirt, OT_Decorate_MMD_Arm]
